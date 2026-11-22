@@ -30,3 +30,6 @@ instrutor/
 TODO.md
 docs/design.md
 docs/review-painel-v2.md
+
+# exemplo de variáveis do backend Go (mantido só localmente)
+backend-go/.env.example
