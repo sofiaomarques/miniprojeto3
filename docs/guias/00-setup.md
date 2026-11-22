@@ -12,7 +12,7 @@ São 4 ferramentas. Python não está na lista porque o `uv` cuida dele.
 |---|---|---|
 | git | versionar em equipe | já vem no macOS/Linux; Windows: dentro do WSL (abaixo) |
 | uv | Python + dependências do backend | https://docs.astral.sh/uv/getting-started/installation/ |
-| node 20+ | rodar o frontend | de preferência via nvm: https://github.com/nvm-sh/nvm |
+| node 22+ | rodar o frontend | de preferência via nvm: https://github.com/nvm-sh/nvm |
 | make | os comandos `make check`, `make test`... | macOS: `xcode-select --install` · Ubuntu/WSL: `sudo apt install make` |
 
 ## macOS / Linux
