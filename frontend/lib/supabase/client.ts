@@ -1,17 +1,11 @@
 // Cliente Supabase para o navegador (Client Components).
-// As variáveis NEXT_PUBLIC_* precisam ser lidas de forma literal para o Next
-// conseguir embuti-las no bundle do navegador.
 import { createBrowserClient } from "@supabase/ssr";
+import { lerConfigSupabase } from "./config";
 
+// Retorna null em modo mock (NEXT_PUBLIC_USE_MOCKS=true).
 export function criarClienteNavegador() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const chave = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const config = lerConfigSupabase();
+  if (!config) return null;
 
-  if (!url || !chave) {
-    throw new Error(
-      "Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (ver .env.local.example).",
-    );
-  }
-
-  return createBrowserClient(url, chave);
+  return createBrowserClient(config.url, config.chave);
 }
