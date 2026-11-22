@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+
+	"redeservicos/internal/handlers"
 )
 
 // portaPadrao é usada quando a variável PORT não está definida.
@@ -28,6 +30,9 @@ func main() {
 
 	// Roteador principal; as rotas serão registradas nos próximos blocos.
 	roteador := http.NewServeMux()
+
+	// GET também atende HEAD; outros métodos recebem 405 automaticamente.
+	roteador.HandleFunc("GET /health", handlers.Health)
 
 	// Timeouts protegem contra conexões lentas ou ociosas.
 	servidor := &http.Server{
