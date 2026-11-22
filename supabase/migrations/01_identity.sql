@@ -1,0 +1,3 @@
+-- Dono: Pessoa 1.
+-- profiles(id = auth.users.id, role client|provider, name, avatar_url, bio, city)
+-- service_categories, provider_services, portfolio_images

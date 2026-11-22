@@ -1,0 +1,3 @@
+-- Dono: Pessoa 3.
+-- conversations, messages (+ Realtime em messages)
+-- Referências a outras tabelas só por profiles(id).

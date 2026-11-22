@@ -1,0 +1,3 @@
+-- Dono: Pessoa 2.
+-- reviews(provider_id, client_id, rating 1-5, comment, created_at, única por par)
+-- Referências a outras tabelas só por profiles(id).
