@@ -4,6 +4,7 @@ import * as mock from "./service-mock";
 import * as real from "./service-supabase";
 import type {
   Avaliacao,
+  CategoriaResumo,
   DadosAvaliacao,
   FiltrosBusca,
   NovaAvaliacao,
@@ -21,6 +22,11 @@ function validarDados(dados: DadosAvaliacao): DadosAvaliacao {
   }
   const comentario = dados.comentario?.trim() || null;
   return { nota: dados.nota, comentario };
+}
+
+// Categorias para o filtro da busca (vêm de `categorias_servico`, da P1).
+export function listarCategorias(): Promise<CategoriaResumo[]> {
+  return impl.listarCategorias();
 }
 
 export function buscarPrestadoras(filtros: FiltrosBusca = {}): Promise<PrestadoraResumo[]> {

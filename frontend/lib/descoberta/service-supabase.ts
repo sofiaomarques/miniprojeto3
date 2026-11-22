@@ -66,6 +66,13 @@ function paraResumo(l: any): PrestadoraResumo {
   };
 }
 
+export async function listarCategorias(): Promise<CategoriaResumo[]> {
+  const linhas = ou(
+    await clienteSupabase().from("categorias_servico").select("id, nome").order("nome"),
+  ) as any[];
+  return linhas.map((l) => ({ id: l.id, nome: l.nome }));
+}
+
 export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<PrestadoraResumo[]> {
   let consulta = clienteSupabase().from("prestadoras_resumo").select("*");
   if (filtros.categoriaId) {

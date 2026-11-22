@@ -49,6 +49,10 @@ function resumir(perfil: Perfil): PrestadoraResumo {
   };
 }
 
+export async function listarCategorias(): Promise<CategoriaResumo[]> {
+  return [...CATEGORIAS_MOCK].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+}
+
 export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<PrestadoraResumo[]> {
   const cidade = filtros.cidade ? normalizarTexto(filtros.cidade) : "";
   const resultado = PRESTADORAS_MOCK.map(resumir).filter((p) => {
