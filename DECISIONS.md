@@ -63,23 +63,7 @@ uma estrutura de dados no `core/`, qual o Big O da operação principal, ou o
 que mudaria se a rede crescesse 100 vezes. Se mediram com `make bench`, colem a
 saída e uma frase dizendo o que os números mostram.
 
-### Stack: Next.js + Supabase + Vercel
-
-- **Escolha:** front em Next.js 15 (App Router), Supabase como backend
-  (Postgres, Auth e Storage) e deploy na Vercel (Root Directory `frontend`,
-  produção na `main`).
-- **Por quê:** o Supabase dá banco, autenticação e arquivos prontos, sem servidor
-  próprio para manter, e a Vercel publica o Next sem configuração extra. O time
-  foca nas features em vez da infraestrutura.
-- **Como integra:** `frontend/lib/supabase/client.ts` (navegador) e
-  `frontend/lib/supabase/server.ts` (servidor, com `cookies()` do Next) usam
-  `@supabase/ssr` e só a chave publishable (`NEXT_PUBLIC_SUPABASE_*`).
-
 ## Uso de IA
 
 Ferramenta e para quê. Exemplo: "Claude para gerar o seed de 200 posts sobre
 corrida; o resto foi escrito pelo time."
-
-- **Claude (Claude Code):** implementou a integração com o Supabase da issue #11
-  (`lib/supabase/client.ts`, `lib/supabase/server.ts`, `.env.local.example`) e
-  validou build e conexão; revisado pela Pessoa 1.
