@@ -1,6 +1,8 @@
 "use client";
 // Indicações (avaliações) que uma cliente fez. Carrega, edita e apaga por conta
 // própria, então a P1 só precisa de <ListaIndicacoes clienteId={...} /> no perfil.
+// Só passe `editavel` quando quem vê é a própria cliente: sem ele a lista é só
+// leitura e o texto não fala com a dona das avaliações.
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -12,32 +14,39 @@ import {
 } from "@/lib/descoberta/service";
 import type { Avaliacao } from "@/lib/descoberta/types";
 
-type Props = { clienteId: string };
+type Props = { clienteId: string; editavel?: boolean };
 
-export function ListaIndicacoes({ clienteId }: Props) {
+export function ListaIndicacoes({ clienteId, editavel = false }: Props) {
   const [indicacoes, setIndicacoes] = useState<Avaliacao[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [nota, setNota] = useState(5);
   const [comentario, setComentario] = useState("");
   const [ocupada, setOcupada] = useState(false);
+  // Muda a cada "Tentar de novo" para o efeito carregar outra vez.
+  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
     let cancelado = false;
     setIndicacoes(null);
     setErro(null);
+    setEditandoId(null);
     listarIndicacoesDaCliente(clienteId).then(
       (lista) => !cancelado && setIndicacoes(lista),
       (err) => {
         if (cancelado) return;
         console.error("Erro ao carregar as indicações:", err);
-        setErro("Não consegui carregar suas indicações. Tente de novo.");
+        setErro(
+          editavel
+            ? "Não consegui carregar suas indicações."
+            : "Não consegui carregar as indicações.",
+        );
       },
     );
     return () => {
       cancelado = true;
     };
-  }, [clienteId]);
+  }, [clienteId, editavel, tentativa]);
 
   function comecarEdicao(a: Avaliacao) {
     setEditandoId(a.id);
@@ -51,10 +60,11 @@ export function ListaIndicacoes({ clienteId }: Props) {
     setErro(null);
     try {
       const nova = await editarAvaliacao(clienteId, a.id, { nota, comentario });
-      setIndicacoes((lista) =>
-        lista?.map((i) =>
-          i.id === a.id ? { ...i, nota: nova.nota, comentario: nova.comentario } : i,
-        ) ?? null,
+      setIndicacoes(
+        (lista) =>
+          lista?.map((i) =>
+            i.id === a.id ? { ...i, nota: nova.nota, comentario: nova.comentario } : i,
+          ) ?? null,
       );
       setEditandoId(null);
     } catch (err) {
@@ -81,7 +91,7 @@ export function ListaIndicacoes({ clienteId }: Props) {
   if (indicacoes === null && !erro) {
     return (
       <p role="status" className="text-sm text-zinc-600">
-        Carregando suas indicações...
+        {editavel ? "Carregando suas indicações..." : "Carregando indicações..."}
       </p>
     );
   }
@@ -89,17 +99,38 @@ export function ListaIndicacoes({ clienteId }: Props) {
   return (
     <div className="space-y-3">
       {erro && (
-        <p role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <p
+          role="alert"
+          className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+        >
           {erro}
+          {indicacoes === null && (
+            <>
+              {" "}
+              <button
+                type="button"
+                onClick={() => setTentativa((t) => t + 1)}
+                className="underline"
+              >
+                Tentar de novo
+              </button>
+            </>
+          )}
         </p>
       )}
 
       {indicacoes?.length === 0 && (
         <p className="rounded border bg-white p-4 text-sm text-zinc-600">
-          Você ainda não avaliou ninguém.{" "}
-          <Link href="/buscar" className="underline">
-            Encontre uma prestadora
-          </Link>
+          {editavel ? (
+            <>
+              Você ainda não avaliou ninguém.{" "}
+              <Link href="/buscar" className="underline">
+                Encontre uma prestadora
+              </Link>
+            </>
+          ) : (
+            "Nenhuma indicação ainda."
+          )}
         </p>
       )}
 
@@ -131,7 +162,7 @@ export function ListaIndicacoes({ clienteId }: Props) {
                 </time>
               </div>
 
-              {editandoId === a.id ? (
+              {editavel && editandoId === a.id ? (
                 <form
                   className="space-y-2"
                   onSubmit={(e) => {
@@ -187,24 +218,26 @@ export function ListaIndicacoes({ clienteId }: Props) {
                     <span className="text-zinc-300">{"★".repeat(5 - a.nota)}</span>
                   </p>
                   {a.comentario && <p className="text-sm text-zinc-700">{a.comentario}</p>}
-                  <div className="flex gap-3 text-sm">
-                    <button
-                      type="button"
-                      disabled={ocupada}
-                      onClick={() => comecarEdicao(a)}
-                      className="underline disabled:opacity-50"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      disabled={ocupada}
-                      onClick={() => void apagar(a)}
-                      className="text-red-700 underline disabled:opacity-50"
-                    >
-                      Apagar
-                    </button>
-                  </div>
+                  {editavel && (
+                    <div className="flex gap-3 text-sm">
+                      <button
+                        type="button"
+                        disabled={ocupada}
+                        onClick={() => comecarEdicao(a)}
+                        className="underline disabled:opacity-50"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={ocupada}
+                        onClick={() => void apagar(a)}
+                        className="text-red-700 underline disabled:opacity-50"
+                      >
+                        Apagar
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </li>

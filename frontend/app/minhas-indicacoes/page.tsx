@@ -27,12 +27,15 @@ export default function MinhasIndicacoesPage() {
       {clienteId === null && (
         <p className="rounded border bg-white p-4 text-sm text-zinc-600">
           Entre na sua conta para ver suas indicações.{" "}
-          <Link href="/login" className="underline">
+          <Link
+            href={`/login?next=${encodeURIComponent("/minhas-indicacoes")}`}
+            className="underline"
+          >
             Entrar
           </Link>
         </p>
       )}
-      {clienteId && <ListaIndicacoes clienteId={clienteId} />}
+      {clienteId && <ListaIndicacoes clienteId={clienteId} editavel />}
     </div>
   );
 }
