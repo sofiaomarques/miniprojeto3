@@ -124,3 +124,29 @@ left join lateral (
 where p.papel = 'prestadora';
 
 grant select on public.prestadoras_resumo to anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Avaliações com o nome de quem avaliou e de quem foi avaliada
+-- Na 01, `perfis` só é público para prestadoras: uma cliente não aparece para
+-- as outras. Esta view (sem security_invoker, de propósito: roda com o dono da
+-- view e ignora a RLS de `perfis`) expõe SÓ nome e avatar da autora de uma
+-- avaliação, que já é pública. Bio, cidade e papel dela continuam privados.
+-- ---------------------------------------------------------------------------
+create view public.avaliacoes_publicas as
+select
+  a.id,
+  a.prestadora_id,
+  a.cliente_id,
+  a.nota,
+  a.comentario,
+  a.criada_em,
+  cli.nome       as cliente_nome,
+  cli.avatar_url as cliente_avatar_url,
+  pre.nome       as prestadora_nome,
+  pre.avatar_url as prestadora_avatar_url
+from public.avaliacoes a
+join public.perfis cli on cli.id = a.cliente_id
+join public.perfis pre on pre.id = a.prestadora_id;
+
+revoke all on public.avaliacoes_publicas from public, anon, authenticated;
+grant select on public.avaliacoes_publicas to anon, authenticated;
