@@ -23,7 +23,7 @@ export function ItemConversa({ conversa, usuariaId }: Props) {
         {outra.nome.charAt(0).toUpperCase() || "?"}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{outra.nome}</p>
+        <p className="truncate font-medium">{outra.nome || "Participante"}</p>
         <p className={`truncate text-sm ${naoLidas > 0 ? "font-semibold text-zinc-900" : "text-zinc-500"}`}>
           {previa}
         </p>

@@ -1,54 +1,18 @@
-// Dados de mentira do chat (NEXT_PUBLIC_USE_MOCKS=true), no nicho real:
-// mulheres em João Pessoa combinando serviços domésticos.
-import type { Perfil } from "./identidade-provisoria";
+// Conversas de mentira do chat (NEXT_PUBLIC_USE_MOCKS=true), no nicho real:
+// mulheres em João Pessoa e Recife combinando serviços domésticos.
+//
+// Os perfis e a conta "logada" vêm dos mocks da identidade (P1), com os mesmos
+// ids da descoberta (P2). A conta padrão é a prestadora Marina; para ver o
+// lado da cliente, use definirUsuariaMock(ID_CLIENTE_BEATRIZ) de
+// "@/lib/identidade/mocks" (e definirUsuariaMock(null) para deslogada).
+import {
+  ID_CLIENTE_BEATRIZ,
+  ID_CLIENTE_FERNANDA,
+  ID_PRESTADORA_CAMILA,
+  ID_PRESTADORA_JOANA,
+  ID_PRESTADORA_MARINA,
+} from "@/lib/identidade/mocks";
 import type { Mensagem } from "./types";
-
-// Quem está "logada" em modo mock. Troque para PERFIS_MOCK[2].id para ver o
-// chat do lado da prestadora.
-export const USUARIA_MOCK_ID = "a0000000-0000-0000-0000-000000000001";
-
-export const PERFIS_MOCK: Perfil[] = [
-  {
-    id: "a0000000-0000-0000-0000-000000000001",
-    papel: "cliente",
-    nome: "Ana Souza",
-    avatarUrl: null,
-    bio: "Moro sozinha em Manaíra e prefiro contratar mulheres.",
-    cidade: "João Pessoa",
-  },
-  {
-    id: "b0000000-0000-0000-0000-000000000002",
-    papel: "cliente",
-    nome: "Bia Lima",
-    avatarUrl: null,
-    bio: null,
-    cidade: "João Pessoa",
-  },
-  {
-    id: "c0000000-0000-0000-0000-000000000003",
-    papel: "prestadora",
-    nome: "Carla Ar-Condicionado",
-    avatarUrl: null,
-    bio: "Instalação e limpeza de split há 8 anos.",
-    cidade: "João Pessoa",
-  },
-  {
-    id: "d0000000-0000-0000-0000-000000000004",
-    papel: "prestadora",
-    nome: "Dani Encanadora",
-    avatarUrl: null,
-    bio: "Vazamentos, torneiras e caixas d'água.",
-    cidade: "João Pessoa",
-  },
-  {
-    id: "e0000000-0000-0000-0000-000000000005",
-    papel: "prestadora",
-    nome: "Eva Montagem de Móveis",
-    avatarUrl: null,
-    bio: "Monto guarda-roupa, cama e estante no mesmo dia.",
-    cidade: "João Pessoa",
-  },
-];
 
 export type ConversaMock = {
   id: number;
@@ -57,74 +21,99 @@ export type ConversaMock = {
   criadaEm: string;
 };
 
-export const CONVERSAS_MOCK: ConversaMock[] = [
+export const CONVERSAS_MOCK: readonly ConversaMock[] = [
+  // id 1 = Beatriz × Marina: é a conversa que o botão "Conversar" da P2 abre
+  // no mock (lib/descoberta/conversa.ts devolve { id: 1 }).
   {
     id: 1,
-    clienteId: "a0000000-0000-0000-0000-000000000001",
-    prestadoraId: "c0000000-0000-0000-0000-000000000003",
-    criadaEm: "2026-11-20T13:00:00Z",
+    clienteId: ID_CLIENTE_BEATRIZ,
+    prestadoraId: ID_PRESTADORA_MARINA,
+    criadaEm: "2026-11-20T13:00:00.000Z",
   },
   {
     id: 2,
-    clienteId: "a0000000-0000-0000-0000-000000000001",
-    prestadoraId: "d0000000-0000-0000-0000-000000000004",
-    criadaEm: "2026-11-21T18:30:00Z",
+    clienteId: ID_CLIENTE_FERNANDA,
+    prestadoraId: ID_PRESTADORA_MARINA,
+    criadaEm: "2026-11-22T09:00:00.000Z",
   },
   {
     id: 3,
-    clienteId: "b0000000-0000-0000-0000-000000000002",
-    prestadoraId: "c0000000-0000-0000-0000-000000000003",
-    criadaEm: "2026-11-22T09:00:00Z",
+    clienteId: ID_CLIENTE_BEATRIZ,
+    prestadoraId: ID_PRESTADORA_JOANA,
+    criadaEm: "2026-11-21T18:30:00.000Z",
+  },
+  // A Marina não participa desta: /chat/4 mostra "Conversa não encontrada" para ela.
+  {
+    id: 4,
+    clienteId: ID_CLIENTE_FERNANDA,
+    prestadoraId: ID_PRESTADORA_CAMILA,
+    criadaEm: "2026-11-22T10:00:00.000Z",
   },
 ];
 
-export const MENSAGENS_MOCK: Mensagem[] = [
+export const MENSAGENS_MOCK: readonly Mensagem[] = [
   {
     id: 1,
     conversaId: 1,
-    autorId: "a0000000-0000-0000-0000-000000000001",
-    texto: "Oi, Carla! Quanto fica a limpeza de um split de 12 mil BTUs?",
-    criadaEm: "2026-11-20T13:01:00Z",
-    lidaEm: "2026-11-20T13:05:00Z",
+    autorId: ID_CLIENTE_BEATRIZ,
+    texto: "Oi, Marina! Quanto fica a limpeza de um split de 12 mil BTUs?",
+    criadaEm: "2026-11-20T13:01:00.000Z",
+    lidaEm: "2026-11-20T13:05:00.000Z",
   },
   {
     id: 2,
     conversaId: 1,
-    autorId: "c0000000-0000-0000-0000-000000000003",
-    texto: "Oi, Ana! Fica R$ 150 com a higienização. Posso ir quinta de manhã.",
-    criadaEm: "2026-11-20T13:06:00Z",
-    lidaEm: "2026-11-20T13:10:00Z",
+    autorId: ID_PRESTADORA_MARINA,
+    texto: "Oi, Beatriz! Fica R$ 150 com a higienização. Posso ir quinta de manhã.",
+    criadaEm: "2026-11-20T13:06:00.000Z",
+    lidaEm: "2026-11-20T13:10:00.000Z",
   },
   {
     id: 3,
     conversaId: 1,
-    autorId: "a0000000-0000-0000-0000-000000000001",
+    autorId: ID_CLIENTE_BEATRIZ,
     texto: "Fechado! Moro em Manaíra, te mando o endereço certinho na quarta.",
-    criadaEm: "2026-11-20T13:11:00Z",
-    lidaEm: "2026-11-20T14:00:00Z",
+    criadaEm: "2026-11-20T13:11:00.000Z",
+    lidaEm: "2026-11-20T14:00:00.000Z",
   },
   {
     id: 4,
     conversaId: 1,
-    autorId: "c0000000-0000-0000-0000-000000000003",
+    autorId: ID_PRESTADORA_MARINA,
     texto: "Combinado. Até quinta!",
-    criadaEm: "2026-11-21T08:00:00Z",
+    criadaEm: "2026-11-21T08:00:00.000Z",
     lidaEm: null,
   },
   {
     id: 5,
     conversaId: 2,
-    autorId: "a0000000-0000-0000-0000-000000000001",
-    texto: "Oi, Dani! A torneira da cozinha está pingando. Você atende no Bessa?",
-    criadaEm: "2026-11-21T18:31:00Z",
+    autorId: ID_CLIENTE_FERNANDA,
+    texto: "Oi! Você instala ar-condicionado em apartamento? É um 9 mil BTUs.",
+    criadaEm: "2026-11-22T09:01:00.000Z",
     lidaEm: null,
   },
   {
     id: 6,
+    conversaId: 2,
+    autorId: ID_CLIENTE_FERNANDA,
+    texto: "Já tenho o suporte, falta só a instalação.",
+    criadaEm: "2026-11-22T09:02:00.000Z",
+    lidaEm: null,
+  },
+  {
+    id: 7,
     conversaId: 3,
-    autorId: "b0000000-0000-0000-0000-000000000002",
-    texto: "Oi! Você instala ar-condicionado em apartamento?",
-    criadaEm: "2026-11-22T09:01:00Z",
+    autorId: ID_CLIENTE_BEATRIZ,
+    texto: "Oi, Joana! Preciso montar um guarda-roupa de 6 portas. Você tem horário sábado?",
+    criadaEm: "2026-11-21T18:31:00.000Z",
+    lidaEm: null,
+  },
+  {
+    id: 8,
+    conversaId: 4,
+    autorId: ID_CLIENTE_FERNANDA,
+    texto: "Oi, Camila! A torneira da cozinha está pingando. Você atende em Boa Viagem?",
+    criadaEm: "2026-11-22T10:01:00.000Z",
     lidaEm: null,
   },
 ];

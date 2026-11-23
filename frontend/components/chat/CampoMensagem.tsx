@@ -2,15 +2,20 @@
 
 import { type FormEvent, useState } from "react";
 
+import { contarCaracteres } from "@/lib/chat/service";
 import { LIMITE_TEXTO_MENSAGEM } from "@/lib/chat/types";
 
 type Props = { onEnviar: (texto: string) => Promise<void> };
 
 // Caixa de texto + botão. Enter envia; Shift+Enter quebra a linha.
+// Sem maxLength no textarea: ele conta unidades UTF-16 (emoji = 2) e o banco
+// conta caracteres. O limite é checado por validarTexto ao enviar.
 export function CampoMensagem({ onEnviar }: Props) {
   const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const caracteres = contarCaracteres(texto);
+  const perto = caracteres > LIMITE_TEXTO_MENSAGEM - 200;
 
   async function enviar(e?: FormEvent) {
     e?.preventDefault();
@@ -43,13 +48,15 @@ export function CampoMensagem({ onEnviar }: Props) {
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            // isComposing: o Enter que confirma uma palavra no teclado do
+            // celular (ou IME) não pode enviar a mensagem pela metade.
+            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               void enviar();
             }
           }}
           rows={2}
-          maxLength={LIMITE_TEXTO_MENSAGEM}
+          aria-describedby={perto ? "contador-mensagem" : undefined}
           placeholder="Escreva sua mensagem…"
           className="min-h-[44px] flex-1 resize-none rounded border bg-white p-2 text-sm"
         />
@@ -61,6 +68,16 @@ export function CampoMensagem({ onEnviar }: Props) {
           {enviando ? "Enviando…" : "Enviar"}
         </button>
       </div>
+      {perto && (
+        <p
+          id="contador-mensagem"
+          className={`text-right text-xs ${
+            caracteres > LIMITE_TEXTO_MENSAGEM ? "text-red-700" : "text-zinc-500"
+          }`}
+        >
+          {caracteres}/{LIMITE_TEXTO_MENSAGEM}
+        </p>
+      )}
     </form>
   );
 }

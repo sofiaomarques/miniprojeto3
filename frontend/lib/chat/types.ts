@@ -1,14 +1,15 @@
 // Contrato da área de chat (P3). Datas em ISO 8601 UTC.
 // Os nomes espelham a migration 03_chat.sql, em camelCase.
-import type { Papel } from "./identidade-provisoria";
+import type { Papel } from "@/lib/identidade/types";
 
-// Mesmo limite do CHECK de mensagens.texto na 03.
+// Mesmo limite do CHECK de mensagens.texto na 03 (em caracteres, não em
+// unidades UTF-16: um emoji conta 1).
 export const LIMITE_TEXTO_MENSAGEM = 2000;
 
 // A outra pessoa da conversa, do ponto de vista de quem está logada.
 export type Participante = {
   id: string;
-  nome: string;
+  nome: string; // "" se o perfil não estiver visível
   avatarUrl: string | null;
   papel: Papel | null;
 };
@@ -24,6 +25,21 @@ export type Conversa = {
   ultimaMensagem: { texto: string; autorId: string } | null;
   naoLidas: number; // mensagens recebidas nesta conversa ainda não lidas
 };
+
+export const ERRO_DESLOGADA = "Entre na sua conta para conversar.";
+
+// Mesma ordem nos dois modos (e na view): a conversa com mensagem mais
+// recente primeiro; conversas ainda sem mensagem no fim, mais novas antes.
+export function ordenarConversas(lista: Conversa[]): Conversa[] {
+  return [...lista].sort((a, b) => {
+    if (a.ultimaMensagemEm !== b.ultimaMensagemEm) {
+      if (a.ultimaMensagemEm === null) return 1;
+      if (b.ultimaMensagemEm === null) return -1;
+      return b.ultimaMensagemEm.localeCompare(a.ultimaMensagemEm);
+    }
+    return b.criadaEm.localeCompare(a.criadaEm) || b.id - a.id;
+  });
+}
 
 // Uma linha de `mensagens`.
 export type Mensagem = {

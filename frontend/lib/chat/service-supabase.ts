@@ -1,8 +1,12 @@
 // Implementação real do service (NEXT_PUBLIC_USE_MOCKS=false), sobre o banco
 // criado por 03_chat.sql. A segurança de verdade está na RLS e nos GRANTs;
 // daqui só saem as queries e mensagens de erro claras.
+//
+// Só para Client Components: usa o cliente do navegador (a sessão vem dos
+// cookies do navegador). As telas do chat são todas "use client".
+import { servicoIdentidade } from "@/lib/identidade/service";
 import { criarClienteNavegador } from "@/lib/supabase/client";
-import type { Conversa, Mensagem } from "./types";
+import { type Conversa, ERRO_DESLOGADA, type Mensagem } from "./types";
 
 type LinhaConversaResumo = {
   id: number;
@@ -32,7 +36,7 @@ const COLUNAS_MENSAGEM = "id, conversa_id, autor_id, texto, criada_em, lida_em";
 
 // Códigos que a 03 devolve, traduzidos para a tela.
 const ERROS: Record<string, string> = {
-  "28000": "Entre na sua conta para conversar.",
+  "28000": ERRO_DESLOGADA,
   "42501": "Você não tem permissão para fazer isso.",
   P0002: "Prestadora não encontrada.",
   "23514": "A mensagem está vazia ou passou de 2000 caracteres.",
@@ -84,9 +88,11 @@ function paraMensagem(l: LinhaMensagem): Mensagem {
   };
 }
 
+// null = deslogada. Falha de rede ou do Supabase lança ErroIdentidade (P1),
+// para a tela mostrar erro em vez de "entre na sua conta".
 export async function obterUsuariaAtualId(): Promise<string | null> {
-  const { data } = await cliente().auth.getUser();
-  return data.user?.id ?? null;
+  const perfil = await servicoIdentidade(cliente()).obterMeuPerfil();
+  return perfil?.id ?? null;
 }
 
 export async function listarConversas(): Promise<Conversa[]> {
@@ -122,7 +128,7 @@ export async function listarMensagens(conversaId: number): Promise<Mensagem[]> {
 
 export async function enviarMensagem(conversaId: number, texto: string): Promise<Mensagem> {
   const autorId = await obterUsuariaAtualId();
-  if (!autorId) throw new Error(ERROS["28000"]);
+  if (!autorId) throw new Error(ERRO_DESLOGADA);
   const { data, error } = await cliente()
     .from("mensagens")
     .insert({ conversa_id: conversaId, autor_id: autorId, texto })
@@ -132,12 +138,16 @@ export async function enviarMensagem(conversaId: number, texto: string): Promise
   return paraMensagem(data as LinhaMensagem);
 }
 
+// iniciar_conversa(prestadora_id uuid) devolve uma linha de `conversas`; o
+// PostgREST manda um objeto (não array). Conferido contra a 03 do #43.
 export async function iniciarConversa(prestadoraId: string): Promise<Conversa> {
   const { data, error } = await cliente().rpc("iniciar_conversa", {
     prestadora_id: prestadoraId,
   });
   if (error) falha(error);
-  const conversa = await obterConversa((data as { id: number }).id);
+  const id = (data as { id?: unknown } | null)?.id;
+  if (typeof id !== "number") throw new Error("Não consegui abrir a conversa. Tente de novo.");
+  const conversa = await obterConversa(id);
   if (!conversa) throw new Error("Não consegui abrir a conversa. Tente de novo.");
   return conversa;
 }

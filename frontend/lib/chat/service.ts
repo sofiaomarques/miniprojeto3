@@ -1,5 +1,6 @@
 // Ponto único de acesso da área de chat. As telas importam só daqui;
 // NEXT_PUBLIC_USE_MOCKS troca mock e banco real sem mexer em componente.
+// Só para Client Components (o modo real usa o cliente do navegador).
 //
 // Contrato para as outras pessoas:
 //   P2 (#25): o botão "Conversar" chama iniciarConversa(prestadoraId) e
@@ -12,11 +13,16 @@ import { type Conversa, LIMITE_TEXTO_MENSAGEM, type Mensagem } from "./types";
 
 const impl = usarMocks ? mock : real;
 
+// Quantos caracteres o Postgres conta (char_length): um emoji vale 1, não 2.
+export function contarCaracteres(texto: string): number {
+  return [...texto].length;
+}
+
 // Mesma regra do CHECK da 03: não vazio (nem só espaços/quebras) e até 2000.
 export function validarTexto(texto: string): string {
   const limpo = texto.trim();
   if (!limpo) throw new Error("Escreva uma mensagem antes de enviar.");
-  if (limpo.length > LIMITE_TEXTO_MENSAGEM) {
+  if (contarCaracteres(limpo) > LIMITE_TEXTO_MENSAGEM) {
     throw new Error(`A mensagem pode ter no máximo ${LIMITE_TEXTO_MENSAGEM} caracteres.`);
   }
   return limpo;

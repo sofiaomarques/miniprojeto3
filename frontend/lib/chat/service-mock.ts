@@ -2,15 +2,13 @@
 // Replica as regras da 03_chat.sql: uma conversa por par, só cliente inicia,
 // só com prestadora, só as participantes leem e escrevem, marcar_lidas só
 // marca o que a usuária recebeu.
-import type { Perfil } from "./identidade-provisoria";
-import {
-  CONVERSAS_MOCK,
-  type ConversaMock,
-  MENSAGENS_MOCK,
-  PERFIS_MOCK,
-  USUARIA_MOCK_ID,
-} from "./mocks";
-import type { Conversa, Mensagem } from "./types";
+//
+// Quem está logada vem do mock da identidade (P1); ver mocks.ts.
+import { PERFIS_MOCK } from "@/lib/identidade/mocks";
+import { servicoIdentidade } from "@/lib/identidade/service";
+import type { Perfil } from "@/lib/identidade/types";
+import { CONVERSAS_MOCK, type ConversaMock, MENSAGENS_MOCK } from "./mocks";
+import { type Conversa, ERRO_DESLOGADA, type Mensagem, ordenarConversas } from "./types";
 
 const conversas: ConversaMock[] = CONVERSAS_MOCK.map((c) => ({ ...c }));
 const mensagens: Mensagem[] = MENSAGENS_MOCK.map((m) => ({ ...m }));
@@ -19,6 +17,16 @@ let proximaMensagemId = Math.max(0, ...mensagens.map((m) => m.id)) + 1;
 
 function perfil(id: string): Perfil | undefined {
   return PERFIS_MOCK.find((p) => p.id === id);
+}
+
+async function eu(): Promise<Perfil | null> {
+  return servicoIdentidade(null).obterMeuPerfil();
+}
+
+async function exigirEu(): Promise<Perfil> {
+  const quem = await eu();
+  if (!quem) throw new Error(ERRO_DESLOGADA);
+  return quem;
 }
 
 function participa(c: ConversaMock, usuariaId: string): boolean {
@@ -45,7 +53,7 @@ function resumir(c: ConversaMock, usuariaId: string): Conversa {
     outra: {
       id: outraId,
       nome: outra?.nome ?? "",
-      avatarUrl: outra?.avatarUrl ?? null,
+      avatarUrl: outra?.avatar_url ?? null,
       papel: outra?.papel ?? null,
     },
     ultimaMensagem: ultima ? { texto: ultima.texto, autorId: ultima.autorId } : null,
@@ -53,38 +61,37 @@ function resumir(c: ConversaMock, usuariaId: string): Conversa {
   };
 }
 
-function minhaConversa(conversaId: number): ConversaMock | undefined {
-  return conversas.find((c) => c.id === conversaId && participa(c, USUARIA_MOCK_ID));
+function minhaConversa(conversaId: number, usuariaId: string): ConversaMock | undefined {
+  return conversas.find((c) => c.id === conversaId && participa(c, usuariaId));
 }
 
 export async function obterUsuariaAtualId(): Promise<string | null> {
-  return USUARIA_MOCK_ID;
+  return (await eu())?.id ?? null;
 }
 
 export async function listarConversas(): Promise<Conversa[]> {
-  return conversas
-    .filter((c) => participa(c, USUARIA_MOCK_ID))
-    .map((c) => resumir(c, USUARIA_MOCK_ID))
-    .sort((a, b) =>
-      (b.ultimaMensagemEm ?? b.criadaEm).localeCompare(a.ultimaMensagemEm ?? a.criadaEm),
-    );
+  const { id } = await exigirEu();
+  return ordenarConversas(conversas.filter((c) => participa(c, id)).map((c) => resumir(c, id)));
 }
 
-export async function obterConversa(id: number): Promise<Conversa | null> {
-  const c = minhaConversa(id);
-  return c ? resumir(c, USUARIA_MOCK_ID) : null;
+export async function obterConversa(conversaId: number): Promise<Conversa | null> {
+  const { id } = await exigirEu();
+  const c = minhaConversa(conversaId, id);
+  return c ? resumir(c, id) : null;
 }
 
 export async function listarMensagens(conversaId: number): Promise<Mensagem[]> {
-  return minhaConversa(conversaId) ? daConversa(conversaId).map((m) => ({ ...m })) : [];
+  const { id } = await exigirEu();
+  return minhaConversa(conversaId, id) ? daConversa(conversaId).map((m) => ({ ...m })) : [];
 }
 
 export async function enviarMensagem(conversaId: number, texto: string): Promise<Mensagem> {
-  if (!minhaConversa(conversaId)) throw new Error("Conversa não encontrada.");
+  const { id } = await exigirEu();
+  if (!minhaConversa(conversaId, id)) throw new Error("Conversa não encontrada.");
   const nova: Mensagem = {
     id: proximaMensagemId++,
     conversaId,
-    autorId: USUARIA_MOCK_ID,
+    autorId: id,
     texto,
     criadaEm: new Date().toISOString(),
     lidaEm: null,
@@ -94,33 +101,29 @@ export async function enviarMensagem(conversaId: number, texto: string): Promise
 }
 
 export async function iniciarConversa(prestadoraId: string): Promise<Conversa> {
-  if (perfil(USUARIA_MOCK_ID)?.papel !== "cliente") {
-    throw new Error("Só clientes podem iniciar uma conversa.");
-  }
-  if (perfil(prestadoraId)?.papel !== "prestadora") {
-    throw new Error("Prestadora não encontrada.");
-  }
-  let c = conversas.find(
-    (x) => x.clienteId === USUARIA_MOCK_ID && x.prestadoraId === prestadoraId,
-  );
+  const quem = await exigirEu();
+  if (quem.papel !== "cliente") throw new Error("Só clientes podem iniciar uma conversa.");
+  if (perfil(prestadoraId)?.papel !== "prestadora") throw new Error("Prestadora não encontrada.");
+  let c = conversas.find((x) => x.clienteId === quem.id && x.prestadoraId === prestadoraId);
   if (!c) {
     c = {
       id: proximaConversaId++,
-      clienteId: USUARIA_MOCK_ID,
+      clienteId: quem.id,
       prestadoraId,
       criadaEm: new Date().toISOString(),
     };
     conversas.push(c);
   }
-  return resumir(c, USUARIA_MOCK_ID);
+  return resumir(c, quem.id);
 }
 
 export async function marcarLidas(conversaId: number): Promise<number> {
-  if (!minhaConversa(conversaId)) return 0;
+  const { id } = await exigirEu();
+  if (!minhaConversa(conversaId, id)) return 0;
   const agora = new Date().toISOString();
   let marcadas = 0;
   for (const m of mensagens) {
-    if (m.conversaId === conversaId && m.autorId !== USUARIA_MOCK_ID && m.lidaEm === null) {
+    if (m.conversaId === conversaId && m.autorId !== id && m.lidaEm === null) {
       m.lidaEm = agora;
       marcadas++;
     }
