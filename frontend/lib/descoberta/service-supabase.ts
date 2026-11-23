@@ -24,10 +24,30 @@ function clienteSupabase(): ClienteSupabase {
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function ou<T>(resposta: { data: T; error: { message: string } | null }): T {
-  if (resposta.error) throw new Error(resposta.error.message);
+// Traduz os erros do Postgres/PostgREST para mensagens seguras: a mensagem
+// crua traz nome de policy, constraint e valores.
+function mensagemDoErro(erro: { code?: string }): string {
+  switch (erro.code) {
+    case "23505":
+      return "Você já avaliou esta prestadora.";
+    case "42501":
+      return "Você não tem permissão para fazer isso.";
+    case "23514":
+    case "22P02":
+      return "Dados inválidos.";
+    case "23503":
+      return "Registro relacionado não encontrado.";
+    default:
+      return "Não foi possível concluir a operação. Tente novamente.";
+  }
+}
+
+function ou<T>(resposta: { data: T; error: { message: string; code?: string } | null }): T {
+  if (resposta.error) throw new Error(mensagemDoErro(resposta.error));
   return resposta.data;
 }
+
+const REGEX_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const COLUNAS_AVALIACAO =
   "id, prestadora_id, cliente_id, nota, comentario, criada_em, " +
@@ -91,13 +111,15 @@ export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<Prestado
     consulta = consulta.contains("categorias", [{ id: filtros.categoriaId }]);
   }
   if (filtros.cidade?.trim()) {
-    const termo = normalizarTexto(filtros.cidade).replace(/[%_,]/g, " ");
+    const termo = normalizarTexto(filtros.cidade).replace(/[%_,*\\]/g, " ");
     consulta = consulta.ilike("cidade_normalizada", `%${termo}%`);
   }
   consulta =
     filtros.ordenarPor === "nome"
       ? consulta.order("nome", { ascending: true })
-      : consulta.order("nota_media", { ascending: false, nullsFirst: false });
+      : consulta
+          .order("nota_media", { ascending: false, nullsFirst: false })
+          .order("nome", { ascending: true });
   return (ou(await consulta) as any[]).map(paraResumo);
 }
 
@@ -113,31 +135,35 @@ export async function listarAvaliacoes(prestadoraId: string): Promise<Avaliacao[
 }
 
 export async function obterPrestadora(id: string): Promise<PrestadoraDetalhe | null> {
+  // id que não é uuid vira "não encontrada", não erro 22P02 do Postgres.
+  if (!REGEX_UUID.test(id)) return null;
   const db = clienteSupabase();
-  const resumo = ou(await db.from("prestadoras_resumo").select("*").eq("id", id).maybeSingle());
-  if (!resumo) return null;
-  const perfil = ou(
-    await db.from("perfis").select("id, papel, nome, avatar_url, bio, cidade").eq("id", id).single(),
-  ) as any;
-  const fotos = ou(
-    await db.from("fotos_portfolio").select("*").eq("prestadora_id", id),
-  ) as any[];
-  const base = paraResumo(resumo);
+  const [resumo, perfil, fotos, avaliacoes] = await Promise.all([
+    db.from("prestadoras_resumo").select("*").eq("id", id).maybeSingle(),
+    db.from("perfis").select("id, papel, nome, avatar_url, bio, cidade").eq("id", id).maybeSingle(),
+    db.from("fotos_portfolio").select("*").eq("prestadora_id", id),
+    listarAvaliacoes(id),
+  ]);
+  if (!ou(resumo)) return null;
+  const perfilLinha = ou(perfil) as any;
+  if (!perfilLinha) return null;
+  const fotosLinhas = ou(fotos) as any[];
+  const base = paraResumo(ou(resumo));
   return {
     perfil: {
-      id: perfil.id,
-      papel: perfil.papel,
-      nome: perfil.nome,
-      avatarUrl: perfil.avatar_url,
-      bio: perfil.bio,
-      cidade: perfil.cidade,
+      id: perfilLinha.id,
+      papel: perfilLinha.papel,
+      nome: perfilLinha.nome,
+      avatarUrl: perfilLinha.avatar_url,
+      bio: perfilLinha.bio,
+      cidade: perfilLinha.cidade,
     } satisfies Perfil,
     categorias: base.categorias,
     // TODO: ajustar ao formato real de `fotos_portfolio` da 01 (#12).
-    fotos: fotos.map(
+    fotos: fotosLinhas.map(
       (f): FotoPortfolio => ({ id: f.id, prestadoraId: f.prestadora_id, caminho: f.caminho }),
     ),
-    avaliacoes: await listarAvaliacoes(id),
+    avaliacoes,
     notaMedia: base.notaMedia,
     totalAvaliacoes: base.totalAvaliacoes,
   };
