@@ -116,6 +116,21 @@ create policy mensagens_insert_da_autora on public.mensagens
 
 -- Sem policy de update/delete em mensagens: só marcar_lidas() muda lida_em.
 
+-- Na 01, perfis de cliente só são visíveis para a própria dona. Quem conversa
+-- precisa ver a outra participante (nome e avatar na lista), então esta
+-- policy libera o perfil de quem divide uma conversa com a usuária logada.
+-- Policies de select somam (OR) com a perfis_leitura_publica da 01.
+-- Sem recursão: a policy de conversas não lê perfis.
+create policy perfis_leitura_por_conversa on public.perfis
+  for select to authenticated
+  using (
+    exists (
+      select 1 from public.conversas c
+      where (select auth.uid()) in (c.cliente_id, c.prestadora_id)
+        and perfis.id in (c.cliente_id, c.prestadora_id)
+    )
+  );
+
 -- ===========================================================================
 -- RPCs
 -- ===========================================================================
@@ -184,7 +199,8 @@ as $$
 $$;
 
 -- Total de mensagens não lidas da usuária logada (para o <UnreadBadge />).
--- SECURITY INVOKER: a RLS de mensagens já limita às conversas dela.
+-- SECURITY INVOKER: a RLS já limita às conversas dela. Começa pelas conversas
+-- da usuária para a consulta crescer com as conversas dela, não com o sistema.
 -- Chamada do front: supabase.rpc('nao_lidas')
 create function public.nao_lidas()
 returns integer
@@ -193,8 +209,10 @@ stable
 set search_path = ''
 as $$
   select count(*)::int
-  from public.mensagens m
-  where m.autor_id <> (select auth.uid())
+  from public.conversas c
+  join public.mensagens m on m.conversa_id = c.id
+  where (select auth.uid()) in (c.cliente_id, c.prestadora_id)
+    and m.autor_id <> (select auth.uid())
     and m.lida_em is null;
 $$;
 
@@ -204,6 +222,8 @@ $$;
 --   ultima_mensagem_*: prévia na lista
 --   nao_lidas: mensagens recebidas ainda não lidas nesta conversa
 -- security_invoker: a view respeita a RLS de conversas, mensagens e perfis.
+-- left join: se a RLS esconder o perfil, a conversa continua na lista (sem
+-- nome); outra_id vem da conversa, então nunca é null.
 -- ===========================================================================
 create view public.conversas_resumo
 with (security_invoker = true) as
@@ -213,7 +233,8 @@ select
   c.prestadora_id,
   c.criada_em,
   c.ultima_mensagem_em,
-  outra.id         as outra_id,
+  case when c.cliente_id = (select auth.uid())
+       then c.prestadora_id else c.cliente_id end as outra_id,
   outra.nome       as outra_nome,
   outra.avatar_url as outra_avatar_url,
   outra.papel      as outra_papel,
@@ -221,7 +242,7 @@ select
   u.autor_id       as ultima_mensagem_autor_id,
   coalesce(n.nao_lidas, 0) as nao_lidas
 from public.conversas c
-join public.perfis outra
+left join public.perfis outra
   on outra.id = case when c.cliente_id = (select auth.uid())
                      then c.prestadora_id else c.cliente_id end
 left join lateral (

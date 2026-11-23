@@ -57,8 +57,16 @@ select ok(not has_function_privilege('anon', 'public.iniciar_conversa(uuid)', 'e
 -- ---------------------------------------------------------------------------
 -- 3. iniciar_conversa (como a cliente A)
 -- ---------------------------------------------------------------------------
-select set_config('request.jwt.claims', '{"sub": "a0000000-0000-0000-0000-000000000001", "role": "authenticated"}', true);
+-- Antes de conversar, a prestadora não enxerga a cliente (regra da 01).
+select set_config('request.jwt.claims', '{"sub": "c0000000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
 set local role authenticated;
+select is(
+  (select count(*) from public.perfis where id = 'a0000000-0000-0000-0000-000000000001'),
+  0::bigint,
+  'sem conversa, prestadora não vê o perfil da cliente'
+);
+
+select set_config('request.jwt.claims', '{"sub": "a0000000-0000-0000-0000-000000000001", "role": "authenticated"}', true);
 
 select ok(
   (select id from public.iniciar_conversa('c0000000-0000-0000-0000-000000000003')) is not null,
@@ -169,6 +177,11 @@ select is((select count(*) from public.conversas), 0::bigint, 'outra cliente nã
 select is((select count(*) from public.mensagens), 0::bigint, 'outra cliente não vê as mensagens');
 select is((select count(*) from public.conversas_resumo), 0::bigint, 'outra cliente não vê na conversas_resumo');
 select is(public.nao_lidas(), 0, 'outra cliente não conta não lidas dos outros');
+select is(
+  (select count(*) from public.perfis where id = 'a0000000-0000-0000-0000-000000000001'),
+  0::bigint,
+  'outra cliente não vê o perfil da cliente da conversa'
+);
 reset role;
 
 -- id da conversa A–P, lido como admin, para os próximos testes
@@ -184,6 +197,11 @@ select is(public.marcar_lidas(current_setting('teste.conversa')::bigint), 0, 'ou
 
 select set_config('request.jwt.claims', '{"sub": "d0000000-0000-0000-0000-000000000004", "role": "authenticated"}', true);
 select is((select count(*) from public.mensagens), 0::bigint, 'outra prestadora não vê as mensagens');
+select is(
+  (select count(*) from public.perfis where id = 'a0000000-0000-0000-0000-000000000001'),
+  0::bigint,
+  'outra prestadora não vê o perfil da cliente'
+);
 reset role;
 
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
@@ -204,7 +222,18 @@ select is((select nao_lidas from public.conversas_resumo), 1, 'resumo conta 1 n�
 
 select set_config('request.jwt.claims', '{"sub": "c0000000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
 select is(public.nao_lidas(), 2, 'prestadora tem 2 não lidas');
+select is(
+  (select nome from public.perfis where id = 'a0000000-0000-0000-0000-000000000001'),
+  'Ana',
+  'com conversa, prestadora vê o perfil da cliente'
+);
+select is((select count(*) from public.conversas_resumo), 1::bigint, 'conversa aparece na lista da prestadora');
 select is((select outra_nome from public.conversas_resumo), 'Ana', 'resumo da prestadora mostra a cliente');
+select is(
+  (select outra_id from public.conversas_resumo),
+  'a0000000-0000-0000-0000-000000000001'::uuid,
+  'outra_id da prestadora é a cliente'
+);
 select is(public.marcar_lidas(current_setting('teste.conversa')::bigint), 2, 'marcar_lidas marca as 2');
 select is(public.nao_lidas(), 0, 'não lidas da prestadora zeram');
 
