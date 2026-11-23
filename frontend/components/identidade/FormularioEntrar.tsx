@@ -14,7 +14,8 @@ const VALIDADORES: Validadores = {
   senha: (senha) => (senha === "" ? "Informe sua senha." : undefined),
 };
 
-export function FormularioEntrar() {
+// proxima: página para voltar depois do login (já conferida com proximaSegura).
+export function FormularioEntrar({ proxima }: { proxima?: string | null }) {
   const [estado, acao, enviando] = useActionState(entrar, ESTADO_INICIAL);
   const { erro, ligar, aoEnviar } = useValidacaoAoVivo(VALIDADORES, estado);
 
@@ -22,6 +23,7 @@ export function FormularioEntrar() {
     // noValidate: as mensagens vêm da validação ao vivo e do servidor, em português.
     <form action={acao} onSubmit={aoEnviar} noValidate className="space-y-4">
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
+      {proxima && <input type="hidden" name="proxima" value={proxima} />}
       <CampoTexto
         rotulo="E-mail"
         name="email"

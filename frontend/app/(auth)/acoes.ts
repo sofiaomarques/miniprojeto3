@@ -14,6 +14,7 @@ import {
   ROTA_CALLBACK,
   type EstadoFormulario,
 } from "@/lib/identidade/auth";
+import { proximaSegura } from "@/lib/identidade/rotas";
 import { ehErroIdentidade, servicoIdentidade } from "@/lib/identidade/service";
 import { usarMocks } from "@/lib/supabase/config";
 import { criarClienteServidor } from "@/lib/supabase/server";
@@ -74,12 +75,15 @@ export async function entrar(_anterior: EstadoFormulario, form: FormData): Promi
   const resultado = await entrarNaConta(supabase.auth, lido.dados);
   if (resultado.tipo === "erro") return { erro: resultado.mensagem, valores: { email } };
 
-  // Quem ainda não escolheu o papel vai para o onboarding.
-  let destino = "/";
+  // Quem ainda não escolheu o papel vai para o onboarding; as demais voltam
+  // para a página que pediram antes do login (?proxima=), se for segura.
+  const proxima = proximaSegura(form.get("proxima"));
+  let destino = proxima ?? "/";
   try {
-    destino = destinoAposLogin(await servicoIdentidade(supabase).obterMeuPerfil());
+    const perfil = await servicoIdentidade(supabase).obterMeuPerfil();
+    if (destinoAposLogin(perfil) === "/onboarding") destino = "/onboarding";
   } catch {
-    // Sem o perfil não dá para decidir; a página inicial resolve depois.
+    // Sem o perfil não dá para decidir; o middleware confere de novo.
   }
 
   revalidatePath("/", "layout");

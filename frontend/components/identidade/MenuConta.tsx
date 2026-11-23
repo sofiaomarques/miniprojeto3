@@ -1,21 +1,12 @@
 // Canto direito da navbar: links de entrar/cadastrar ou nome + Sair.
-// A navbar completa e a guarda de rotas ficam na #15.
 import Link from "next/link";
-import { obterMeuPerfilNoServidor } from "@/lib/identidade/sessao";
 import type { Perfil } from "@/lib/identidade/types";
 import { BotaoSair } from "./BotaoSair";
 
-export async function MenuConta() {
-  let perfil: Perfil | null = null;
-  try {
-    perfil = await obterMeuPerfilNoServidor();
-  } catch {
-    perfil = null; // Supabase indisponível: mostra os links de entrar
-  }
-
+export function MenuConta({ perfil }: { perfil: Perfil | null }) {
   if (!perfil) {
     return (
-      <div className="ml-auto flex items-center gap-4 whitespace-nowrap text-sm">
+      <div className="flex items-center gap-4 whitespace-nowrap text-sm">
         <Link href="/entrar" className="text-zinc-600 hover:text-zinc-900">
           Entrar
         </Link>
@@ -30,13 +21,16 @@ export async function MenuConta() {
   }
 
   return (
-    <div className="ml-auto flex items-center gap-4 whitespace-nowrap text-sm">
+    <div className="flex items-center gap-4 whitespace-nowrap text-sm">
       {perfil.papel === null && (
         <Link href="/onboarding" className="font-medium text-zinc-900 underline">
           Concluir cadastro
         </Link>
       )}
-      <span className="text-zinc-600">{perfil.nome ?? "Minha conta"}</span>
+      {/* No celular o nome some para caber o menu. */}
+      <span className="hidden max-w-40 truncate text-zinc-600 sm:inline">
+        {perfil.nome ?? "Minha conta"}
+      </span>
       <BotaoSair />
     </div>
   );
