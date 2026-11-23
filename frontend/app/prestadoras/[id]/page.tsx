@@ -11,8 +11,10 @@ import { useEffect, useState } from "react";
 
 import { CabecalhoPrestadora } from "@/components/descoberta/CabecalhoPrestadora";
 import { GaleriaPortfolio } from "@/components/descoberta/GaleriaPortfolio";
+import { FormularioAvaliacao } from "@/components/descoberta/FormularioAvaliacao";
 import { ListaAvaliacoes } from "@/components/descoberta/ListaAvaliacoes";
 import { obterPrestadora } from "@/lib/descoberta/service";
+import { usuarioAtual, type UsuarioAtual } from "@/lib/descoberta/sessao";
 import type { PrestadoraDetalhe } from "@/lib/descoberta/types";
 
 type Estado =
@@ -24,11 +26,26 @@ type Estado =
 export default function PaginaPrestadora() {
   const { id } = useParams<{ id: string }>();
   const [estado, setEstado] = useState<Estado>({ situacao: "carregando" });
+  const [usuaria, setUsuaria] = useState<UsuarioAtual | null>(null);
+  // Muda a cada avaliação salva, para recarregar a nota média e a lista.
+  const [versao, setVersao] = useState(0);
+
+  useEffect(() => {
+    let cancelado = false;
+    usuarioAtual().then(
+      (u) => !cancelado && setUsuaria(u),
+      () => !cancelado && setUsuaria(null),
+    );
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   useEffect(() => {
     // Ignora a resposta se o id mudou ou a página saiu da tela antes.
     let cancelado = false;
-    setEstado({ situacao: "carregando" });
+    // Só mostra "carregando" na primeira vez; depois atualiza sem piscar a tela.
+    if (versao === 0) setEstado({ situacao: "carregando" });
 
     obterPrestadora(id).then(
       (prestadora) => {
@@ -53,7 +70,7 @@ export default function PaginaPrestadora() {
     return () => {
       cancelado = true;
     };
-  }, [id]);
+  }, [id, versao]);
 
   return (
     <div className="space-y-6">
@@ -96,6 +113,29 @@ export default function PaginaPrestadora() {
 
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Avaliações</h2>
+            {usuaria?.papel === "cliente" ? (
+              <FormularioAvaliacao
+                key={usuaria.id}
+                prestadoraId={id}
+                clienteId={usuaria.id}
+                existente={
+                  estado.prestadora.avaliacoes.find((a) => a.clienteId === usuaria.id) ?? null
+                }
+                onSalvo={() => setVersao((v) => v + 1)}
+              />
+            ) : usuaria?.papel === "prestadora" ? (
+              <p className="text-sm text-zinc-500">Só clientes podem avaliar prestadoras.</p>
+            ) : (
+              <p className="text-sm text-zinc-600">
+                <Link
+                  href={`/login?next=${encodeURIComponent(`/prestadoras/${id}`)}`}
+                  className="underline"
+                >
+                  Entre na sua conta
+                </Link>{" "}
+                para avaliar.
+              </p>
+            )}
             <ListaAvaliacoes avaliacoes={estado.prestadora.avaliacoes} />
           </section>
         </>
