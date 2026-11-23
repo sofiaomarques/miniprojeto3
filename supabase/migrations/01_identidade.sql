@@ -330,5 +330,5 @@ create policy portfolio_delete_da_dona on storage.objects
 -- de fotos_portfolio, ou a conta (cascade), deixa o arquivo no bucket público.
 -- Contrato para o app: apagar o objeto pela API do Storage ANTES de apagar a
 -- linha da foto, e antes de excluir a conta (Edge Function com service_role
--- remove a pasta '<id>/'). Pendente de implementação no app (issue própria de limpeza do
--- Storage, a abrir; não faz parte da #17).
+-- remove a pasta '<id>/'). Pendente de implementação no app (issue #46; não faz parte
+-- da #17).
