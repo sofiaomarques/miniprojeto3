@@ -41,9 +41,11 @@ export default function PaginaPrestadora() {
       },
       (err) => {
         if (cancelado) return;
+        // Detalhe técnico só no console; a tela mostra texto fixo.
+        console.error("Erro ao carregar a prestadora:", err);
         setEstado({
           situacao: "erro",
-          mensagem: err instanceof Error ? err.message : "Erro ao carregar a prestadora.",
+          mensagem: "Não consegui carregar a prestadora. Tente de novo.",
         });
       },
     );
