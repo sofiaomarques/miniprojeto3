@@ -79,8 +79,8 @@ curl -s -X POST localhost:8000/upload -H "X-User-Id: 1" -F "arquivo=@alguma_foto
 ## Frontend
 
 Usem `<input type="file">` e `FormData`. Não definam o `Content-Type` na mão:
-o browser precisa colocar o boundary do multipart sozinho. O `apiPost` do
-`lib/api.ts` força JSON, então o upload usa `fetch` puro:
+o browser precisa colocar o boundary do multipart sozinho. Um helper como o `apiPost`
+do guia 10 força JSON, então o upload usa `fetch` puro:
 
 ```tsx
 const [arquivo, setArquivo] = useState<File | null>(null);
