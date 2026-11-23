@@ -39,6 +39,23 @@ const COLUNAS_AVALIACAO =
   "cliente:perfis!avaliacoes_cliente_id_fkey(nome, avatar_url), " +
   "prestadora:perfis!avaliacoes_prestadora_id_fkey(nome, avatar_url)";
 
+// Linha da view `avaliacoes_publicas` (02): traz o nome e o avatar de quem avaliou,
+// que `perfis` não mostra para outras clientes (a 01 só deixa prestadoras públicas).
+function paraAvaliacaoPublica(l: any): Avaliacao {
+  return {
+    id: l.id,
+    prestadoraId: l.prestadora_id,
+    clienteId: l.cliente_id,
+    nota: l.nota,
+    comentario: l.comentario,
+    criadaEm: l.criada_em,
+    prestadoraNome: l.prestadora_nome ?? "",
+    prestadoraAvatarUrl: l.prestadora_avatar_url ?? null,
+    clienteNome: l.cliente_nome ?? "",
+    clienteAvatarUrl: l.cliente_avatar_url ?? null,
+  };
+}
+
 function paraAvaliacao(l: any): Avaliacao {
   return {
     id: l.id,
@@ -92,12 +109,12 @@ export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<Prestado
 export async function listarAvaliacoes(prestadoraId: string): Promise<Avaliacao[]> {
   const linhas = ou(
     await clienteSupabase()
-      .from("avaliacoes")
-      .select(COLUNAS_AVALIACAO)
+      .from("avaliacoes_publicas")
+      .select("*")
       .eq("prestadora_id", prestadoraId)
       .order("criada_em", { ascending: false }),
   );
-  return (linhas as any[]).map(paraAvaliacao);
+  return (linhas as any[]).map(paraAvaliacaoPublica);
 }
 
 export async function obterPrestadora(id: string): Promise<PrestadoraDetalhe | null> {
@@ -180,10 +197,10 @@ export async function apagarAvaliacao(clienteId: string, id: number): Promise<vo
 export async function listarIndicacoesDaCliente(clienteId: string): Promise<Avaliacao[]> {
   const linhas = ou(
     await clienteSupabase()
-      .from("avaliacoes")
-      .select(COLUNAS_AVALIACAO)
+      .from("avaliacoes_publicas")
+      .select("*")
       .eq("cliente_id", clienteId)
       .order("criada_em", { ascending: false }),
   );
-  return (linhas as any[]).map(paraAvaliacao);
+  return (linhas as any[]).map(paraAvaliacaoPublica);
 }
