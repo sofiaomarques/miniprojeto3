@@ -43,14 +43,14 @@ Para rodar o projeto, abram dois terminais:
 
 ```bash
 make dev-back   # API em localhost:8000, Swagger em localhost:8000/docs
-make dev-front  # site em localhost:3000/usuarios
+make dev-front  # site em localhost:3000
 ```
 
 Se algum comando falhar, vejam o [guia 00](docs/guias/00-setup.md).
 
 ## Primeiros passos do time
 
-1. Leiam o slice de exemplo (`/usuarios`, do model à página). Toda feature
+1. Leiam o código existente (Supabase em `frontend/lib/supabase`). Toda feature
    nova segue o mesmo caminho.
 2. Escolham o nicho e comecem a seção Produto e a tabela de donos no
    [DECISIONS.md](DECISIONS.md). Não precisa ficar pronto agora: o arquivo muda
