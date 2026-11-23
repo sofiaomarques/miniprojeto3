@@ -267,7 +267,7 @@ grant select on table public.servicos_prestadora to anon, authenticated;
 grant select on table public.fotos_portfolio     to anon, authenticated;
 
 grant update (nome, avatar_url, bio, cidade, papel) on table public.perfis to authenticated;
-grant insert, delete on table public.servicos_prestadora to authenticated;
+grant insert (prestadora_id, categoria_id), delete on table public.servicos_prestadora to authenticated;
 grant insert (prestadora_id, caminho), delete on table public.fotos_portfolio to authenticated;
 
 -- Funções: ninguém chama os triggers por fora; eh_prestadora só para
@@ -330,4 +330,5 @@ create policy portfolio_delete_da_dona on storage.objects
 -- de fotos_portfolio, ou a conta (cascade), deixa o arquivo no bucket público.
 -- Contrato para o app: apagar o objeto pela API do Storage ANTES de apagar a
 -- linha da foto, e antes de excluir a conta (Edge Function com service_role
--- remove a pasta '<id>/'). Pendente de implementação no app (issue #17).
+-- remove a pasta '<id>/'). Pendente de implementação no app (issue própria de limpeza do
+-- Storage, a abrir; não faz parte da #17).
