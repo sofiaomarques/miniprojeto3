@@ -31,8 +31,8 @@ POST /posts → 422
 Causa: o corpo não bate com o schema. Falta um campo, o nome está errado, ou o
 fetch foi sem `Content-Type: application/json` ou sem `JSON.stringify(body)`.
 
-Conserto: o `loc` diz qual campo. No front, usem sempre `apiPost()` do
-`lib/api.ts`, que já põe o header e o stringify. Testem o endpoint sozinho no
+Conserto: o `loc` diz qual campo. No front, usem sempre um helper como o `apiPost()` do
+bloco 3 do guia 10, que já põe o header e o stringify. Testem o endpoint sozinho no
 Swagger (`:8000/docs`). Se funcionar lá, o problema está no fetch.
 
 ## 2. CORS
@@ -60,7 +60,7 @@ the "use client" directive.
 Causa: página com estado ou efeito sem `"use client"` na primeira linha.
 
 Conserto: adicionem `"use client";` na primeira linha do arquivo, antes dos
-imports. Referência: `app/usuarios/page.tsx`.
+imports.
 
 ## 4. failed to fetch
 
@@ -80,12 +80,12 @@ GET /feed → 401 {"detail":"não autenticado"}
 ```
 
 Causa: o token não está indo no request. O login foi feito, mas falta o Passo
-4 do guia 01 (o `headers()` do `lib/api.ts` que lê o `localStorage`).
+4 do guia 01 (o `headers()` do helper de fetch que lê o `localStorage`).
 
 Conserto: F12 → Network → cliquem no request e vejam se o header
 `Authorization: Bearer ...` existe. Se não existe, façam o Passo 4. Se existe
 e mesmo assim dá 401, o token não está na tabela `sessions` (o banco foi
-apagado?). O `lib/api.ts` já apaga esse token e manda para `/login`; é só
+apagado?). O helper de fetch (Passo 6 do guia 01) apaga esse token e manda para `/login`; é só
 logar de novo.
 
 ## 6. token some no refresh
@@ -182,8 +182,8 @@ Causa: a rota respondeu `204 No Content`, que não tem corpo, e o código chamou
 `res.json()` mesmo assim. Acontece com follow, curtir, apagar e qualquer rota
 `204`.
 
-Conserto: usem `apiPost`, `apiPatch` e `apiDelete` do `lib/api.ts`, que já
-tratam o `204`. Se escreverem um `fetch` próprio (como no upload), confiram
+Conserto: usem um helper de fetch que já trate o `204` (como o `apiPost` do guia 10,
+estendido com `apiPatch` e `apiDelete`). Se escreverem um `fetch` próprio (como no upload), confiram
 `res.status === 204` antes de chamar `res.json()`.
 
 ---
