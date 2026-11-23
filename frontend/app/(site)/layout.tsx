@@ -1,6 +1,8 @@
 import Link from "next/link";
 
-// Moldura das páginas já existentes (busca e página da prestadora).
+import { MenuConta } from "@/components/identidade/MenuConta";
+
+// Moldura das páginas já existentes (busca, página da prestadora e minhas indicações).
 export default function SiteLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -11,6 +13,7 @@ export default function SiteLayout({
           <Link href="/" className="font-bold">
             Rede de Mulheres
           </Link>
+          <MenuConta />
         </div>
       </nav>
       <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>

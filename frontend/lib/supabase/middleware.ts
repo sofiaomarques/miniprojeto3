@@ -32,8 +32,11 @@ export async function atualizarSessao(request: NextRequest) {
   });
 
   // Não coloque código entre a criação do cliente e esta chamada: é ela que
-  // valida o token no Supabase e dispara a renovação dos cookies.
-  await supabase.auth.getUser();
+  // valida o token e dispara a renovação dos cookies quando ele expira.
+  // getClaims confere a assinatura do token localmente (chaves assimétricas do
+  // projeto, guardadas em cache por 10 min), sem ir ao Supabase a cada página;
+  // getUser faria uma consulta de rede em toda request.
+  await supabase.auth.getClaims();
 
   return resposta;
 }

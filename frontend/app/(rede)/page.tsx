@@ -3,6 +3,7 @@ import Link from "next/link";
 import { IconeBusca, IconeEstrela, IconePino } from "@/components/rede/icones";
 import { Avatar, BarraAbas, Rotulo, Tela } from "@/components/rede/Tela";
 import { CATEGORIAS, PRESTADORAS } from "@/lib/rede/dados";
+import { perfilOuNull } from "@/lib/rede/sessao";
 
 const TONS_FOTO = ["bg-rosa", "bg-areia", "bg-rosa-claro"];
 
@@ -13,10 +14,28 @@ export default async function HomePage({
 }) {
   const { categoria = "Todos" } = await searchParams;
   const lista = PRESTADORAS.filter((p) => categoria === "Todos" || p.servico === categoria);
+  const perfil = await perfilOuNull();
 
   return (
     <Tela className="h-screen">
-      <div className="flex flex-col gap-3.5 rounded-b-[28px] bg-rosa px-5 pb-4 pt-7">
+      <div className="flex flex-col gap-3.5 rounded-b-[28px] bg-rosa px-5 pb-4 pt-5">
+        <div className="flex items-center justify-between gap-3 text-[13.5px]">
+          <span className="flex items-center gap-2 text-corpo">
+            <IconePino size={16} className="text-vinho" />
+            <b>João Pessoa, PB</b>
+          </span>
+          {!perfil ? (
+            <Link href="/entrar" className="inline-block px-1 py-2.5 font-bold text-vinho">
+              Entrar
+            </Link>
+          ) : !perfil.papel ? (
+            <Link href="/onboarding" className="inline-block px-1 py-2.5 font-bold text-vinho">
+              Concluir cadastro
+            </Link>
+          ) : (
+            <span className="truncate text-corpo">Olá, {perfil.nome?.split(" ")[0] ?? "você"}</span>
+          )}
+        </div>
         <h1 className="font-display text-[26px] font-semibold leading-[1.15]">
           Do que você precisa hoje?
         </h1>
@@ -29,10 +48,6 @@ export default async function HomePage({
             className="min-w-0 flex-1 bg-transparent text-[15px] text-texto outline-none placeholder:text-suave"
           />
         </label>
-        <div className="flex items-center gap-2 text-[13.5px] text-corpo">
-          <IconePino size={16} className="text-vinho" />
-          <b>João Pessoa, PB</b>
-        </div>
       </div>
 
       <div className="flex gap-2 overflow-x-auto px-5 pb-1 pt-3.5">

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { IconeEstrela, IconeInfo, IconeVoltar } from "@/components/rede/icones";
 import { Avatar, classeBotao, Tela } from "@/components/rede/Tela";
 import { buscarPrestadora } from "@/lib/rede/dados";
+import { exigirConta } from "@/lib/rede/sessao";
 
 const NOTA_EXEMPLO = 4;
 const ROTULOS = ["Ruim", "Regular", "Boa", "Muito boa", "Excelente"];
@@ -13,6 +14,7 @@ export default async function AvaliarPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const p = buscarPrestadora(slug);
   if (!p) notFound();
+  await exigirConta(`/avaliar/${p.slug}`);
 
   return (
     <Tela className="gap-[22px] px-6 pb-8 pt-5">

@@ -4,12 +4,14 @@ import { notFound } from "next/navigation";
 import { IconeEnviar, IconeVoltar } from "@/components/rede/icones";
 import { Avatar, Tela } from "@/components/rede/Tela";
 import { buscarPrestadora } from "@/lib/rede/dados";
+import { exigirConta } from "@/lib/rede/sessao";
 
 // Só visual: mensagens de exemplo, sem envio.
 export default async function ChatPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const p = buscarPrestadora(slug);
   if (!p) notFound();
+  await exigirConta(`/chat/${p.slug}`);
 
   return (
     <Tela className="h-screen">
