@@ -85,6 +85,8 @@ select throws_ok(
 select set_config('request.jwt.claims', '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
 set local role authenticated;
 
+select is((select count(*) from public.perfis where id = '33333333-3333-3333-3333-333333333333'), 0::bigint, 'cliente A não enxerga perfil sem papel de outra conta');
+select is((select count(*) from public.perfis where id = '22222222-2222-2222-2222-222222222222'), 1::bigint, 'cliente A enxerga prestadora B');
 select lives_ok(
   $$ update public.perfis set nome = 'hackeado' where id = '22222222-2222-2222-2222-222222222222' $$,
   'update no perfil alheio não dá erro, mas não atinge linha'
@@ -187,7 +189,8 @@ select throws_ok(
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
 set local role anon;
 
-select ok((select count(*) from public.perfis) >= 4, 'anon lê perfis');
+select is((select count(*) from public.perfis), 1::bigint, 'anon só lê perfis de prestadoras (B)');
+select is((select count(*) from public.perfis where papel is distinct from 'prestadora'), 0::bigint, 'anon não lê clientes nem contas sem papel');
 select ok((select count(*) from public.categorias_servico) >= 4, 'anon lê categorias');
 select throws_ok($$ update public.perfis set nome = 'anon' $$, '42501', null, 'anon não edita perfis');
 select throws_ok($$ insert into public.servicos_prestadora (prestadora_id, categoria_id) values ('22222222-2222-2222-2222-222222222222', 1) $$, '42501', null, 'anon não cria serviço');

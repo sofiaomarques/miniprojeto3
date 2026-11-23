@@ -120,9 +120,12 @@ create trigger criar_perfil_ao_cadastrar
 
 alter table public.perfis enable row level security;
 
+-- Só prestadoras são públicas (vitrine/busca). Clientes e contas sem papel
+-- só enxergam o próprio perfil; quem precisar ver cliente (ex.: prestadora
+-- vendo quem pediu um serviço) cria policy própria na migration dela.
 create policy perfis_leitura_publica on public.perfis
   for select to anon, authenticated
-  using (true);
+  using (papel = 'prestadora' or id = (select auth.uid()));
 
 create policy perfis_update_da_dona on public.perfis
   for update to authenticated
@@ -322,3 +325,9 @@ create policy portfolio_delete_da_dona on storage.objects
   );
 
 -- Sem policy de UPDATE: ninguém sobrescreve nem move arquivo (upsert: false).
+--
+-- ATENÇÃO (limpeza): o banco não apaga arquivos do Storage. Apagar uma linha
+-- de fotos_portfolio, ou a conta (cascade), deixa o arquivo no bucket público.
+-- Contrato para o app: apagar o objeto pela API do Storage ANTES de apagar a
+-- linha da foto, e antes de excluir a conta (Edge Function com service_role
+-- remove a pasta '<id>/'). Pendente de implementação no app (issue #17).
