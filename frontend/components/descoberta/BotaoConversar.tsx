@@ -20,7 +20,7 @@ export function BotaoConversar({ prestadoraId }: { prestadoraId: string }) {
       const quemSou = await usuarioAtualId();
       if (!quemSou) {
         const voltar = encodeURIComponent(`/prestadoras/${prestadoraId}`);
-        router.push(`/login?next=${voltar}`);
+        router.push(`/entrar?next=${voltar}`);
         return;
       }
       const conversa = await iniciarConversa(prestadoraId);

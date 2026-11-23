@@ -14,7 +14,7 @@ const VALIDADORES: Validadores = {
   senha: (senha) => (senha === "" ? "Informe sua senha." : undefined),
 };
 
-export function FormularioEntrar() {
+export function FormularioEntrar({ next = null }: { next?: string | null }) {
   const [estado, acao, enviando] = useActionState(entrar, ESTADO_INICIAL);
   const { erro, ligar, aoEnviar } = useValidacaoAoVivo(VALIDADORES, estado);
 
@@ -22,6 +22,7 @@ export function FormularioEntrar() {
     // noValidate: as mensagens vêm da validação ao vivo e do servidor, em português.
     <form action={acao} onSubmit={aoEnviar} noValidate className="space-y-4">
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
+      {next && <input type="hidden" name="next" value={next} />}
       <CampoTexto
         rotulo="E-mail"
         name="email"

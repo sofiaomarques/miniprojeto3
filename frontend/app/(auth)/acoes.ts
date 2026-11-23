@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   cadastrarConta,
+  caminhoInterno,
   destinoAposLogin,
   entrarNaConta,
   lerCadastro,
@@ -74,10 +75,12 @@ export async function entrar(_anterior: EstadoFormulario, form: FormData): Promi
   const resultado = await entrarNaConta(supabase.auth, lido.dados);
   if (resultado.tipo === "erro") return { erro: resultado.mensagem, valores: { email } };
 
-  // Quem ainda não escolheu o papel vai para o onboarding.
-  let destino = "/";
+  // Quem ainda não escolheu o papel vai para o onboarding; quem já escolheu
+  // volta para a página que pediu o login (?next=, só caminho interno).
+  const next = form.get("next");
+  let destino = caminhoInterno(next) ?? "/";
   try {
-    destino = destinoAposLogin(await servicoIdentidade(supabase).obterMeuPerfil());
+    destino = destinoAposLogin(await servicoIdentidade(supabase).obterMeuPerfil(), next);
   } catch {
     // Sem o perfil não dá para decidir; a página inicial resolve depois.
   }

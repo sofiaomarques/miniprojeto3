@@ -34,9 +34,28 @@ export type ClienteAuth = Pick<SupabaseClient["auth"], "signUp" | "signInWithPas
 // Rota que recebe a volta do link de confirmação de e-mail.
 export const ROTA_CALLBACK = "/auth/callback";
 
-// Para onde mandar a usuária logada: sem papel ainda, para o onboarding.
-export function destinoAposLogin(perfil: Pick<Perfil, "papel"> | null): string {
-  return perfil?.papel ? "/" : "/onboarding";
+// Valida o ?next= do login: só aceita caminho dentro do próprio site
+// ("/prestadoras/x?y=1"). Recusa URL absoluta, "//outro.site", "/\outro.site"
+// e variações com tab/quebra de linha (o parser de URL resolve igual ao
+// navegador). Sem isso, o login viraria um redirecionamento aberto.
+const BASE_INTERNA = "http://interno.invalid";
+
+export function caminhoInterno(valor: unknown): string | null {
+  if (typeof valor !== "string" || !valor.startsWith("/")) return null;
+  try {
+    const url = new URL(valor, BASE_INTERNA);
+    if (url.origin !== BASE_INTERNA) return null;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
+}
+
+// Para onde mandar a usuária logada: sem papel ainda, para o onboarding;
+// com papel, para o `next` pedido (se for um caminho interno) ou o início.
+export function destinoAposLogin(perfil: Pick<Perfil, "papel"> | null, next?: unknown): string {
+  if (!perfil?.papel) return "/onboarding";
+  return caminhoInterno(next) ?? "/";
 }
 
 // ===========================================================================
