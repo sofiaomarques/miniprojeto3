@@ -35,6 +35,10 @@ export async function usuarioAtual(): Promise<UsuarioAtual | null> {
 
   const cliente = criarClienteNavegador();
   if (!cliente) return { id, papel: null };
-  const { data } = await cliente.from("perfis").select("papel").eq("id", id).maybeSingle();
+  const { data, error } = await cliente.from("perfis").select("papel").eq("id", id).maybeSingle();
+  if (error) {
+    console.error("Erro ao ler o papel da usuária:", error);
+    return { id, papel: null };
+  }
   return { id, papel: (data?.papel as Papel | undefined) ?? null };
 }
