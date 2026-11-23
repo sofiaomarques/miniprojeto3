@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { IconeChat, IconeEstrela, IconeVoltar } from "@/components/rede/icones";
-import { Avatar, classeBotao, Rotulo, Tela } from "@/components/rede/Tela";
+import { BotaoConversarRede } from "@/components/rede/BotaoConversarRede";
+import { IconeEstrela, IconeVoltar } from "@/components/rede/icones";
+import { Avatar, Rotulo, Tela } from "@/components/rede/Tela";
 import { buscarPrestadora } from "@/lib/rede/dados";
 
 const FOTOS = ["bg-rosa", "bg-areia", "bg-rosa-claro", "bg-areia", "bg-rosa-claro", "bg-rosa"];
@@ -74,10 +75,13 @@ export default async function PerfilPrestadoraPage({
         </section>
       </div>
 
-      <div className="border-t border-borda bg-papel px-5 pb-[26px] pt-3">
-        <Link href={`/chat/${p.slug}`} className={classeBotao}>
-          <IconeChat size={20} />
-          Conversar e pedir orçamento
+      <div className="flex flex-col gap-1 border-t border-borda bg-papel px-5 pb-[26px] pt-3">
+        <BotaoConversarRede prestadoraId={p.prestadoraId} voltarPara={`/p/${p.slug}`} />
+        <Link
+          href={`/avaliar/${p.slug}`}
+          className="flex min-h-11 items-center justify-center text-[14.5px] font-bold text-vinho"
+        >
+          Já foi atendida? Avaliar {p.primeiroNome}
         </Link>
       </div>
     </Tela>

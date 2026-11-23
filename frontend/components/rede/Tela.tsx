@@ -12,7 +12,7 @@ export function Tela({
 }) {
   return (
     <div
-      className={`mx-auto flex min-h-screen w-full max-w-[430px] flex-col bg-crema shadow-xl ${className}`}
+      className={`mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-crema shadow-xl ${className}`}
     >
       {children}
     </div>
@@ -64,7 +64,7 @@ export function Avatar({
 
 const ABAS = [
   { id: "buscar", rotulo: "Buscar", href: "/", Icone: IconeBusca },
-  { id: "conversas", rotulo: "Conversas", href: "/chat/marina", Icone: IconeChat },
+  { id: "conversas", rotulo: "Conversas", href: "/chat", Icone: IconeChat },
   { id: "perfil", rotulo: "Perfil", href: "/perfil", Icone: IconePessoa },
 ] as const;
 

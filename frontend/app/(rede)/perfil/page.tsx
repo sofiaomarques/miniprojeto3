@@ -15,7 +15,7 @@ export default async function PerfilPage() {
 
   if (!perfil) {
     return (
-      <Tela className="h-screen">
+      <Tela className="h-dvh">
         <div className="flex-1 px-5 pt-8">
           <Aviso tipo="erro">
             Não foi possível carregar sua conta agora. Recarregue a página em alguns instantes.
@@ -38,7 +38,7 @@ export default async function PerfilPage() {
     .join(" · ");
 
   return (
-    <Tela className="h-screen">
+    <Tela className="h-dvh">
       <div className="flex flex-col items-center gap-2 rounded-b-[28px] bg-rosa px-5 pb-5 pt-8 text-center">
         <Avatar iniciais={iniciaisDe(perfil.nome)} tamanho={84} fundo="papel" />
         <h1 className="font-display text-[26px] font-semibold leading-[1.15]">

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { IconeEstrela, IconeInfo, IconeVoltar } from "@/components/rede/icones";
 import { Avatar, classeBotao, Tela } from "@/components/rede/Tela";
+import { Aviso } from "@/components/ui/Aviso";
 import { buscarPrestadora } from "@/lib/rede/dados";
 import { exigirConta } from "@/lib/rede/sessao";
 
@@ -14,13 +15,22 @@ export default async function AvaliarPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const p = buscarPrestadora(slug);
   if (!p) notFound();
-  await exigirConta(`/avaliar/${p.slug}`);
+  const perfil = await exigirConta(`/avaliar/${p.slug}`);
+  if (!perfil) {
+    return (
+      <Tela className="px-5 pt-8">
+        <Aviso tipo="erro">
+          Não foi possível carregar sua conta agora. Recarregue a página em alguns instantes.
+        </Aviso>
+      </Tela>
+    );
+  }
 
   return (
     <Tela className="gap-[22px] px-6 pb-8 pt-5">
       <Link
-        href={`/chat/${p.slug}`}
-        aria-label="Voltar para a conversa"
+        href={`/p/${p.slug}`}
+        aria-label="Voltar ao perfil"
         className="-ml-2.5 flex h-11 w-11 items-center justify-center"
       >
         <IconeVoltar size={24} />

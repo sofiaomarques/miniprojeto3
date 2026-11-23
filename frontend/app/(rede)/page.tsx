@@ -17,7 +17,7 @@ export default async function HomePage({
   const perfil = await perfilOuNull();
 
   return (
-    <Tela className="h-screen">
+    <Tela className="h-dvh">
       <div className="flex flex-col gap-3.5 rounded-b-[28px] bg-rosa px-5 pb-4 pt-5">
         <div className="flex items-center justify-between gap-3 text-[13.5px]">
           <span className="flex items-center gap-2 text-corpo">

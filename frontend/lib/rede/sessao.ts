@@ -18,7 +18,8 @@ export async function perfilOuNull(): Promise<Perfil | null> {
 
 // Telas que só fazem sentido com conta (conversa, avaliar, perfil): sem sessão
 // vai para /entrar e volta para `voltarPara` depois; sem papel, para o
-// onboarding. Devolve o perfil, ou null se o Supabase não respondeu.
+// onboarding. Devolve o perfil, ou null se o Supabase não respondeu: aí a
+// tela mostra um erro em vez do conteúdo protegido.
 export async function exigirConta(voltarPara: string): Promise<Perfil | null> {
   let perfil: Perfil | null;
   try {

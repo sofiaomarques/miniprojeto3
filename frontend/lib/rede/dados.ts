@@ -1,8 +1,18 @@
 // Dados de exemplo só para as telas visuais. Quando as telas forem ligadas ao
 // Supabase, estes dados saem e entram os do lib/descoberta.
+// O `slug` só existe aqui; identidade, descoberta e chat usam o uuid do perfil.
+// `prestadoraId` aponta cada exemplo para uma prestadora dos mocks da
+// identidade, para o "Conversar" abrir o chat de verdade (#44).
+import {
+  ID_PRESTADORA_ALINE,
+  ID_PRESTADORA_CAMILA,
+  ID_PRESTADORA_JOANA,
+  ID_PRESTADORA_MARINA,
+} from "@/lib/identidade/mocks";
 
 export type PrestadoraExemplo = {
   slug: string;
+  prestadoraId: string;
   nome: string;
   primeiroNome: string;
   iniciais: string;
@@ -17,6 +27,7 @@ export type PrestadoraExemplo = {
 export const PRESTADORAS: PrestadoraExemplo[] = [
   {
     slug: "marina",
+    prestadoraId: ID_PRESTADORA_MARINA,
     nome: "Marina Costa",
     primeiroNome: "Marina",
     iniciais: "MC",
@@ -29,6 +40,7 @@ export const PRESTADORAS: PrestadoraExemplo[] = [
   },
   {
     slug: "helena",
+    prestadoraId: ID_PRESTADORA_CAMILA,
     nome: "Helena Duarte",
     primeiroNome: "Helena",
     iniciais: "HD",
@@ -41,6 +53,7 @@ export const PRESTADORAS: PrestadoraExemplo[] = [
   },
   {
     slug: "beatriz",
+    prestadoraId: ID_PRESTADORA_ALINE,
     nome: "Beatriz Lima",
     primeiroNome: "Beatriz",
     iniciais: "BL",
@@ -53,6 +66,7 @@ export const PRESTADORAS: PrestadoraExemplo[] = [
   },
   {
     slug: "camila",
+    prestadoraId: ID_PRESTADORA_JOANA,
     nome: "Camila Rocha",
     primeiroNome: "Camila",
     iniciais: "CR",
