@@ -17,7 +17,7 @@ Além das features, cada pessoa cuida de uma área e revisa os PRs que mexem
 nela:
 
 - **Backend:** models, routers, services e `main.py`.
-- **Frontend:** layout, navegação e `frontend/lib/api.ts`.
+- **Frontend:** layout, navegação e o helper de fetch (`frontend/lib/`).
 - **Dados:** seed, estruturas do `core/` e deploy.
 
 ## Time de 3
