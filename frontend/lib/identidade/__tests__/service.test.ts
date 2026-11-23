@@ -99,6 +99,14 @@ describe("perfis", () => {
     expect(await servicoIdentidade(f.cliente).obterMeuPerfil()).toBeNull();
   });
 
+  it("token com assinatura inválida (getClaims) é tratado como deslogada", async () => {
+    const f = criarClienteFalso({
+      erroAuth: { name: "AuthInvalidJwtError", status: 400, message: "Invalid JWT signature" },
+    });
+    expect(await servicoIdentidade(f.cliente).obterMeuPerfil()).toBeNull();
+    expect(f.consultas).toHaveLength(0);
+  });
+
   it("falha de rede no Auth vira 'indisponivel', não 'deslogada'", async () => {
     const f = criarClienteFalso({
       erroAuth: { name: "AuthRetryableFetchError", status: 0, message: "fetch failed" },

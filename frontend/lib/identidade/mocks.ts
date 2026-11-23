@@ -222,6 +222,18 @@ export const servicoMock: ServicoIdentidade = {
     return copiar(perfil);
   },
 
+  // Mesma regra do modo real: o papel só é gravado enquanto ainda é null.
+  async escolherMeuPapel(papel, nome) {
+    const id = exigirSessao();
+    const perfil = estado.perfis.find((p) => p.id === id);
+    if (!perfil) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+    if (perfil.papel !== null) {
+      throw new ErroIdentidade("conflito", "Você já escolheu se é cliente ou prestadora.");
+    }
+    Object.assign(perfil, { papel, nome, atualizado_em: new Date().toISOString() });
+    return copiar(perfil);
+  },
+
   async listarCategorias() {
     return copiar([...CATEGORIAS_MOCK].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")));
   },

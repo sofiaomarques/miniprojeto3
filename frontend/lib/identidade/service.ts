@@ -67,6 +67,9 @@ export const CAMPOS_EDITAVEIS_PERFIL = [
   "cidade",
 ] as const satisfies readonly (keyof AtualizacaoPerfil)[];
 
+// Valores aceitos em perfis.papel (CHECK da 01).
+export const PAPEIS = ["cliente", "prestadora"] as const satisfies readonly Papel[];
+
 export const MAXIMO_IDS_POR_CONSULTA = 100;
 
 const SELECT_PERFIL = COLUNAS_PERFIL.join(", ");
@@ -121,6 +124,22 @@ function textoOpcional(valor: unknown, campo: string, maximo: number): string | 
   return texto;
 }
 
+// CHECK de perfis.nome na 01: de 1 a 80 caracteres, sem contar espaços nas pontas.
+function validarNome(valor: unknown): string {
+  const nome = typeof valor === "string" ? valor.trim() : "";
+  if (nome === "" || tamanho(nome) > 80) {
+    throw new ErroIdentidade("validacao", "O nome deve ter de 1 a 80 caracteres.");
+  }
+  return nome;
+}
+
+function validarPapel(valor: unknown): Papel {
+  if (!(PAPEIS as readonly unknown[]).includes(valor)) {
+    throw new ErroIdentidade("validacao", "Escolha cliente ou prestadora.");
+  }
+  return valor as Papel;
+}
+
 // Mesmos limites dos CHECKs de perfis na 01.
 function validarAtualizacaoPerfil(dados: unknown): AtualizacaoPerfil {
   if (typeof dados !== "object" || dados === null || Array.isArray(dados)) {
@@ -138,13 +157,7 @@ function validarAtualizacaoPerfil(dados: unknown): AtualizacaoPerfil {
   const entrada = dados as Record<string, unknown>;
   const saida: AtualizacaoPerfil = {};
 
-  if (entrada.nome !== undefined) {
-    const nome = typeof entrada.nome === "string" ? entrada.nome.trim() : "";
-    if (nome === "" || tamanho(nome) > 80) {
-      throw new ErroIdentidade("validacao", "O nome deve ter de 1 a 80 caracteres.");
-    }
-    saida.nome = nome;
-  }
+  if (entrada.nome !== undefined) saida.nome = validarNome(entrada.nome);
 
   if (entrada.avatar_url !== undefined) {
     const url = textoOpcional(entrada.avatar_url, "Endereço do avatar", 2048);
@@ -188,6 +201,10 @@ function comValidacao(impl: ServicoIdentidade): ServicoIdentidade {
 
     async atualizarMeuPerfil(dados) {
       return impl.atualizarMeuPerfil(validarAtualizacaoPerfil(dados));
+    },
+
+    async escolherMeuPapel(papel, nome) {
+      return impl.escolherMeuPapel(validarPapel(papel), validarNome(nome));
     },
 
     listarCategorias: () => impl.listarCategorias(),
@@ -300,19 +317,33 @@ const TRADUCOES_PERFIL: Traducoes = {
   "23514": new ErroIdentidade("validacao", "Dados do perfil inválidos."),
 };
 
+const MENSAGEM_PAPEL_JA_ESCOLHIDO = "Você já escolheu se é cliente ou prestadora.";
+
+const TRADUCOES_PAPEL: Traducoes = {
+  ...TRADUCOES_PERFIL,
+  // 42501 = trigger perfis_proteger_campos (papel já definido).
+  "42501": new ErroIdentidade("conflito", MENSAGEM_PAPEL_JA_ESCOLHIDO),
+};
+
 export function criarServicoSupabase(cliente: ClienteSupabase): ServicoIdentidade {
-  // Id da usuária vindo da sessão validada no Supabase Auth (getUser consulta
-  // o servidor; getSession só leria o cookie). null = sem sessão válida.
+  // Id da usuária vindo de um token com assinatura conferida. getClaims
+  // verifica a assinatura com a chave pública do projeto (sem ir à rede a cada
+  // chamada; getSession só leria o cookie sem conferir nada). O banco confere
+  // o mesmo token de novo em toda consulta (RLS). null = sem sessão válida.
   async function idDaSessao(): Promise<string | null> {
-    const { data, error } = await cliente.auth.getUser();
+    const { data, error } = await cliente.auth.getClaims();
     if (error) {
       const status = (error as { status?: number }).status;
       const semSessao =
-        error.name === "AuthSessionMissingError" || status === 401 || status === 403;
+        error.name === "AuthSessionMissingError" ||
+        error.name === "AuthInvalidJwtError" ||
+        status === 401 ||
+        status === 403;
       if (semSessao) return null;
       throw new ErroIdentidade("indisponivel", "Não foi possível verificar sua sessão.");
     }
-    return data.user?.id ?? null;
+    const id = data?.claims?.sub;
+    return typeof id === "string" && id !== "" ? id : null;
   }
 
   async function exigirSessao(): Promise<string> {
@@ -365,6 +396,26 @@ export function criarServicoSupabase(cliente: ClienteSupabase): ServicoIdentidad
       );
       if (!linha) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
       return paraPerfil(linha as Linha);
+    },
+
+    async escolherMeuPapel(papel, nome) {
+      const id = await exigirSessao();
+      // O filtro papel is null faz a escolha valer uma vez só, sem depender
+      // do erro do trigger perfis_proteger_campos (que também bloqueia).
+      const linha = dados(
+        await cliente
+          .from("perfis")
+          .update({ papel, nome })
+          .eq("id", id)
+          .is("papel", null)
+          .select(SELECT_PERFIL)
+          .maybeSingle(),
+        TRADUCOES_PAPEL,
+      );
+      if (linha) return paraPerfil(linha as Linha);
+      // Nenhuma linha alterada: ou o papel já existia, ou o perfil sumiu.
+      if (await buscarPerfil(id)) throw new ErroIdentidade("conflito", MENSAGEM_PAPEL_JA_ESCOLHIDO);
+      throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
     },
 
     async listarCategorias() {

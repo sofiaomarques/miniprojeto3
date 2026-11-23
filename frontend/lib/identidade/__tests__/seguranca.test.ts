@@ -9,7 +9,14 @@ const fonte = (arquivo: string) => readFileSync(PASTA + arquivo, "utf8");
 
 describe("lib/identidade não expõe nem usa credencial administrativa", () => {
   it("encontra os arquivos do módulo", () => {
-    expect(ARQUIVOS.sort()).toEqual(["erros.ts", "mocks.ts", "service.ts", "types.ts"]);
+    expect(ARQUIVOS.sort()).toEqual([
+      "auth.ts",
+      "erros.ts",
+      "mocks.ts",
+      "service.ts",
+      "sessao.ts",
+      "types.ts",
+    ]);
   });
 
   it.each(ARQUIVOS)("%s não cita service_role, secret key nem lê variáveis de ambiente", (arquivo) => {
@@ -34,12 +41,24 @@ describe("lib/identidade não expõe nem usa credencial administrativa", () => {
     expect(fonte("service.ts")).not.toMatch(/createBrowserClient|createServerClient/);
   });
 
+  it("cadastro e login não escrevem nada em log (a senha passa por eles)", () => {
+    const acoes = readFileSync(fileURLToPath(new URL("../../../app/(auth)/acoes.ts", import.meta.url)), "utf8");
+    for (const codigo of [fonte("auth.ts"), acoes]) {
+      expect(codigo).not.toMatch(/console\./);
+    }
+  });
+
   it("escritas filtram pelo id da sessão, nunca por argumento", () => {
     const codigo = fonte("service.ts");
     const escritas = [...codigo.matchAll(/\.(update|insert|delete)\(/g)];
-    expect(escritas.length).toBe(3);
+    expect(escritas.length).toBe(4);
     // Toda escrita é precedida por exigirSessao() na mesma função.
-    for (const funcao of ["atualizarMeuPerfil", "adicionarMeuServico", "removerMeuServico"]) {
+    for (const funcao of [
+      "atualizarMeuPerfil",
+      "escolherMeuPapel",
+      "adicionarMeuServico",
+      "removerMeuServico",
+    ]) {
       // lastIndexOf: a última definição é a do Supabase (a primeira é a validação).
       const corpo = codigo.slice(codigo.lastIndexOf(`async ${funcao}(`));
       const ate = corpo.indexOf("\n    },");

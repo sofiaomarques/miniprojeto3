@@ -76,6 +76,9 @@ export type ServicoIdentidade = {
   obterMeuPerfil(): Promise<Perfil | null>;
   // Só altera o perfil da usuária autenticada.
   atualizarMeuPerfil(dados: AtualizacaoPerfil): Promise<Perfil>;
+  // Onboarding (#14): grava papel e nome de uma vez, só enquanto o papel é
+  // null. Depois disso falha com "conflito" (o papel não muda pelo app).
+  escolherMeuPapel(papel: Papel, nome: string): Promise<Perfil>;
   // Ordem alfabética.
   listarCategorias(): Promise<CategoriaServico[]>;
   // Ordem por categoria_id.

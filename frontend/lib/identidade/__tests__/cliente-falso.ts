@@ -9,12 +9,12 @@ export type RespostaFalsa = { data: unknown; error: unknown };
 type Opcoes = {
   // id da usuária logada; null = sem sessão.
   usuaria?: string | null;
-  // erro devolvido por auth.getUser (sobrepõe `usuaria`).
+  // erro devolvido por auth.getClaims (sobrepõe `usuaria`).
   erroAuth?: { name: string; status?: number; message: string };
   responder?: (consulta: Consulta) => RespostaFalsa;
 };
 
-const METODOS = ["select", "eq", "in", "order", "update", "insert", "delete", "maybeSingle", "single"];
+const METODOS = ["select", "eq", "in", "is", "order", "update", "insert", "delete", "maybeSingle", "single"];
 
 export function criarClienteFalso(opcoes: Opcoes = {}) {
   const consultas: Consulta[] = [];
@@ -45,17 +45,13 @@ export function criarClienteFalso(opcoes: Opcoes = {}) {
       return construtor(consulta);
     },
     auth: {
-      async getUser() {
+      // Mesmo formato do getClaims real: sem sessão, data e error vêm null.
+      async getClaims() {
         chamadasAuth++;
-        if (opcoes.erroAuth) return { data: { user: null }, error: opcoes.erroAuth };
+        if (opcoes.erroAuth) return { data: null, error: opcoes.erroAuth };
         const id = opcoes.usuaria ?? null;
-        if (!id) {
-          return {
-            data: { user: null },
-            error: { name: "AuthSessionMissingError", status: 400, message: "Auth session missing!" },
-          };
-        }
-        return { data: { user: { id } }, error: null };
+        if (!id) return { data: null, error: null };
+        return { data: { claims: { sub: id, role: "authenticated" } }, error: null };
       },
     },
   };
