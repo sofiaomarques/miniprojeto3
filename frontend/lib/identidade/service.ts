@@ -333,12 +333,15 @@ export function criarServicoSupabase(cliente: ClienteSupabase): ServicoIdentidad
   async function idDaSessao(): Promise<string | null> {
     const { data, error } = await cliente.auth.getClaims();
     if (error) {
+      // Qualquer recusa 4xx do Auth (token inválido, refresh token revogado
+      // ou já usado, que vem com 400) é sessão inválida, não falha do
+      // servidor. 429 (limite de tentativas), 5xx e rede seguem 'indisponivel'.
       const status = (error as { status?: number }).status;
+      const recusaDoAuth = typeof status === "number" && status >= 400 && status < 500 && status !== 429;
       const semSessao =
         error.name === "AuthSessionMissingError" ||
         error.name === "AuthInvalidJwtError" ||
-        status === 401 ||
-        status === 403;
+        recusaDoAuth;
       if (semSessao) return null;
       throw new ErroIdentidade("indisponivel", "Não foi possível verificar sua sessão.");
     }
