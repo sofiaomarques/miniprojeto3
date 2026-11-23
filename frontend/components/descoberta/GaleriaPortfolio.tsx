@@ -7,11 +7,15 @@ export function GaleriaPortfolio({ fotos }: { fotos: FotoPortfolio[] }) {
   }
 
   return (
-    <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+    // Tamanho fixo por foto: poucas fotos não esticam a grade para o resto da linha.
+    <ul className="flex flex-wrap gap-2">
       {fotos.map((foto, indice) => {
         const url = urlFotoPortfolio(foto.caminho);
         return (
-          <li key={foto.id} className="aspect-square overflow-hidden rounded-lg bg-zinc-200">
+          <li
+            key={foto.id}
+            className="aspect-square w-[calc(50%-0.25rem)] overflow-hidden rounded-lg bg-zinc-200 sm:w-48"
+          >
             {url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img

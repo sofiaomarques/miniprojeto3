@@ -7,7 +7,7 @@ export function CabecalhoPrestadora({ prestadora }: { prestadora: PrestadoraDeta
   const { perfil, categorias, notaMedia, totalAvaliacoes } = prestadora;
 
   return (
-    <header className="flex flex-col gap-4 rounded-lg border bg-white p-4 sm:flex-row sm:items-start">
+    <header className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-4 sm:flex-row sm:items-start">
       <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-2xl font-semibold">
         {perfil.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

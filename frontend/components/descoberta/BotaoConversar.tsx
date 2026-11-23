@@ -37,7 +37,7 @@ export function BotaoConversar({ prestadoraId }: { prestadoraId: string }) {
         type="button"
         onClick={conversar}
         disabled={ocupado}
-        className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+        className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 active:bg-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {ocupado ? "Abrindo conversa..." : "Conversar"}
       </button>

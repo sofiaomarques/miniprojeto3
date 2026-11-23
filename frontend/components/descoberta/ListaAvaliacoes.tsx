@@ -9,7 +9,7 @@ export function ListaAvaliacoes({ avaliacoes }: { avaliacoes: Avaliacao[] }) {
   return (
     <ul className="space-y-3">
       {avaliacoes.map((avaliacao) => (
-        <li key={avaliacao.id} className="rounded-lg border bg-white p-3">
+        <li key={avaliacao.id} className="rounded-lg border border-zinc-200 bg-white p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-medium">{avaliacao.clienteNome || "Cliente"}</p>
             <time dateTime={avaliacao.criadaEm} className="text-xs text-zinc-500">
