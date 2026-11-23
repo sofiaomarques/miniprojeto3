@@ -4,6 +4,7 @@
 // dela (lib/identidade) e apagar este arquivo.
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
+import type { Papel } from "./identidade-provisoria";
 import { CLIENTES_MOCK } from "./mocks";
 import { USAR_MOCKS } from "./service";
 
@@ -18,4 +19,22 @@ export async function usuarioAtualId(): Promise<string | null> {
 
   const { data } = await cliente.auth.getUser();
   return data.user?.id ?? null;
+}
+
+export type UsuarioAtual = { id: string; papel: Papel | null };
+
+// Quem está logada e com qual papel, para decidir se a tela mostra o formulário
+// de avaliação. `papel` é null se o perfil ainda não pôde ser lido.
+export async function usuarioAtual(): Promise<UsuarioAtual | null> {
+  const id = await usuarioAtualId();
+  if (!id) return null;
+
+  if (USAR_MOCKS) {
+    return { id, papel: CLIENTES_MOCK.find((c) => c.id === id)?.papel ?? null };
+  }
+
+  const cliente = criarClienteNavegador();
+  if (!cliente) return { id, papel: null };
+  const { data } = await cliente.from("perfis").select("papel").eq("id", id).maybeSingle();
+  return { id, papel: (data?.papel as Papel | undefined) ?? null };
 }
