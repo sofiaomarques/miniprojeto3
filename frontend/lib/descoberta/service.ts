@@ -1,5 +1,6 @@
 // Ponto único de acesso da área de descoberta. As telas importam só daqui;
 // NEXT_PUBLIC_USE_MOCKS troca mock e banco real sem mexer em componente.
+import { usarMocks } from "@/lib/supabase/config";
 import * as mock from "./service-mock";
 import * as real from "./service-supabase";
 import type {
@@ -12,7 +13,8 @@ import type {
   PrestadoraResumo,
 } from "./types";
 
-export const USAR_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
+// A flag vem de lib/supabase/config, que a ignora em produção.
+export const USAR_MOCKS = usarMocks;
 
 const impl = USAR_MOCKS ? mock : real;
 

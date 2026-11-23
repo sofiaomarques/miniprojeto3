@@ -1,6 +1,7 @@
 // Implementação real do service (NEXT_PUBLIC_USE_MOCKS=false), sobre o banco
 // criado por 02_descoberta.sql. A segurança de verdade está na RLS; as
 // checagens daqui só dão mensagens claras.
+import { criarClienteNavegador } from "@/lib/supabase/client";
 import type { FotoPortfolio, Perfil } from "./identidade-provisoria";
 import { normalizarTexto } from "./texto";
 import type {
@@ -13,19 +14,13 @@ import type {
   PrestadoraResumo,
 } from "./types";
 
-// Tipo mínimo do cliente Supabase, para não depender de pacote que ainda não
-// está no main.
-// TODO: quando a #11 (lib/supabase) entrar no main, trocar por
-//   import { criarClienteNavegador } from "@/lib/supabase/client";
-// e apagar este tipo e `clienteSupabase`.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ClienteSupabase = { from(tabela: string): any };
 
 function clienteSupabase(): ClienteSupabase {
-  throw new Error(
-    "Modo real indisponível: lib/supabase (#11) ainda não está no main. " +
-      "Use NEXT_PUBLIC_USE_MOCKS=true por enquanto.",
-  );
+  const cliente = criarClienteNavegador();
+  if (!cliente) throw new Error("Supabase desligado (modo mock).");
+  return cliente;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
