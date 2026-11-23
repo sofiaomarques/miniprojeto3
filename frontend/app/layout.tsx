@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MenuConta } from "@/components/identidade/MenuConta";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,9 +20,7 @@ export default function RootLayout({
               {/* troque pelo nome/logo do seu nicho */}
               Rede da Trilha
             </Link>
-            <Link href="/usuarios" className="text-sm text-zinc-600 hover:text-zinc-900">
-              Usuários
-            </Link>
+            <MenuConta />
           </div>
         </nav>
         <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>

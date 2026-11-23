@@ -284,9 +284,10 @@ CORS com credenciais. Aqui o `localStorage` ganha por ser mais simples de
 entender e depurar. Em produção, vocês avaliariam as duas opções. JWT está no
 guia 05.
 
-### Passo 4: `lib/api.ts` manda o token
+### Passo 4: o helper de fetch manda o token
 
-Troquem a função `headers()`, que já existe:
+No helper de fetch do front (bloco 3 do guia 10), usem uma função `headers()`
+assim:
 
 ```ts
 function headers(): HeadersInit {
@@ -299,8 +300,7 @@ function headers(): HeadersInit {
 
 ### Passo 5: páginas `/registro` e `/login`
 
-Copiem a estrutura de `app/usuarios/page.tsx` (form controlado com `use client`
-e `apiPost`). O que muda no submit do login:
+Criem formulários controlados com `use client` e `apiPost`. O que muda no submit do login:
 
 ```ts
 const { token } = await apiPost<{ token: string }>("/auth/login", { username, password });
@@ -330,7 +330,7 @@ export function useExigeLogin() {
 
 O hook só confere se existe um token, não se ele ainda vale. Token que deixou
 de valer (banco apagado, servidor do deploy reiniciado) é tratado no
-`lib/api.ts`: qualquer `401` com token salvo apaga o token e manda para
+helper de fetch: qualquer `401` com token salvo apaga o token e manda para
 `/login`. Não removam essa parte.
 
 ### Verificação ponta a ponta
