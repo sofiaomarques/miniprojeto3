@@ -6,7 +6,14 @@
 // cookies do navegador). As telas do chat são todas "use client".
 import { servicoIdentidade } from "@/lib/identidade/service";
 import { criarClienteNavegador } from "@/lib/supabase/client";
-import { type Conversa, ERRO_DESLOGADA, type Mensagem } from "./types";
+import {
+  type AoChegarMensagem,
+  type CancelarAssinatura,
+  type Conversa,
+  ERRO_DESLOGADA,
+  INTERVALO_CONSULTA_MS,
+  type Mensagem,
+} from "./types";
 
 type LinhaConversaResumo = {
   id: number;
@@ -162,4 +169,80 @@ export async function contarNaoLidas(): Promise<number> {
   const { data, error } = await cliente().rpc("nao_lidas");
   if (error) falha(error);
   return data as number;
+}
+
+// Tempo real (#37). Ouve os INSERTs de `mensagens` desta conversa pelo
+// Supabase Realtime, que respeita a RLS: só chega o que a usuária pode ler.
+//
+// Plano B: se o canal não conecta (erro, tempo esgotado ou fechado), consulta
+// o banco a cada INTERVALO_CONSULTA_MS até o Realtime voltar.
+// Ao conectar, faz uma consulta de recuperação: mensagens que chegaram entre
+// o carregamento da tela e a assinatura não se perdem.
+export function assinarMensagens(
+  conversaId: number,
+  ultimoIdConhecido: number,
+  aoChegar: AoChegarMensagem,
+): CancelarAssinatura {
+  const supabase = cliente();
+  let ultimoId = ultimoIdConhecido;
+  let ativa = true;
+  let consulta: ReturnType<typeof setInterval> | null = null;
+
+  function entregar(mensagem: Mensagem) {
+    if (!ativa) return;
+    if (mensagem.id > ultimoId) ultimoId = mensagem.id;
+    aoChegar(mensagem);
+  }
+
+  async function buscarNovas() {
+    const { data, error } = await supabase
+      .from("mensagens")
+      .select(COLUNAS_MENSAGEM)
+      .eq("conversa_id", conversaId)
+      .gt("id", ultimoId)
+      .order("id", { ascending: true });
+    if (error || !data) return; // tenta de novo na próxima rodada
+    (data as LinhaMensagem[]).map(paraMensagem).forEach(entregar);
+  }
+
+  function ligarConsulta() {
+    if (!consulta) consulta = setInterval(() => void buscarNovas(), INTERVALO_CONSULTA_MS);
+  }
+
+  function desligarConsulta() {
+    if (consulta) {
+      clearInterval(consulta);
+      consulta = null;
+    }
+  }
+
+  const canal = supabase
+    .channel(`chat:mensagens:${conversaId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "mensagens",
+        filter: `conversa_id=eq.${conversaId}`,
+      },
+      (evento) => entregar(paraMensagem(evento.new as LinhaMensagem)),
+    )
+    .subscribe((status) => {
+      if (!ativa) return;
+      if (status === "SUBSCRIBED") {
+        desligarConsulta();
+        void buscarNovas();
+      } else {
+        // CHANNEL_ERROR, TIMED_OUT ou CLOSED: o supabase-js tenta reconectar
+        // sozinho; enquanto isso, o plano B garante as mensagens.
+        ligarConsulta();
+      }
+    });
+
+  return () => {
+    ativa = false;
+    desligarConsulta();
+    void supabase.removeChannel(canal);
+  };
 }

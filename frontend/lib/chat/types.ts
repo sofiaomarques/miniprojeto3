@@ -41,6 +41,21 @@ export function ordenarConversas(lista: Conversa[]): Conversa[] {
   });
 }
 
+// Tempo real (#37): quem assina recebe cada mensagem nova da conversa e
+// chama a função devolvida para parar (ao sair da tela ou trocar de conversa).
+export type AoChegarMensagem = (mensagem: Mensagem) => void;
+export type CancelarAssinatura = () => void;
+
+// Plano B quando o Realtime não conecta: consulta o banco nesse intervalo.
+export const INTERVALO_CONSULTA_MS = 2500;
+
+// Junta uma mensagem à lista sem duplicar: a própria mensagem enviada chega
+// duas vezes (resposta do insert e evento do Realtime). Mantém a ordem.
+export function juntarMensagens(lista: Mensagem[], nova: Mensagem): Mensagem[] {
+  if (lista.some((m) => m.id === nova.id)) return lista;
+  return [...lista, nova].sort((a, b) => a.criadaEm.localeCompare(b.criadaEm) || a.id - b.id);
+}
+
 // Uma linha de `mensagens`.
 export type Mensagem = {
   id: number;

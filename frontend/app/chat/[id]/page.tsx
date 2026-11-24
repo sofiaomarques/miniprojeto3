@@ -1,6 +1,7 @@
 "use client";
 // A página só compõe componentes; as regras e queries ficam em lib/chat.
-// Tempo real (#37), "Pedir orçamento" e estados finais (#39) entram depois.
+// Mensagens novas chegam em tempo real (#37). "Pedir orçamento" e o visual
+// do protótipo entram na #39.
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -10,13 +11,14 @@ import { AvisoDeslogada } from "@/components/chat/AvisoDeslogada";
 import { BolhaMensagem } from "@/components/chat/BolhaMensagem";
 import { CampoMensagem } from "@/components/chat/CampoMensagem";
 import {
+  assinarMensagens,
   enviarMensagem,
   listarMensagens,
   marcarLidas,
   obterConversa,
   obterUsuariaAtualId,
 } from "@/lib/chat/service";
-import type { Conversa, Mensagem } from "@/lib/chat/types";
+import { type Conversa, juntarMensagens, type Mensagem } from "@/lib/chat/types";
 
 // Só dígitos: Number() aceitaria "1e3", "0x10" ou " 5 ".
 function lerId(id: string | undefined): number | null {
@@ -36,7 +38,12 @@ export default function ConversaPage() {
 
   const [estado, setEstado] = useState<Estado>({ tipo: "carregando" });
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
+  // Texto lido pelo leitor de tela quando chega mensagem nova.
+  const [avisoNova, setAvisoNova] = useState("");
   const fim = useRef<HTMLDivElement>(null);
+  // Última lista na tela, para a assinatura saber o maior id já carregado.
+  const mensagensRef = useRef<Mensagem[]>([]);
+  mensagensRef.current = mensagens;
 
   useEffect(() => {
     // Ao trocar de conversa, limpa a anterior e ignora respostas atrasadas dela.
@@ -90,6 +97,38 @@ export default function ConversaPage() {
     };
   }, [conversaId]);
 
+  // Tempo real (#37): assina quando a conversa termina de carregar e cancela
+  // ao sair da tela ou trocar de conversa.
+  const conversaPronta = estado.tipo === "pronta" ? estado.conversa : null;
+  const usuariaPronta = estado.tipo === "pronta" ? estado.usuariaId : null;
+  useEffect(() => {
+    if (!conversaPronta || !usuariaPronta) return;
+    const id = conversaPronta.id;
+    const nomeOutra = conversaPronta.outra.nome || "a outra pessoa";
+    const ultimoId = Math.max(0, ...mensagensRef.current.map((m) => m.id));
+
+    const cancelar = assinarMensagens(id, ultimoId, (nova) => {
+      setMensagens((atuais) => juntarMensagens(atuais, nova));
+      if (nova.autorId === usuariaPronta) return;
+
+      setAvisoNova(`Nova mensagem de ${nomeOutra}`);
+      // Só conta como lida se a aba está na frente; senão continua não lida.
+      if (document.visibilityState === "visible") {
+        marcarLidas(id)
+          .then(() => {
+            const agora = new Date().toISOString();
+            setMensagens((ms) =>
+              ms.map((m) => (m.id === nova.id && m.lidaEm === null ? { ...m, lidaEm: agora } : m)),
+            );
+          })
+          .catch(() => {
+            // Fica não lida; a próxima abertura da conversa tenta de novo.
+          });
+      }
+    });
+    return cancelar;
+  }, [conversaPronta, usuariaPronta]);
+
   useEffect(() => {
     fim.current?.scrollIntoView({ block: "end" });
   }, [mensagens]);
@@ -97,7 +136,7 @@ export default function ConversaPage() {
   async function enviar(texto: string) {
     if (estado.tipo !== "pronta") return;
     const nova = await enviarMensagem(estado.conversa.id, texto);
-    setMensagens((atuais) => [...atuais, nova]);
+    setMensagens((atuais) => juntarMensagens(atuais, nova));
   }
 
   if (estado.tipo === "carregando") return <p className="text-sm text-zinc-500">Carregando…</p>;
@@ -134,8 +173,11 @@ export default function ConversaPage() {
         <h1 className="truncate text-lg font-bold">{conversa.outra.nome || "Conversa"}</h1>
       </header>
 
-      {/* Sem aria-live aqui: o leitor de tela leria o histórico inteiro ao abrir.
-          O aviso de mensagem nova entra com o tempo real (#37). */}
+      {/* Sem aria-live no histórico: o leitor de tela leria tudo ao abrir.
+          Mensagem nova é anunciada só por este aviso. */}
+      <p role="status" className="sr-only">
+        {avisoNova}
+      </p>
       <div className="flex-1 space-y-2 overflow-y-auto" aria-label="Mensagens">
         {mensagens.length === 0 && (
           <p className="text-center text-sm text-zinc-500">

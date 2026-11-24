@@ -8,12 +8,41 @@ import { PERFIS_MOCK } from "@/lib/identidade/mocks";
 import { servicoIdentidade } from "@/lib/identidade/service";
 import type { Perfil } from "@/lib/identidade/types";
 import { CONVERSAS_MOCK, type ConversaMock, MENSAGENS_MOCK } from "./mocks";
-import { type Conversa, ERRO_DESLOGADA, type Mensagem, ordenarConversas } from "./types";
+import {
+  type AoChegarMensagem,
+  type CancelarAssinatura,
+  type Conversa,
+  ERRO_DESLOGADA,
+  type Mensagem,
+  ordenarConversas,
+} from "./types";
 
 const conversas: ConversaMock[] = CONVERSAS_MOCK.map((c) => ({ ...c }));
 const mensagens: Mensagem[] = MENSAGENS_MOCK.map((m) => ({ ...m }));
 let proximaConversaId = Math.max(0, ...conversas.map((c) => c.id)) + 1;
 let proximaMensagemId = Math.max(0, ...mensagens.map((m) => m.id)) + 1;
+
+// Tempo real no mock (#37): avisa quem assinou nesta aba e, pelo
+// BroadcastChannel, as outras abas abertas do mesmo site. Assim dá para ver
+// uma mensagem enviada numa aba aparecer na outra sem o Supabase.
+type Ouvinte = { conversaId: number; aoChegar: AoChegarMensagem };
+const ouvintes = new Set<Ouvinte>();
+const outrasAbas =
+  typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel("rede-chat-mock");
+
+function avisar(mensagem: Mensagem) {
+  for (const o of ouvintes) {
+    if (o.conversaId === mensagem.conversaId) o.aoChegar({ ...mensagem });
+  }
+}
+
+outrasAbas?.addEventListener("message", (evento: MessageEvent<Mensagem>) => {
+  const mensagem = evento.data;
+  if (mensagens.some((m) => m.id === mensagem.id)) return;
+  mensagens.push(mensagem);
+  proximaMensagemId = Math.max(proximaMensagemId, mensagem.id + 1);
+  avisar(mensagem);
+});
 
 function perfil(id: string): Perfil | undefined {
   return PERFIS_MOCK.find((p) => p.id === id);
@@ -97,7 +126,21 @@ export async function enviarMensagem(conversaId: number, texto: string): Promise
     lidaEm: null,
   };
   mensagens.push(nova);
+  avisar(nova);
+  outrasAbas?.postMessage(nova);
   return { ...nova };
+}
+
+export function assinarMensagens(
+  conversaId: number,
+  _ultimoIdConhecido: number,
+  aoChegar: AoChegarMensagem,
+): CancelarAssinatura {
+  const ouvinte: Ouvinte = { conversaId, aoChegar };
+  ouvintes.add(ouvinte);
+  return () => {
+    ouvintes.delete(ouvinte);
+  };
 }
 
 export async function iniciarConversa(prestadoraId: string): Promise<Conversa> {
