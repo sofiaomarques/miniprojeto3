@@ -53,13 +53,14 @@ describe("lib/identidade não expõe nem usa credencial administrativa", () => {
   it("escritas filtram pelo id da sessão, nunca por argumento", () => {
     const codigo = fonte("service.ts");
     const escritas = [...codigo.matchAll(/\.(update|insert|delete)\(/g)];
-    expect(escritas.length).toBe(4);
+    expect(escritas.length).toBe(5);
     // Toda escrita é precedida por exigirSessao() na mesma função.
     for (const funcao of [
       "atualizarMeuPerfil",
       "escolherMeuPapel",
       "adicionarMeuServico",
       "removerMeuServico",
+      "enviarMinhaFoto",
     ]) {
       // lastIndexOf: a última definição é a do Supabase (a primeira é a validação).
       const corpo = codigo.slice(codigo.lastIndexOf(`async ${funcao}(`));

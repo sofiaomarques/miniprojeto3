@@ -9,6 +9,7 @@
 // para o mock falhar nos mesmos casos que o Supabase. A entrada já chega
 // validada por service.ts.
 import { ErroIdentidade } from "./erros";
+import { novoCaminhoFoto } from "./fotos";
 import type {
   AtualizacaoPerfil,
   CategoriaServico,
@@ -284,4 +285,23 @@ export const servicoMock: ServicoIdentidade = {
         .sort((a, b) => a.criada_em.localeCompare(b.criada_em) || a.id - b.id),
     );
   },
+
+  // #17: mesmas regras do banco (trigger exigir_prestadora e RLS da dona).
+  // O arquivo em si não é guardado: no mock não há Storage.
+  async enviarMinhaFoto(arquivo) {
+    const id = exigirSessao();
+    const perfil = estado.perfis.find((p) => p.id === id);
+    if (perfil?.papel !== "prestadora") {
+      throw new ErroIdentidade("permissao", "Só prestadoras podem enviar fotos.");
+    }
+    const nova: FotoPortfolio = {
+      id: Math.max(0, ...estado.fotos.map((f) => f.id)) + 1,
+      prestadora_id: id,
+      caminho: novoCaminhoFoto(id, arquivo.type),
+      criada_em: new Date().toISOString(),
+    };
+    estado.fotos.push(nova);
+    return copiar(nova);
+  },
+
 };
