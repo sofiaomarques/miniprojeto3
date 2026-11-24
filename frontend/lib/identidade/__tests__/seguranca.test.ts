@@ -12,6 +12,7 @@ describe("lib/identidade não expõe nem usa credencial administrativa", () => {
     expect(ARQUIVOS.sort()).toEqual([
       "auth.ts",
       "erros.ts",
+      "fotos.ts",
       "mocks.ts",
       "perfil.ts",
       "service.ts",
