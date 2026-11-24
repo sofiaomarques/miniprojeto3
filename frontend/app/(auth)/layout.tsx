@@ -1,4 +1,14 @@
-// Telas de conta (cadastro, login e onboarding): coluna estreita e centrada.
+import { MolduraRede } from "@/components/rede/Moldura";
+import { Marca, Tela } from "@/components/rede/Tela";
+
+// Telas de conta (cadastro, login e onboarding), com o visual da Rede de Mulheres.
 export default function LayoutConta({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <div className="mx-auto max-w-sm py-6">{children}</div>;
+  return (
+    <MolduraRede>
+      <Tela className="gap-6 px-6 py-8">
+        <Marca />
+        {children}
+      </Tela>
+    </MolduraRede>
+  );
 }

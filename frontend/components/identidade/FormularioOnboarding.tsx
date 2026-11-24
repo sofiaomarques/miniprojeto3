@@ -33,15 +33,17 @@ export function FormularioOnboarding({ nomeInicial }: { nomeInicial: string }) {
         className="space-y-2"
         aria-describedby={erroPapel ? "papel-erro" : "papel-dica"}
       >
-        <legend className="mb-2 text-sm font-medium text-zinc-800">Como você vai usar o app?</legend>
+        <legend className="mb-2 text-[13px] font-bold uppercase tracking-[0.04em] text-suave">
+          Como você vai usar o app?
+        </legend>
         {OPCOES.map((opcao) => (
           <label
             key={opcao.papel}
             className={[
-              "flex cursor-pointer items-start gap-3 rounded-md border bg-white p-3",
-              "has-[:checked]:border-zinc-900 has-[:checked]:ring-1 has-[:checked]:ring-zinc-900",
-              "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-zinc-900",
-              erroPapel ? "border-red-500" : "border-zinc-300",
+              "flex cursor-pointer items-center gap-3 rounded-[18px] border-2 bg-papel p-3.5",
+              "has-[:checked]:border-vinho has-[:checked]:bg-rosa",
+              "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-vinho",
+              erroPapel ? "border-red-600" : "border-borda",
             ].join(" ")}
           >
             <input
@@ -50,20 +52,20 @@ export function FormularioOnboarding({ nomeInicial }: { nomeInicial: string }) {
               value={opcao.papel}
               defaultChecked={papelMarcado === opcao.papel}
               required
-              className="mt-1 accent-zinc-900"
+              className="m-0 h-5 w-5 shrink-0 accent-vinho"
             />
             <span>
-              <span className="block text-sm font-medium text-zinc-900">{opcao.titulo}</span>
-              <span className="block text-sm text-zinc-600">{opcao.descricao}</span>
+              <span className="block text-base font-bold">{opcao.titulo}</span>
+              <span className="block text-[13.5px] leading-snug text-corpo">{opcao.descricao}</span>
             </span>
           </label>
         ))}
         {erroPapel ? (
-          <p id="papel-erro" className="text-xs text-red-600">
+          <p id="papel-erro" className="text-xs font-medium text-red-700">
             {erroPapel}
           </p>
         ) : (
-          <p id="papel-dica" className="text-xs text-zinc-500">
+          <p id="papel-dica" className="text-xs text-suave">
             Essa escolha não pode ser trocada depois.
           </p>
         )}
