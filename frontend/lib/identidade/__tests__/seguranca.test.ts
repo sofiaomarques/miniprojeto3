@@ -13,6 +13,7 @@ describe("lib/identidade não expõe nem usa credencial administrativa", () => {
       "auth.ts",
       "erros.ts",
       "mocks.ts",
+      "perfil.ts",
       "service.ts",
       "sessao.ts",
       "types.ts",
