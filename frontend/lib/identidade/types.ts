@@ -88,7 +88,9 @@ export type ServicoIdentidade = {
   removerMeuServico(categoriaId: number): Promise<void>;
   // Ordem de envio (criada_em, depois id).
   listarFotosDaPrestadora(prestadoraId: string): Promise<FotoPortfolio[]>;
-  // #17: só a prestadora autenticada, na própria galeria. Sobe o arquivo
-  // para o bucket `portfolio` e registra em fotos_portfolio.
+  // #17: só a prestadora autenticada, na própria galeria. Enviar sobe o
+  // arquivo para o bucket `portfolio` e registra em fotos_portfolio; apagar
+  // remove o arquivo do bucket ANTES da linha (contrato da #46).
   enviarMinhaFoto(arquivo: Blob): Promise<FotoPortfolio>;
+  apagarMinhaFoto(fotoId: number): Promise<void>;
 };

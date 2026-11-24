@@ -1,4 +1,4 @@
-// Envio (e, no commit seguinte, remoção) de fotos pelo service de identidade,
+// Envio e remoção de fotos pelo service de identidade,
 // nos dois modos: Supabase falso (sem rede) e mock.
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { argumentos, criarClienteFalso } from "./cliente-falso";
@@ -120,5 +120,83 @@ describe("enviarMinhaFoto: modo mock", () => {
     m.redefinirMocks();
     m.definirUsuariaMock(m.ID_CLIENTE_BEATRIZ);
     expect((await erroDe(m.servicoIdentidade(null).enviarMinhaFoto(foto()))).codigo).toBe("permissao");
+  });
+});
+
+describe("apagarMinhaFoto: validação", () => {
+  for (const flag of ["true", "false"] as const) {
+    it(`USE_MOCKS=${flag}: id inválido é recusado sem tocar no banco nem no Storage`, async () => {
+      const m = await carregar(flag);
+      const f = criarClienteFalso({ usuaria: EU });
+      const s = m.servicoIdentidade(f.cliente);
+      for (const id of [0, -1, 1.5, Number.NaN, "3"] as unknown as number[]) {
+        expect((await erroDe(s.apagarMinhaFoto(id))).codigo).toBe("validacao");
+      }
+      expect(f.consultas).toHaveLength(0);
+      expect(f.armazenamento).toHaveLength(0);
+    });
+  }
+});
+
+describe("apagarMinhaFoto: modo real (Supabase falso)", () => {
+  it("só acha a foto da própria usuária e apaga o arquivo ANTES da linha (#46)", async () => {
+    const m = await carregar("false");
+    const ordem: string[] = [];
+    let consulta = 0;
+    const f = criarClienteFalso({
+      usuaria: EU,
+      responder: () => {
+        ordem.push(consulta === 0 ? "banco:ler" : "banco:apagar");
+        return consulta++ === 0 ? { data: LINHA, error: null } : { data: [{ id: 9 }], error: null };
+      },
+      responderStorage: (op) => {
+        ordem.push(`storage:${op}`);
+        return { data: [], error: null };
+      },
+    });
+    await m.servicoIdentidade(f.cliente).apagarMinhaFoto(9);
+    expect(ordem).toEqual(["banco:ler", "storage:remove", "banco:apagar"]);
+    expect(argumentos(f.consultas[0], "eq")).toEqual([["id", 9], ["prestadora_id", EU]]);
+    expect(f.armazenamento[0].args).toEqual([[LINHA.caminho]]);
+    expect(argumentos(f.consultas[1], "eq")).toEqual([["id", 9], ["prestadora_id", EU]]);
+  });
+
+  it("foto de outra pessoa (ou inexistente): nao_encontrado, sem apagar nada", async () => {
+    const m = await carregar("false");
+    const f = criarClienteFalso({ usuaria: EU, responder: () => ({ data: null, error: null }) });
+    expect((await erroDe(m.servicoIdentidade(f.cliente).apagarMinhaFoto(9))).codigo).toBe("nao_encontrado");
+    expect(f.armazenamento).toHaveLength(0);
+    expect(f.consultas).toHaveLength(1);
+  });
+
+  it("se o Storage falhar, a linha fica (a foto continua na galeria)", async () => {
+    const m = await carregar("false");
+    const f = criarClienteFalso({
+      usuaria: EU,
+      responder: () => ({ data: LINHA, error: null }),
+      responderStorage: () => ({ data: null, error: { statusCode: "500", message: "cru" } }),
+    });
+    const erro = await erroDe(m.servicoIdentidade(f.cliente).apagarMinhaFoto(9));
+    expect(erro.codigo).toBe("indisponivel");
+    expect(erro.message).not.toContain("cru");
+    expect(f.consultas).toHaveLength(1); // só a leitura; nenhum delete
+  });
+
+  it("sem sessão: nao_autenticada", async () => {
+    const m = await carregar("false");
+    const f = criarClienteFalso({ usuaria: null });
+    expect((await erroDe(m.servicoIdentidade(f.cliente).apagarMinhaFoto(9))).codigo).toBe("nao_autenticada");
+  });
+});
+
+describe("apagarMinhaFoto: modo mock", () => {
+  it("a dona apaga a própria foto; outra prestadora não consegue", async () => {
+    const m = await carregar("true");
+    m.redefinirMocks();
+    m.definirUsuariaMock(m.ID_PRESTADORA_CAMILA);
+    expect((await erroDe(m.servicoIdentidade(null).apagarMinhaFoto(1))).codigo).toBe("nao_encontrado"); // foto 1 é da Marina
+    m.definirUsuariaMock(m.ID_PRESTADORA_MARINA);
+    await m.servicoIdentidade(null).apagarMinhaFoto(1);
+    expect((await m.servicoIdentidade(null).listarFotosDaPrestadora(m.ID_PRESTADORA_MARINA)).map((x) => x.id)).toEqual([2]);
   });
 });

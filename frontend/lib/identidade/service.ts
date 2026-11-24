@@ -237,6 +237,12 @@ function comValidacao(impl: ServicoIdentidade): ServicoIdentidade {
       return impl.enviarMinhaFoto(arquivo);
     },
 
+    async apagarMinhaFoto(fotoId) {
+      if (typeof fotoId !== "number" || !Number.isSafeInteger(fotoId) || fotoId < 1) {
+        throw new ErroIdentidade("validacao", "Foto inválida.");
+      }
+      return impl.apagarMinhaFoto(fotoId);
+    },
   };
 }
 
@@ -530,6 +536,36 @@ export function criarServicoSupabase(cliente: ClienteSupabase): ServicoIdentidad
       }
     },
 
+    async apagarMinhaFoto(fotoId) {
+      const id = await exigirSessao();
+      const linha = dados(
+        await cliente
+          .from("fotos_portfolio")
+          .select(SELECT_FOTO)
+          .eq("id", fotoId)
+          .eq("prestadora_id", id)
+          .maybeSingle(),
+      );
+      if (!linha) throw new ErroIdentidade("nao_encontrado", "Foto não encontrada.");
+      const foto = paraFoto(linha as Linha);
+
+      // Contrato da #46: o arquivo sai do bucket ANTES da linha. Se o Storage
+      // falhar, a linha fica e a foto continua na galeria (nada some pela metade).
+      const remocao = await cliente.storage.from(BUCKET_PORTFOLIO).remove([foto.caminho]);
+      if (remocao.error) throw erroDoStorage(remocao.error, "Não foi possível apagar a foto. Tente de novo.");
+
+      const removidas = dados(
+        await cliente
+          .from("fotos_portfolio")
+          .delete()
+          .eq("id", fotoId)
+          .eq("prestadora_id", id)
+          .select("id"),
+      );
+      if (comoLinhas(removidas).length === 0) {
+        throw new ErroIdentidade("nao_encontrado", "Foto não encontrada.");
+      }
+    },
   };
 }
 

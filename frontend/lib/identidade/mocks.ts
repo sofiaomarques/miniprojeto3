@@ -304,4 +304,10 @@ export const servicoMock: ServicoIdentidade = {
     return copiar(nova);
   },
 
+  async apagarMinhaFoto(fotoId) {
+    const id = exigirSessao();
+    const indice = estado.fotos.findIndex((f) => f.id === fotoId && f.prestadora_id === id);
+    if (indice === -1) throw new ErroIdentidade("nao_encontrado", "Foto não encontrada.");
+    estado.fotos.splice(indice, 1);
+  },
 };
