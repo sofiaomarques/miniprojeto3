@@ -63,6 +63,37 @@ uma estrutura de dados no `core/`, qual o Big O da operação principal, ou o
 que mudaria se a rede crescesse 100 vezes. Se mediram com `make bench`, colem a
 saída e uma frase dizendo o que os números mostram.
 
+## Testes de RLS
+
+### Avaliações com duas contas (#28)
+
+- **Arquivo:** `supabase/tests/database/02_descoberta.test.sql` (pgTAP, roda
+  numa transação com rollback). Rodar com `supabase start && supabase test db`.
+- **Contas:** clientes A e B, prestadoras P e Q, conta sem papel N.
+  `auth.uid()` é simulado via `request.jwt.claims`, como o PostgREST faz.
+- **Resultado (24/11):** 52/52 ok. Rodado em Postgres 16 local com pgTAP e um
+  shim mínimo do Supabase (papéis `anon`/`authenticated`, `auth.uid()`); a
+  `01_identidade.test.sql` passou 95/95 no mesmo ambiente.
+
+| Tentativa | Resultado |
+|---|---|
+| A edita/apaga a avaliação de B | bloqueado pela RLS (0 linhas; conferido como admin) |
+| A troca `cliente_id` da avaliação de B para si | `42501` (sem GRANT na coluna) |
+| A insere avaliação com `cliente_id` de B | `42501` (policy de insert) |
+| A avalia outra cliente, conta sem papel, perfil inexistente ou a si mesma | `42501` |
+| Prestadora P avalia Q; conta sem papel N avalia P | `42501` |
+| P cria 5 estrelas para si em nome de A | `42501` |
+| P apaga/edita avaliações sobre ela | bloqueado pela RLS (0 linhas) |
+| Segunda avaliação de A para P | `23505` (`UNIQUE`) |
+| Nota 0, 6, 9 (no update) ou nula; comentário > 1000 caracteres | `23514` / `23502` |
+| Forjar `criada_em` ou mover a avaliação para outra prestadora | `42501` (GRANT só em `nota` e `comentario`) |
+| anon insere, edita, apaga ou chama `perfil_tem_papel` | `42501` |
+| anon lê `avaliacoes`, `avaliacoes_publicas` e `prestadoras_resumo` | ok (média, total e busca por cidade sem acento conferidos) |
+| anon lê perfis de clientes | 0 linhas; a view só expõe nome e avatar da autora |
+
+Para garantir que o teste pega erro de verdade, afrouxamos as policies de
+insert e delete numa cópia: 8 testes falharam, como esperado.
+
 ## Uso de IA
 
 Ferramenta e para quê. Exemplo: "Claude para gerar o seed de 200 posts sobre
