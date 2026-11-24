@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   cadastrarConta,
+  caminhoInterno,
   destinoAposLogin,
   entrarNaConta,
   lerCadastro,
@@ -14,7 +15,6 @@ import {
   ROTA_CALLBACK,
   type EstadoFormulario,
 } from "@/lib/identidade/auth";
-import { proximaSegura } from "@/lib/identidade/rotas";
 import { ehErroIdentidade, servicoIdentidade } from "@/lib/identidade/service";
 import { usarMocks } from "@/lib/supabase/config";
 import { criarClienteServidor } from "@/lib/supabase/server";
@@ -75,15 +75,14 @@ export async function entrar(_anterior: EstadoFormulario, form: FormData): Promi
   const resultado = await entrarNaConta(supabase.auth, lido.dados);
   if (resultado.tipo === "erro") return { erro: resultado.mensagem, valores: { email } };
 
-  // Quem ainda não escolheu o papel vai para o onboarding; as demais voltam
-  // para a página que pediram antes do login (?proxima=), se for segura.
-  const proxima = proximaSegura(form.get("proxima"));
-  let destino = proxima ?? "/";
+  // Quem ainda não escolheu o papel vai para o onboarding; quem já escolheu
+  // volta para a página que pediu o login (?next=, só caminho interno).
+  const next = form.get("next");
+  let destino = caminhoInterno(next) ?? "/";
   try {
-    const perfil = await servicoIdentidade(supabase).obterMeuPerfil();
-    if (destinoAposLogin(perfil) === "/onboarding") destino = "/onboarding";
+    destino = destinoAposLogin(await servicoIdentidade(supabase).obterMeuPerfil(), next);
   } catch {
-    // Sem o perfil não dá para decidir; o middleware confere de novo.
+    // Sem o perfil não dá para decidir; a página inicial resolve depois.
   }
 
   revalidatePath("/", "layout");

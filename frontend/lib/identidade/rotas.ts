@@ -26,15 +26,13 @@ export const navLinks: readonly LinkNavegacao[] = [
 
 // Rotas que exigem login (a rota e tudo abaixo dela: /chat cobre /chat/123).
 // O resto é público: início, busca, página da prestadora, login e cadastro.
+// /onboarding não entra: a própria página já manda para /entrar sem sessão.
 export const ROTAS_PROTEGIDAS: readonly string[] = [
   "/perfil",
   "/chat",
   "/minhas-indicacoes",
-  "/onboarding",
+  "/avaliar",
 ];
-
-// Rotas de conta: não fazem sentido como destino depois do login.
-const ROTAS_DE_CONTA: readonly string[] = ["/entrar", "/cadastro", "/onboarding", "/auth"];
 
 function comecaCom(caminho: string, rota: string): boolean {
   return caminho === rota || caminho.startsWith(`${rota}/`);
@@ -57,29 +55,4 @@ export function linksVisiveis(logada: boolean, papel: Papel | null | undefined):
 // Link ativo: a rota exata ou uma página abaixo dela.
 export function linkAtivo(caminhoAtual: string, href: string): boolean {
   return comecaCom(caminhoAtual, href);
-}
-
-// ===========================================================================
-// "Voltar para onde estava" depois do login (?proxima=/chat/123)
-// ===========================================================================
-
-const PROXIMA_MAXIMO = 512;
-
-// Devolve o caminho se for seguro redirecionar para ele, ou null. Só aceita
-// caminho interno do próprio site: nada de "//outro-site.com", "https://...",
-// barra invertida ou caracteres de controle (evita redirecionamento aberto).
-export function proximaSegura(valor: unknown): string | null {
-  if (typeof valor !== "string" || valor === "" || valor.length > PROXIMA_MAXIMO) return null;
-  if (!valor.startsWith("/") || valor.startsWith("//")) return null;
-  if (/[\\\u0000-\u001f\u007f]/.test(valor)) return null;
-
-  let url: URL;
-  try {
-    url = new URL(valor, "http://interno.invalid");
-  } catch {
-    return null;
-  }
-  if (url.origin !== "http://interno.invalid") return null;
-  if (ROTAS_DE_CONTA.some((rota) => comecaCom(url.pathname, rota))) return null;
-  return `${url.pathname}${url.search}`;
 }

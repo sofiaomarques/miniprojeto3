@@ -76,7 +76,7 @@ beforeEach(() => {
 });
 
 describe("rotas públicas", () => {
-  it.each(["/", "/buscar", "/prestadoras/abc", "/entrar", "/cadastro", "/auth/callback"])(
+  it.each(["/", "/buscar", "/prestadoras/abc", "/p/ana", "/entrar", "/cadastro", "/onboarding", "/auth/callback"])(
     "%s passa sem login e sem consultar o banco",
     async (caminho) => {
       const r = await pedir(caminho);
@@ -96,13 +96,13 @@ describe("rotas protegidas", () => {
   it("sem login vai para /entrar guardando a página pedida", async () => {
     const r = await pedir("/chat/123?aba=fotos");
     expect(r.status).toBe(307);
-    expect(destino(r)).toBe("/entrar?proxima=%2Fchat%2F123%3Faba%3Dfotos");
+    expect(destino(r)).toBe("/entrar?next=%2Fchat%2F123%3Faba%3Dfotos");
   });
 
-  it.each(["/perfil", "/chat", "/minhas-indicacoes", "/onboarding"])(
+  it.each(["/perfil", "/chat", "/minhas-indicacoes", "/avaliar/ana"])(
     "%s sem login também vai para /entrar",
     async (caminho) => {
-      expect(destino(await pedir(caminho))?.startsWith("/entrar?proxima=")).toBe(true);
+      expect(destino(await pedir(caminho))?.startsWith("/entrar?next=")).toBe(true);
     },
   );
 
@@ -117,7 +117,7 @@ describe("rotas protegidas", () => {
     expect(destino(await pedir("/perfil"))).toBe("/onboarding");
   });
 
-  it("no próprio /onboarding não redireciona (sem laço) e nem consulta o banco", async () => {
+  it("/onboarding é público para o middleware (sem laço): a própria página cuida", async () => {
     cenario = { usuaria: EU, papel: null };
     expect(destino(await pedir("/onboarding"))).toBeNull();
     expect(consultasPerfil).toBe(0);

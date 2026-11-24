@@ -1,7 +1,7 @@
 // Mapa de rotas (lib/identidade/rotas.ts): links da navbar, rotas
-// protegidas e o "voltar para onde estava" depois do login.
+// protegidas e link ativo.
 import { describe, expect, it } from "vitest";
-import { ehRotaProtegida, linkAtivo, linksVisiveis, navLinks, proximaSegura } from "../rotas";
+import { ehRotaProtegida, linkAtivo, linksVisiveis, navLinks } from "../rotas";
 
 const rotulos = (links: { rotulo: string }[]) => links.map((l) => l.rotulo);
 
@@ -39,12 +39,12 @@ describe("linksVisiveis", () => {
 });
 
 describe("ehRotaProtegida", () => {
-  it.each(["/perfil", "/perfil/editar", "/chat", "/chat/123", "/minhas-indicacoes", "/onboarding"])(
+  it.each(["/perfil", "/perfil/editar", "/chat", "/chat/123", "/minhas-indicacoes", "/avaliar/ana"])(
     "%s exige login",
     (caminho) => expect(ehRotaProtegida(caminho)).toBe(true),
   );
 
-  it.each(["/", "/buscar", "/prestadoras/abc", "/entrar", "/cadastro", "/auth/callback", "/chatbot", "/perfis"])(
+  it.each(["/", "/buscar", "/prestadoras/abc", "/entrar", "/cadastro", "/onboarding", "/auth/callback", "/chatbot", "/perfis"])(
     "%s é pública (inclusive nomes parecidos com rotas protegidas)",
     (caminho) => expect(ehRotaProtegida(caminho)).toBe(false),
   );
@@ -56,36 +56,5 @@ describe("linkAtivo", () => {
     expect(linkAtivo("/chat/42", "/chat")).toBe(true);
     expect(linkAtivo("/chatbot", "/chat")).toBe(false);
     expect(linkAtivo("/", "/buscar")).toBe(false);
-  });
-});
-
-describe("proximaSegura", () => {
-  it.each([
-    ["/chat", "/chat"],
-    ["/chat/123", "/chat/123"],
-    ["/buscar?categoria=2&cidade=Recife", "/buscar?categoria=2&cidade=Recife"],
-    ["/perfil#fotos", "/perfil"], // o # não vai junto
-  ])("aceita caminho interno %s", (valor, esperado) => {
-    expect(proximaSegura(valor)).toBe(esperado);
-  });
-
-  it.each([
-    "https://site-malicioso.com",
-    "//site-malicioso.com",
-    "/\\site-malicioso.com",
-    "\\\\site-malicioso.com",
-    "javascript:alert(1)",
-    "chat",
-    "",
-    "/chat\nSet-Cookie: x",
-    `/${"a".repeat(600)}`,
-    "/entrar", // páginas de conta não servem de destino
-    "/cadastro",
-    "/onboarding",
-    "/auth/callback?code=x",
-    null,
-    42,
-  ])("recusa %j", (valor) => {
-    expect(proximaSegura(valor)).toBeNull();
   });
 });

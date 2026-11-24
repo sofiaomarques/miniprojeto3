@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import {
   cadastrarConta,
+  caminhoInterno,
   destinoAposLogin,
   entrarNaConta,
   lerCadastro,
@@ -283,7 +284,42 @@ describe("entrarNaConta", () => {
   });
 });
 
+describe("caminhoInterno (?next= do login)", () => {
+  it("aceita caminhos do próprio site, com busca e âncora", () => {
+    expect(caminhoInterno("/minhas-indicacoes")).toBe("/minhas-indicacoes");
+    expect(caminhoInterno("/prestadoras/abc?x=1#y")).toBe("/prestadoras/abc?x=1#y");
+  });
+
+  it("recusa qualquer coisa que leve para fora do site", () => {
+    for (const valor of [
+      "https://evil.com",
+      "//evil.com",
+      "/\\evil.com",
+      "/\t/evil.com",
+      "/\n/evil.com",
+      "javascript:alert(1)",
+      "evil.com",
+      "",
+      null,
+      undefined,
+      42,
+    ]) {
+      expect(caminhoInterno(valor)).toBeNull();
+    }
+  });
+});
+
 describe("destinoAposLogin", () => {
+  it("com papel, usa o next interno; next externo ou ausente vai para o início", () => {
+    expect(destinoAposLogin({ papel: "cliente" }, "/minhas-indicacoes")).toBe("/minhas-indicacoes");
+    expect(destinoAposLogin({ papel: "cliente" }, "//evil.com")).toBe("/");
+    expect(destinoAposLogin({ papel: "cliente" }, null)).toBe("/");
+  });
+
+  it("sem papel, vai para o onboarding mesmo com next", () => {
+    expect(destinoAposLogin({ papel: null }, "/minhas-indicacoes")).toBe("/onboarding");
+  });
+
   it("sem papel vai para o onboarding; com papel, para o início", () => {
     expect(destinoAposLogin({ papel: null })).toBe("/onboarding");
     expect(destinoAposLogin(null)).toBe("/onboarding");

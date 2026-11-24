@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { Navbar } from "@/components/identidade/Navbar";
+import Link from "next/link";
+import { MenuConta } from "@/components/identidade/MenuConta";
+import { NavegacaoPrincipal } from "@/components/identidade/NavegacaoPrincipal";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +15,16 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="min-h-screen bg-zinc-50 text-zinc-900">
-        <Navbar />
+        <nav className="border-b bg-white">
+          <div className="mx-auto flex max-w-3xl items-center gap-6 px-4 py-3">
+            <Link href="/" className="font-bold">
+              {/* troque pelo nome/logo do seu nicho */}
+              Rede da Trilha
+            </Link>
+            <NavegacaoPrincipal />
+            <MenuConta />
+          </div>
+        </nav>
         <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
       </body>
     </html>

@@ -18,7 +18,8 @@ export const obterMeuPerfilNoServidor = cache(async (): Promise<Perfil | null> =
 
 // Telas de cadastro e login: quem já está logada vai direto para onde deve.
 // No modo mock não redireciona, para as telas continuarem visíveis.
-export async function redirecionarSeLogada(): Promise<void> {
+// next: o ?next= da tela de login (validado em destinoAposLogin).
+export async function redirecionarSeLogada(next?: unknown): Promise<void> {
   if (usarMocks) return;
   let perfil: Perfil | null = null;
   try {
@@ -26,5 +27,5 @@ export async function redirecionarSeLogada(): Promise<void> {
   } catch {
     return; // na dúvida, mostra a tela de login
   }
-  if (perfil) redirect(destinoAposLogin(perfil));
+  if (perfil) redirect(destinoAposLogin(perfil, next));
 }

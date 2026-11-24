@@ -107,6 +107,21 @@ describe("perfis", () => {
     expect(f.consultas).toHaveLength(0);
   });
 
+  it("refresh token revogado ou já usado (400) é tratado como deslogada", async () => {
+    const f = criarClienteFalso({
+      erroAuth: { name: "AuthApiError", status: 400, message: "Invalid Refresh Token: Already Used" },
+    });
+    expect(await servicoIdentidade(f.cliente).obterMeuPerfil()).toBeNull();
+    expect(f.consultas).toHaveLength(0);
+  });
+
+  it("limite de tentativas (429) e erro 5xx do Auth viram 'indisponivel'", async () => {
+    for (const status of [429, 500]) {
+      const f = criarClienteFalso({ erroAuth: { name: "AuthApiError", status, message: "x" } });
+      expect((await falha(servicoIdentidade(f.cliente).obterMeuPerfil())).codigo).toBe("indisponivel");
+    }
+  });
+
   it("falha de rede no Auth vira 'indisponivel', não 'deslogada'", async () => {
     const f = criarClienteFalso({
       erroAuth: { name: "AuthRetryableFetchError", status: 0, message: "fetch failed" },

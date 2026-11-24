@@ -3,7 +3,7 @@
 //      Components não conseguem gravar cookies, então o token expirado é
 //      trocado aqui);
 //   2. guarda de rotas (#15): rota protegida sem login vai para /entrar
-//      (?proxima= guarda para onde ela queria ir); logada que ainda não
+//      (?next= guarda para onde ela queria ir, como o resto do login); logada que ainda não
 //      escolheu o papel vai para /onboarding.
 // As rotas protegidas ficam em lib/identidade/rotas.ts.
 import { createServerClient } from "@supabase/ssr";
@@ -51,23 +51,21 @@ export async function atualizarSessao(request: NextRequest) {
   // Rota protegida sem login: vai para o login e volta depois.
   if (!idUsuaria) {
     const destino = new URL("/entrar", request.url);
-    destino.searchParams.set("proxima", `${pathname}${search}`);
+    destino.searchParams.set("next", `${pathname}${search}`);
     return redirecionarComCookies(destino, resposta);
   }
 
   // Logada sem papel: termina o onboarding antes de usar o app. Só nas rotas
   // protegidas (as públicas não precisam de papel), então a consulta ao banco
   // não acontece em toda página.
-  if (pathname !== "/onboarding") {
-    const { data: perfil, error } = await supabase
-      .from("perfis")
-      .select("papel")
-      .eq("id", idUsuaria)
-      .maybeSingle();
-    // Com erro de banco, deixa passar: a página mostra o próprio erro.
-    if (!error && perfil && perfil.papel === null) {
-      return redirecionarComCookies(new URL("/onboarding", request.url), resposta);
-    }
+  const { data: perfil, error } = await supabase
+    .from("perfis")
+    .select("papel")
+    .eq("id", idUsuaria)
+    .maybeSingle();
+  // Com erro de banco, deixa passar: a página mostra o próprio erro.
+  if (!error && perfil && perfil.papel === null) {
+    return redirecionarComCookies(new URL("/onboarding", request.url), resposta);
   }
 
   return resposta;
