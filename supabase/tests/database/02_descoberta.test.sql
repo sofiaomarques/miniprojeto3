@@ -63,16 +63,16 @@ select lives_ok(
 );
 
 -- Editar/apagar a avaliação de B: a RLS esconde a linha, então não dá erro,
--- mas nenhuma linha é atingida (conferido abaixo como admin).
-select lives_ok(
+-- mas nenhuma linha é atingida (returning vazio; conferido de novo como admin).
+select is_empty(
   $$ update public.avaliacoes set nota = 1, comentario = 'editado pela A'
-     where cliente_id = 'bbbbbbbb-0000-0000-0000-000000000002' $$,
-  'update na avaliação de B não dá erro, mas não atinge linha'
+     where cliente_id = 'bbbbbbbb-0000-0000-0000-000000000002' returning id $$,
+  'update na avaliação de B não atinge linha'
 );
-select lives_ok(
+select is_empty(
   $$ delete from public.avaliacoes
-     where cliente_id = 'bbbbbbbb-0000-0000-0000-000000000002' $$,
-  'delete na avaliação de B não dá erro, mas não atinge linha'
+     where cliente_id = 'bbbbbbbb-0000-0000-0000-000000000002' returning id $$,
+  'delete na avaliação de B não atinge linha'
 );
 -- "Roubar" a avaliação de B trocando a autora: coluna sem GRANT de update
 select throws_ok(
@@ -178,13 +178,13 @@ select throws_ok(
      values (auth.uid(), 'aaaaaaaa-0000-0000-0000-000000000001', 5) $$,
   '42501', null, 'P não cria avaliação 5 estrelas para si em nome de A'
 );
-select lives_ok(
-  $$ delete from public.avaliacoes where prestadora_id = auth.uid() $$,
-  'P tenta apagar avaliações sobre ela: não dá erro, mas não atinge linha'
+select is_empty(
+  $$ delete from public.avaliacoes where prestadora_id = auth.uid() returning id $$,
+  'P não apaga avaliações sobre ela'
 );
-select lives_ok(
-  $$ update public.avaliacoes set nota = 5 where prestadora_id = auth.uid() $$,
-  'P tenta subir as próprias notas: não dá erro, mas não atinge linha'
+select is_empty(
+  $$ update public.avaliacoes set nota = 5 where prestadora_id = auth.uid() returning id $$,
+  'P não sobe as próprias notas'
 );
 
 -- ---------------------------------------------------------------------------
@@ -215,7 +215,10 @@ select is(
   (select nota::int from public.avaliacoes where cliente_id = 'aaaaaaaa-0000-0000-0000-000000000001'),
   4, 'edição própria de A gravou (nota 4, não 5 da P)'
 );
-select is((select count(*) from public.avaliacoes), 2::bigint, 'só as duas avaliações válidas existem');
+select is(
+  (select count(*) from public.avaliacoes where prestadora_id in ('cccccccc-0000-0000-0000-000000000003', 'dddddddd-0000-0000-0000-000000000004')),
+  2::bigint, 'só as duas avaliações válidas existem'
+);
 
 -- ---------------------------------------------------------------------------
 -- 7. Leitura pública sem login (anon)
@@ -223,7 +226,10 @@ select is((select count(*) from public.avaliacoes), 2::bigint, 'só as duas aval
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
 set local role anon;
 
-select is((select count(*) from public.avaliacoes), 2::bigint, 'anon lê avaliacoes');
+select is(
+  (select count(*) from public.avaliacoes where prestadora_id in ('cccccccc-0000-0000-0000-000000000003', 'dddddddd-0000-0000-0000-000000000004')),
+  2::bigint, 'anon lê avaliacoes'
+);
 select is(
   (select count(*) from public.avaliacoes_publicas where prestadora_id = 'cccccccc-0000-0000-0000-000000000003'),
   2::bigint, 'anon lê avaliacoes_publicas'
@@ -234,7 +240,15 @@ select is(
 );
 select is((select count(*) from public.perfis where papel = 'cliente'), 0::bigint, 'perfis de clientes continuam privados para anon');
 
-select is((select count(*) from public.prestadoras_resumo), 2::bigint, 'anon lê prestadoras_resumo (só P e Q)');
+select is(
+  (select count(*) from public.prestadoras_resumo where id in ('cccccccc-0000-0000-0000-000000000003', 'dddddddd-0000-0000-0000-000000000004')),
+  2::bigint, 'anon lê prestadoras_resumo (P e Q)'
+);
+select is(
+  (select count(*) from public.prestadoras_resumo where id in (
+     'aaaaaaaa-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000002', 'eeeeeeee-0000-0000-0000-000000000005')),
+  0::bigint, 'prestadoras_resumo não lista clientes nem conta sem papel'
+);
 select is(
   (select nota_media from public.prestadoras_resumo where id = 'cccccccc-0000-0000-0000-000000000003'),
   3.5::numeric, 'nota_media de P = (3 + 4) / 2'
@@ -248,8 +262,10 @@ select ok(
   'Q sem avaliações: nota_media null, total 0'
 );
 select is(
-  (select count(*) from public.prestadoras_resumo where cidade_normalizada = public.normalizar_texto('  JOAO pessoa ')),
-  1::bigint, 'anon busca cidade sem acento/maiúscula'
+  (select array_agg(id) from public.prestadoras_resumo
+   where cidade_normalizada = public.normalizar_texto('  JOAO pessoa ')
+     and id in ('cccccccc-0000-0000-0000-000000000003', 'dddddddd-0000-0000-0000-000000000004')),
+  array['cccccccc-0000-0000-0000-000000000003'::uuid], 'anon busca cidade sem acento/maiúscula (acha só P)'
 );
 
 select throws_ok(
@@ -279,7 +295,10 @@ select is((select count(*) from public.avaliacoes where cliente_id = 'aaaaaaaa-0
 select is((select count(*) from public.avaliacoes where cliente_id = 'bbbbbbbb-0000-0000-0000-000000000002'), 1::bigint, 'avaliação de B continua lá');
 
 delete from auth.users where id = 'bbbbbbbb-0000-0000-0000-000000000002';
-select is((select count(*) from public.avaliacoes), 0::bigint, 'conta apagada remove as avaliações dela');
+select is(
+  (select count(*) from public.avaliacoes where prestadora_id in ('cccccccc-0000-0000-0000-000000000003', 'dddddddd-0000-0000-0000-000000000004')),
+  0::bigint, 'conta apagada remove as avaliações dela'
+);
 
 select * from finish();
 rollback;

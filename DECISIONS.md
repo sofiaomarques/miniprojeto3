@@ -71,7 +71,7 @@ saída e uma frase dizendo o que os números mostram.
   numa transação com rollback). Rodar com `supabase start && supabase test db`.
 - **Contas:** clientes A e B, prestadoras P e Q, conta sem papel N.
   `auth.uid()` é simulado via `request.jwt.claims`, como o PostgREST faz.
-- **Resultado (24/11):** 52/52 ok. Rodado em Postgres 16 local com pgTAP e um
+- **Resultado (24/11):** 53/53 ok. Rodado em Postgres 16 local com pgTAP e um
   shim mínimo do Supabase (papéis `anon`/`authenticated`, `auth.uid()`); a
   `01_identidade.test.sql` passou 95/95 no mesmo ambiente.
 
@@ -92,7 +92,13 @@ saída e uma frase dizendo o que os números mostram.
 | anon lê perfis de clientes | 0 linhas; a view só expõe nome e avatar da autora |
 
 Para garantir que o teste pega erro de verdade, afrouxamos as policies de
-insert e delete numa cópia: 8 testes falharam, como esperado.
+insert e delete numa cópia: 8 testes falharam, como esperado. Afrouxando as de
+update e delete (`using (true)`), 13 falharam: as tentativas em linha alheia
+usam `returning id` + `is_empty`, então falham na hora, e não só na conferência
+como admin.
+
+As contagens são filtradas pelas contas de teste: o teste continua passando se
+o banco local já tiver contas e avaliações criadas usando o app.
 
 ## Uso de IA
 
