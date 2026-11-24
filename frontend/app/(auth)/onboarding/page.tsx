@@ -27,10 +27,10 @@ export default async function PaginaOnboarding() {
   if (perfil.papel) redirect("/");
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">Boas-vindas!</h1>
-        <p className="text-sm text-zinc-600">Falta só um passo para começar.</p>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="font-display text-[32px] font-semibold leading-[1.1]">Boas-vindas!</h1>
+        <p className="text-[15px] leading-snug text-suave">Falta só um passo para começar.</p>
       </div>
       <FormularioOnboarding nomeInicial={perfil.nome ?? ""} />
     </div>

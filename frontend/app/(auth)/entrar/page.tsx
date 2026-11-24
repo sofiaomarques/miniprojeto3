@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FormularioEntrar } from "@/components/identidade/FormularioEntrar";
+import { IconeEscudo } from "@/components/rede/icones";
 import { Aviso } from "@/components/ui/Aviso";
 import { caminhoInterno } from "@/lib/identidade/auth";
 import { redirecionarSeLogada } from "@/lib/identidade/sessao";
@@ -19,10 +20,10 @@ export default async function PaginaEntrar({
   await redirecionarSeLogada(voltarPara);
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">Entrar</h1>
-        <p className="text-sm text-zinc-600">Use o e-mail e a senha do seu cadastro.</p>
+    <div className="flex flex-1 flex-col gap-5">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="font-display text-[32px] font-semibold leading-[1.1]">Que bom ter você de volta.</h1>
+        <p className="text-[15px] leading-snug text-suave">Use o e-mail e a senha do seu cadastro.</p>
       </div>
 
       <AvisoModoMock />
@@ -35,12 +36,19 @@ export default async function PaginaEntrar({
 
       <FormularioEntrar next={voltarPara} />
 
-      <p className="text-center text-sm text-zinc-600">
+      <p className="text-center text-[14.5px] text-suave">
         Ainda não tem conta?{" "}
-        <Link href="/cadastro" className="font-medium text-zinc-900 underline">
+        <Link href="/cadastro" className="inline-block px-1 py-2.5 font-bold text-vinho">
           Criar conta
         </Link>
       </p>
+
+      <div className="mt-auto flex items-start gap-3 rounded-[18px] bg-areia p-4">
+        <IconeEscudo size={24} className="shrink-0 text-vinho" />
+        <p className="text-[13.5px] leading-[1.45] text-corpo">
+          Toda prestadora tem perfil, fotos de trabalhos e avaliações públicas de outras clientes.
+        </p>
+      </div>
     </div>
   );
 }
