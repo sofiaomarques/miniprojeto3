@@ -8,7 +8,7 @@ type Props = {
   onChange: (filtros: FiltrosBusca) => void;
 };
 
-const CAMPO = "w-full rounded border bg-white px-2 py-1.5 text-sm";
+const CAMPO = "min-h-11 w-full rounded border bg-white px-2 text-base sm:min-h-9 sm:text-sm";
 
 export function FiltrosBuscaForm({ categorias, filtros, onChange }: Props) {
   return (

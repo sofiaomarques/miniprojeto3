@@ -10,11 +10,12 @@ import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { CabecalhoPrestadora } from "@/components/descoberta/CabecalhoPrestadora";
-import { GaleriaPortfolio } from "@/components/descoberta/GaleriaPortfolio";
+import { Carregando, Erro } from "@/components/descoberta/Estados";
 import { FormularioAvaliacao } from "@/components/descoberta/FormularioAvaliacao";
+import { GaleriaPortfolio } from "@/components/descoberta/GaleriaPortfolio";
 import { ListaAvaliacoes } from "@/components/descoberta/ListaAvaliacoes";
+import { useMeuPerfil } from "@/components/descoberta/useMeuPerfil";
 import { obterPrestadora } from "@/lib/descoberta/service";
-import { usuarioAtual, type UsuarioAtual } from "@/lib/descoberta/sessao";
 import type { PrestadoraDetalhe } from "@/lib/descoberta/types";
 
 type Estado =
@@ -26,22 +27,11 @@ type Estado =
 export default function PaginaPrestadora() {
   const { id } = useParams<{ id: string }>();
   const [estado, setEstado] = useState<Estado>({ situacao: "carregando" });
-  const [usuaria, setUsuaria] = useState<UsuarioAtual | null>(null);
+  const usuaria = useMeuPerfil();
   // Muda a cada avaliação salva, para recarregar a nota média e a lista.
   const [versao, setVersao] = useState(0);
   // Id da prestadora cujos dados estão na tela; só recarregar a mesma não pisca.
   const idCarregado = useRef<string | null>(null);
-
-  useEffect(() => {
-    let cancelado = false;
-    usuarioAtual().then(
-      (u) => !cancelado && setUsuaria(u),
-      () => !cancelado && setUsuaria(null),
-    );
-    return () => {
-      cancelado = true;
-    };
-  }, []);
 
   useEffect(() => {
     // Ignora a resposta se o id mudou ou a página saiu da tela antes.
@@ -67,7 +57,7 @@ export default function PaginaPrestadora() {
         console.error("Erro ao carregar a prestadora:", err);
         setEstado({
           situacao: "erro",
-          mensagem: "Não consegui carregar a prestadora. Tente de novo.",
+          mensagem: "Não consegui carregar a prestadora.",
         });
       },
     );
@@ -79,15 +69,14 @@ export default function PaginaPrestadora() {
 
   return (
     <div className="space-y-6">
-      <Link href="/buscar" className="text-sm text-zinc-600 underline hover:text-zinc-900">
+      <Link
+        href="/buscar"
+        className="inline-flex min-h-11 items-center text-sm text-zinc-600 underline hover:text-zinc-900 sm:min-h-0"
+      >
         ← Voltar para a busca
       </Link>
 
-      {estado.situacao === "carregando" && (
-        <p role="status" className="text-zinc-600">
-          Carregando prestadora...
-        </p>
-      )}
+      {estado.situacao === "carregando" && <Carregando texto="Carregando prestadora…" linhas={2} />}
 
       {estado.situacao === "nao_encontrada" && (
         <section className="space-y-2 rounded-lg border bg-white p-6 text-center">
@@ -102,23 +91,21 @@ export default function PaginaPrestadora() {
       )}
 
       {estado.situacao === "erro" && (
-        <p role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {estado.mensagem}
-        </p>
+        <Erro mensagem={estado.mensagem} onTentarDeNovo={() => setVersao((v) => v + 1)} />
       )}
 
       {estado.situacao === "pronta" && (
         <>
-          <CabecalhoPrestadora prestadora={estado.prestadora} />
+          <CabecalhoPrestadora prestadora={estado.prestadora} usuaria={usuaria} />
 
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Trabalhos</h2>
-            <GaleriaPortfolio fotos={estado.prestadora.fotos} />
+            <GaleriaPortfolio fotos={estado.prestadora.fotos} nome={estado.prestadora.perfil.nome} />
           </section>
 
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Avaliações</h2>
-            {usuaria?.papel === "cliente" ? (
+            {usuaria === undefined ? null : usuaria?.papel === "cliente" ? (
               <FormularioAvaliacao
                 key={`${usuaria.id}:${id}`}
                 prestadoraId={id}
@@ -131,13 +118,16 @@ export default function PaginaPrestadora() {
             ) : usuaria?.papel === "prestadora" ? (
               <p className="text-sm text-zinc-500">Só clientes podem avaliar prestadoras.</p>
             ) : usuaria ? (
-              <p className="text-sm text-zinc-500">
-                Não consegui confirmar o tipo da sua conta. Recarregue a página para avaliar.
+              <p className="text-sm text-zinc-600">
+                <Link href="/onboarding" className="underline">
+                  Conclua seu cadastro
+                </Link>{" "}
+                para avaliar.
               </p>
             ) : (
               <p className="text-sm text-zinc-600">
                 <Link
-                  href={`/login?next=${encodeURIComponent(`/prestadoras/${id}`)}`}
+                  href={`/entrar?next=${encodeURIComponent(`/prestadoras/${id}`)}`}
                   className="underline"
                 >
                   Entre na sua conta
