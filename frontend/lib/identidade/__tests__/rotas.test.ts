@@ -27,14 +27,16 @@ describe("linksVisiveis", () => {
     expect(rotulos(linksVisiveis(true, null))).toEqual(["Buscar"]);
   });
 
-  it("cliente vê Minhas indicações; prestadora não", () => {
-    expect(rotulos(linksVisiveis(true, "cliente"))).toEqual([
-      "Buscar",
-      "Conversas",
-      "Minhas indicações",
-      "Meu perfil",
-    ]);
+  it("cliente e prestadora veem os mesmos links (indicações ficam no perfil)", () => {
+    expect(rotulos(linksVisiveis(true, "cliente"))).toEqual(["Buscar", "Conversas", "Meu perfil"]);
     expect(rotulos(linksVisiveis(true, "prestadora"))).toEqual(["Buscar", "Conversas", "Meu perfil"]);
+  });
+
+  it("nenhum link aponta para as rotas antigas, que só redirecionam", () => {
+    const hrefs = navLinks.map((l) => l.href);
+    for (const antiga of ["/buscar", "/minhas-indicacoes", "/login"]) {
+      expect(hrefs).not.toContain(antiga);
+    }
   });
 });
 
@@ -55,6 +57,12 @@ describe("linkAtivo", () => {
     expect(linkAtivo("/chat", "/chat")).toBe(true);
     expect(linkAtivo("/chat/42", "/chat")).toBe(true);
     expect(linkAtivo("/chatbot", "/chat")).toBe(false);
-    expect(linkAtivo("/", "/buscar")).toBe(false);
+    expect(linkAtivo("/perfil", "/p")).toBe(false);
+  });
+
+  it("Buscar (/) só fica ativo na página inicial", () => {
+    expect(linkAtivo("/", "/")).toBe(true);
+    expect(linkAtivo("/chat", "/")).toBe(false);
+    expect(linkAtivo("/perfil", "/")).toBe(false);
   });
 });

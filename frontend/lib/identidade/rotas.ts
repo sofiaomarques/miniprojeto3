@@ -5,8 +5,7 @@ import type { Papel } from "./types";
 
 // Quem vê cada link da navbar.
 //   "todas": logada ou não  ·  "logadas": qualquer conta com papel
-//   "cliente" / "prestadora": só esse papel
-export type VisibilidadeLink = "todas" | "logadas" | Papel;
+export type VisibilidadeLink = "todas" | "logadas";
 
 export type LinkNavegacao = {
   href: string;
@@ -17,16 +16,19 @@ export type LinkNavegacao = {
 
 // Links da navbar, na ordem em que aparecem. Para adicionar uma tela nova,
 // inclua aqui; se ela exigir login, inclua também em ROTAS_PROTEGIDAS.
+// A busca é a página inicial e as indicações da cliente ficam no perfil
+// (#62): /buscar e /minhas-indicacoes só redirecionam, então não viram link.
 export const navLinks: readonly LinkNavegacao[] = [
-  { href: "/buscar", rotulo: "Buscar", visivelPara: "todas", area: "P2" },
+  { href: "/", rotulo: "Buscar", visivelPara: "todas", area: "P2" },
   { href: "/chat", rotulo: "Conversas", visivelPara: "logadas", area: "P3" },
-  { href: "/minhas-indicacoes", rotulo: "Minhas indicações", visivelPara: "cliente", area: "P2" },
   { href: "/perfil", rotulo: "Meu perfil", visivelPara: "logadas", area: "P1" },
 ];
 
 // Rotas que exigem login (a rota e tudo abaixo dela: /chat cobre /chat/123).
 // O resto é público: início, busca, página da prestadora, login e cadastro.
 // /onboarding não entra: a própria página já manda para /entrar sem sessão.
+// /minhas-indicacoes hoje só redireciona para /perfil; fica aqui para quem
+// abrir o link antigo deslogada ir direto ao login.
 export const ROTAS_PROTEGIDAS: readonly string[] = [
   "/perfil",
   "/chat",
@@ -45,11 +47,8 @@ export function ehRotaProtegida(caminho: string): boolean {
 // Links que aparecem para a visitante. papel: null = logada sem onboarding;
 // undefined = não logada.
 export function linksVisiveis(logada: boolean, papel: Papel | null | undefined): LinkNavegacao[] {
-  return navLinks.filter((link) => {
-    if (link.visivelPara === "todas") return true;
-    if (!logada || !papel) return false; // sem papel, termina o onboarding primeiro
-    return link.visivelPara === "logadas" || link.visivelPara === papel;
-  });
+  // Sem papel, a conta termina o onboarding antes de ver os links de logada.
+  return navLinks.filter((link) => link.visivelPara === "todas" || (logada && !!papel));
 }
 
 // Link ativo: a rota exata ou uma página abaixo dela.
