@@ -8,10 +8,12 @@ import { servicoIdentidade } from "@/lib/identidade/service";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 import {
   type AoChegarMensagem,
+  type AoMudarNaoLidas,
   type CancelarAssinatura,
   type Conversa,
   ERRO_DESLOGADA,
   INTERVALO_CONSULTA_MS,
+  INTERVALO_CONTADOR_MS,
   type Mensagem,
 } from "./types";
 
@@ -262,6 +264,36 @@ export function assinarMensagens(
   return () => {
     ativa = false;
     desligarConsulta();
+    void supabase.removeChannel(canal);
+  };
+}
+
+// Não lidas (#38). Ouve INSERT (mensagem nova) e UPDATE (marcar_lidas preenche
+// lida_em) de `mensagens` em todas as conversas da usuária: a RLS do Realtime
+// só entrega as linhas que ela pode ler. Cada evento chama aoMudar, que conta
+// de novo com nao_lidas(). A recontagem a cada INTERVALO_CONTADOR_MS cobre o
+// Realtime fora do ar.
+// Cada assinatura tem um canal com nome próprio: o contador pode aparecer em
+// mais de um lugar da tela (aba Conversas e navbar) ao mesmo tempo.
+let canaisNaoLidas = 0;
+
+export function assinarNaoLidas(aoMudar: AoMudarNaoLidas): CancelarAssinatura {
+  const supabase = cliente();
+  let ativa = true;
+  const avisar = () => {
+    if (ativa) aoMudar();
+  };
+
+  const canal = supabase
+    .channel(`chat:nao-lidas:${++canaisNaoLidas}`)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "mensagens" }, avisar)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mensagens" }, avisar)
+    .subscribe();
+  const recontagem = setInterval(avisar, INTERVALO_CONTADOR_MS);
+
+  return () => {
+    ativa = false;
+    clearInterval(recontagem);
     void supabase.removeChannel(canal);
   };
 }
