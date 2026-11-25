@@ -149,3 +149,68 @@ describe("enviarMeuAvatar: modo mock", () => {
     expect((await s.obterMeuPerfil())?.avatar_url).toBe(depois.avatar_url);
   });
 });
+
+describe("removerMeuAvatar: modo real (Supabase falso)", () => {
+  it("primeiro tira o link do perfil, depois apaga o arquivo do bucket", async () => {
+    const m = await carregar("false");
+    const ordem: string[] = [];
+    let n = 0;
+    const f = criarClienteFalso({
+      usuaria: EU,
+      responder: () => {
+        n++;
+        ordem.push(n === 1 ? "ler perfil" : "avatar_url = null");
+        return { data: perfil(n === 1 ? `${BASE}${ANTIGO}` : null), error: null };
+      },
+      responderStorage: (op) => {
+        ordem.push(`storage:${op}`);
+        return { data: [], error: null };
+      },
+    });
+    const depois = await m.servicoIdentidade(f.cliente).removerMeuAvatar();
+    expect(depois.avatar_url).toBeNull();
+    expect(ordem).toEqual(["ler perfil", "avatar_url = null", "storage:remove"]);
+    expect(argumentos(f.consultas[1], "update")).toEqual([[{ avatar_url: null }]]);
+    expect(f.armazenamento[0]).toMatchObject({ bucket: "avatares", args: [[ANTIGO]] });
+  });
+
+  it("sem avatar (ou link externo): só limpa o campo, não apaga nada no bucket", async () => {
+    const m = await carregar("false");
+    for (const antes of [null, "https://outro-site.com/eu.png"]) {
+      let n = 0;
+      const f = criarClienteFalso({ usuaria: EU, responder: () => ({ data: perfil(n++ === 0 ? antes : null), error: null }) });
+      await m.servicoIdentidade(f.cliente).removerMeuAvatar();
+      expect(f.armazenamento).toHaveLength(0);
+    }
+  });
+
+  it("se limpar o campo falhar, o arquivo não é apagado", async () => {
+    const m = await carregar("false");
+    let n = 0;
+    const f = criarClienteFalso({
+      usuaria: EU,
+      responder: () =>
+        n++ === 0 ? { data: perfil(`${BASE}${ANTIGO}`), error: null } : { data: null, error: { code: "500", message: "x" } },
+    });
+    await erroDe(m.servicoIdentidade(f.cliente).removerMeuAvatar());
+    expect(f.armazenamento).toHaveLength(0);
+  });
+
+  it("sem sessão: nao_autenticada", async () => {
+    const m = await carregar("false");
+    const f = criarClienteFalso({ usuaria: null });
+    expect((await erroDe(m.servicoIdentidade(f.cliente).removerMeuAvatar())).codigo).toBe("nao_autenticada");
+  });
+});
+
+describe("removerMeuAvatar: modo mock", () => {
+  it("volta avatar_url para null", async () => {
+    const m = await carregar("true");
+    m.redefinirMocks();
+    m.definirUsuariaMock(m.ID_CLIENTE_BEATRIZ);
+    const s = m.servicoIdentidade(null);
+    await s.enviarMeuAvatar(foto());
+    expect((await s.removerMeuAvatar()).avatar_url).toBeNull();
+    expect((await s.obterMeuPerfil())?.avatar_url).toBeNull();
+  });
+});

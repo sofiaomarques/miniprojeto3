@@ -324,4 +324,12 @@ export const servicoMock: ServicoIdentidade = {
     Object.assign(perfil, { avatar_url: url, atualizado_em: new Date().toISOString() });
     return copiar(perfil);
   },
+
+  async removerMeuAvatar() {
+    const id = exigirSessao();
+    const perfil = estado.perfis.find((p) => p.id === id);
+    if (!perfil) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+    Object.assign(perfil, { avatar_url: null, atualizado_em: new Date().toISOString() });
+    return copiar(perfil);
+  },
 };

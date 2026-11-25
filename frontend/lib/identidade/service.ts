@@ -262,6 +262,8 @@ function comValidacao(impl: ServicoIdentidade): ServicoIdentidade {
       if (erro) throw new ErroIdentidade("validacao", erro);
       return impl.enviarMeuAvatar(arquivo);
     },
+
+    removerMeuAvatar: () => impl.removerMeuAvatar(),
   };
 }
 
@@ -627,6 +629,30 @@ export function criarServicoSupabase(cliente: ClienteSupabase): ServicoIdentidad
       const anterior = caminhoDoAvatar(antes.avatar_url);
       if (anterior && anterior !== caminho) await bucket.remove([anterior]);
       return perfil;
+    },
+
+    async removerMeuAvatar() {
+      const id = await exigirSessao();
+      const antes = await buscarPerfil(id);
+      if (!antes) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+
+      // Primeiro o perfil deixa de apontar para o arquivo; depois o arquivo
+      // sai do bucket. Se o Storage falhar, sobra um arquivo sem uso, e não um
+      // perfil com a imagem quebrada.
+      const linha = dados(
+        await cliente
+          .from("perfis")
+          .update({ avatar_url: null })
+          .eq("id", id)
+          .select(SELECT_PERFIL)
+          .maybeSingle(),
+        TRADUCOES_PERFIL,
+      );
+      if (!linha) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+
+      const anterior = caminhoDoAvatar(antes.avatar_url);
+      if (anterior) await cliente.storage.from(BUCKET_AVATARES).remove([anterior]);
+      return paraPerfil(linha as Linha);
     },
   };
 }
