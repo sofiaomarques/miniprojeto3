@@ -43,6 +43,11 @@ insert into demo_ids (id) values
   ('00000000-0000-4000-8000-0000000000c1'),
   ('00000000-0000-4000-8000-0000000000c2');
 
+-- Desloga quem estiver nas contas da demo: a senha volta por SQL logo abaixo,
+-- e trocar a senha por SQL não encerra sessões abertas. Os refresh tokens
+-- saem em cascata.
+delete from auth.sessions where user_id in (select id from demo_ids);
+
 delete from public.conversas
 where cliente_id in (select id from demo_ids)
   and prestadora_id in (select id from demo_ids);
@@ -155,7 +160,7 @@ values
   ('00000000-0000-4000-8000-0000000000a1', '00000000-0000-4000-8000-0000000000c2', 4,
    'Pontual e cuidadosa. Instalou a máquina de lavar e explicou como limpar o filtro.', now() - interval '9 days'),
   ('00000000-0000-4000-8000-0000000000a2', '00000000-0000-4000-8000-0000000000c2', 5,
-   'Resolveu o vazamento da pia em meia hora e explicou o que tinha acontecido.', now() - interval '7 days'),
+   'Resolveu o vazamento da pia em meia hora e explicou o que tinha acontecido.', now() - interval '6 days 18 hours'),
   ('00000000-0000-4000-8000-0000000000a3', '00000000-0000-4000-8000-0000000000c1', 5,
    'Montou o guarda-roupa de 6 portas sem nenhum arranhão. Recomendo muito!', now() - interval '5 days'),
   ('00000000-0000-4000-8000-0000000000a4', '00000000-0000-4000-8000-0000000000c1', 3,

@@ -74,7 +74,8 @@ Storage): enviem pelo próprio site, entrando como a prestadora.
 
 O repositório é público e a senha está aqui, então qualquer pessoa pode
 entrar nessas contas. Se alguém mudar um perfil, apagar uma avaliação ou
-trocar a senha, é só rodar o seed de novo.
+trocar a senha, é só rodar o seed de novo: ele também desloga quem
+estiver nessas contas.
 
 ## Primeiros passos do time
 
