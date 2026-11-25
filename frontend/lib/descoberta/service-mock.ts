@@ -1,10 +1,10 @@
 // Implementação em memória do service (NEXT_PUBLIC_USE_MOCKS=true).
 // Perfis, categorias, serviços e fotos vêm do mock da identidade (P1), então
-// o que a P1 muda no mock (nome, serviços, fotos) aparece aqui também.
+// o que a P1 muda no mock (onboarding, nome, serviços, fotos) aparece aqui também.
 // Replica as regras do banco: uma avaliação por cliente e prestadora,
 // sem autoavaliação, só cliente avalia, só prestadora é avaliada,
 // só a autora edita ou apaga.
-import { CATEGORIAS_MOCK, PERFIS_MOCK, servicoMock } from "@/lib/identidade/mocks";
+import { CATEGORIAS_MOCK, perfisMockAtuais, servicoMock } from "@/lib/identidade/mocks";
 import type { Perfil } from "@/lib/identidade/types";
 
 import { AVALIACOES_MOCK, type AvaliacaoMock } from "./mocks";
@@ -22,11 +22,10 @@ import type {
 const avaliacoes: AvaliacaoMock[] = AVALIACOES_MOCK.map((a) => ({ ...a }));
 let proximoId = Math.max(0, ...avaliacoes.map((a) => a.id)) + 1;
 
-const IDS_PRESTADORAS = PERFIS_MOCK.filter((p) => p.papel === "prestadora").map((p) => p.id);
-
 // Como a view `avaliacoes_publicas`: mostra nome e avatar de quem avaliou.
+// Lê o estado atual do mock da identidade, não a lista inicial.
 function perfilPublico(id: string): Perfil | undefined {
-  return PERFIS_MOCK.find((p) => p.id === id);
+  return perfisMockAtuais().find((p) => p.id === id);
 }
 
 function paraAvaliacao(a: AvaliacaoMock): Avaliacao {
@@ -69,8 +68,9 @@ export async function listarCategorias(): Promise<CategoriaResumo[]> {
 
 export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<PrestadoraResumo[]> {
   const cidade = filtros.cidade ? normalizarTexto(filtros.cidade) : "";
-  const perfis = await servicoMock.listarPerfis(IDS_PRESTADORAS);
-  const resumos = await Promise.all(perfis.filter((p) => p.papel === "prestadora").map(resumir));
+  // Prestadoras do estado atual: inclui quem virou prestadora no onboarding.
+  const prestadoras = perfisMockAtuais().filter((p) => p.papel === "prestadora");
+  const resumos = await Promise.all(prestadoras.map(resumir));
   const resultado = resumos.filter((p) => {
     if (filtros.categoriaId && !p.categorias.some((c) => c.id === filtros.categoriaId)) {
       return false;
