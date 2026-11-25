@@ -1,5 +1,5 @@
-// Canto direito da navbar: links de entrar/cadastrar ou nome + Sair.
-// A navbar completa e a guarda de rotas ficam na #15.
+// Canto direito da navbar: links de entrar/cadastrar ou foto, nome (a partir de sm) e Sair.
+// Os links das áreas ficam no NavegacaoPrincipal; a guarda de rotas, no middleware.
 import Link from "next/link";
 import { obterMeuPerfilNoServidor } from "@/lib/identidade/sessao";
 import type { Perfil } from "@/lib/identidade/types";
@@ -30,7 +30,7 @@ export async function MenuConta() {
   }
 
   return (
-    <div className="ml-auto flex items-center gap-4 whitespace-nowrap text-sm">
+    <div className="ml-auto flex min-w-0 items-center gap-4 whitespace-nowrap text-sm">
       {perfil.papel === null && (
         <Link href="/onboarding" className="font-medium text-zinc-900 underline">
           Concluir cadastro
@@ -41,7 +41,11 @@ export async function MenuConta() {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={perfil.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
       )}
-      <span className="text-zinc-600">{perfil.nome ?? "Minha conta"}</span>
+      {/* No celular o nome não cabe ao lado do menu (#20): fica só a partir de
+          sm, cortado com "…" se for longo (inline-block para o truncate valer). */}
+      <span className="hidden max-w-40 truncate align-middle text-zinc-600 sm:inline-block">
+        {perfil.nome ?? "Minha conta"}
+      </span>
       <BotaoSair />
     </div>
   );
