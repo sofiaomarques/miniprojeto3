@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { MenuConta } from "@/components/identidade/MenuConta";
 
-// Moldura das páginas já existentes (busca, página da prestadora e minhas indicações).
+// Moldura das telas do chat. Busca, prestadora, avaliação e perfil ficam em (rede).
 export default function SiteLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

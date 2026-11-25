@@ -1,8 +1,8 @@
 // Implementação real do service (NEXT_PUBLIC_USE_MOCKS=false), sobre o banco
 // criado por 02_descoberta.sql. A segurança de verdade está na RLS; as
 // checagens daqui só dão mensagens claras.
+import { servicoIdentidade } from "@/lib/identidade/service";
 import { criarClienteNavegador } from "@/lib/supabase/client";
-import type { FotoPortfolio, Perfil } from "./identidade-provisoria";
 import { normalizarTexto } from "./texto";
 import type {
   Avaliacao,
@@ -14,10 +14,7 @@ import type {
   PrestadoraResumo,
 } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ClienteSupabase = { from(tabela: string): any };
-
-function clienteSupabase(): ClienteSupabase {
+function clienteSupabase() {
   const cliente = criarClienteNavegador();
   if (!cliente) throw new Error("Supabase desligado (modo mock).");
   return cliente;
@@ -108,7 +105,9 @@ export async function listarCategorias(): Promise<CategoriaResumo[]> {
 export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<PrestadoraResumo[]> {
   let consulta = clienteSupabase().from("prestadoras_resumo").select("*");
   if (filtros.categoriaId) {
-    consulta = consulta.contains("categorias", [{ id: filtros.categoriaId }]);
+    // `categorias` é jsonb: o valor vai como texto JSON (cs.[{"id":3}]). Um
+    // array de objetos viraria cs.{[object Object]} e o Postgres recusa.
+    consulta = consulta.contains("categorias", JSON.stringify([{ id: filtros.categoriaId }]));
   }
   if (filtros.cidade?.trim()) {
     const termo = normalizarTexto(filtros.cidade).replace(/[%_,*\\]/g, " ");
@@ -138,31 +137,21 @@ export async function obterPrestadora(id: string): Promise<PrestadoraDetalhe | n
   // id que não é uuid vira "não encontrada", não erro 22P02 do Postgres.
   if (!REGEX_UUID.test(id)) return null;
   const db = clienteSupabase();
+  // Perfil e fotos vêm do service da identidade (P1); nota e categorias, da view da 02.
+  const identidade = servicoIdentidade(db);
   const [resumo, perfil, fotos, avaliacoes] = await Promise.all([
     db.from("prestadoras_resumo").select("*").eq("id", id).maybeSingle(),
-    db.from("perfis").select("id, papel, nome, avatar_url, bio, cidade").eq("id", id).maybeSingle(),
-    db.from("fotos_portfolio").select("*").eq("prestadora_id", id),
+    identidade.obterPerfil(id),
+    identidade.listarFotosDaPrestadora(id),
     listarAvaliacoes(id),
   ]);
-  if (!ou(resumo)) return null;
-  const perfilLinha = ou(perfil) as any;
-  if (!perfilLinha) return null;
-  const fotosLinhas = ou(fotos) as any[];
-  const base = paraResumo(ou(resumo));
+  const linhaResumo = ou(resumo);
+  if (!linhaResumo || !perfil || perfil.papel !== "prestadora") return null;
+  const base = paraResumo(linhaResumo);
   return {
-    perfil: {
-      id: perfilLinha.id,
-      papel: perfilLinha.papel,
-      nome: perfilLinha.nome,
-      avatarUrl: perfilLinha.avatar_url,
-      bio: perfilLinha.bio,
-      cidade: perfilLinha.cidade,
-    } satisfies Perfil,
+    perfil,
     categorias: base.categorias,
-    // TODO: ajustar ao formato real de `fotos_portfolio` da 01 (#12).
-    fotos: fotosLinhas.map(
-      (f): FotoPortfolio => ({ id: f.id, prestadoraId: f.prestadora_id, caminho: f.caminho }),
-    ),
+    fotos,
     avaliacoes,
     notaMedia: base.notaMedia,
     totalAvaliacoes: base.totalAvaliacoes,

@@ -42,6 +42,9 @@ export function Rotulo({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ANTIGO: o Avatar novo é o de components/descoberta/Avatar (nome + foto).
+// Fica aqui só enquanto o chat (#64) ainda importa este; quando o #64 trocar o
+// import para o novo, apagar este componente.
 export function Avatar({
   iniciais,
   tamanho,
