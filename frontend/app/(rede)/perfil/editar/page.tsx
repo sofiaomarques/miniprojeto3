@@ -3,6 +3,7 @@
 // as regras ficam em lib/identidade (service.ts e perfil.ts).
 import Link from "next/link";
 
+import { CampoAvatar } from "@/components/identidade/CampoAvatar";
 import { FormularioPerfil } from "@/components/identidade/FormularioPerfil";
 import { IconeVoltar } from "@/components/rede/icones";
 import { BarraAbas, Tela } from "@/components/rede/Tela";
@@ -52,7 +53,10 @@ export default async function EditarPerfilPage() {
             Não foi possível carregar seu perfil agora. Recarregue a página em alguns instantes.
           </Aviso>
         ) : (
-          <FormularioPerfil perfil={perfil} categorias={categorias} marcadas={marcadas} />
+          <>
+            <CampoAvatar nome={perfil.nome} avatarUrl={perfil.avatar_url} />
+            <FormularioPerfil perfil={perfil} categorias={categorias} marcadas={marcadas} />
+          </>
         )}
       </div>
       <BarraAbas ativa="perfil" />
