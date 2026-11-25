@@ -86,6 +86,16 @@ export type ServicoIdentidade = {
   // Só a prestadora autenticada, para ela mesma.
   adicionarMeuServico(categoriaId: number): Promise<ServicoPrestadora>;
   removerMeuServico(categoriaId: number): Promise<void>;
-  // Ordem de envio (criada_em, depois id). Upload e remoção ficam na #17.
+  // Ordem de envio (criada_em, depois id).
   listarFotosDaPrestadora(prestadoraId: string): Promise<FotoPortfolio[]>;
+  // #17: só a prestadora autenticada, na própria galeria. Enviar sobe o
+  // arquivo para o bucket `portfolio` e registra em fotos_portfolio; apagar
+  // remove o arquivo do bucket ANTES da linha (contrato da #46).
+  enviarMinhaFoto(arquivo: Blob): Promise<FotoPortfolio>;
+  apagarMinhaFoto(fotoId: number): Promise<void>;
+  // #18: foto de perfil de qualquer conta (bucket `avatares` da 04). Sobe o
+  // arquivo, grava o link público em avatar_url e apaga o avatar anterior.
+  enviarMeuAvatar(arquivo: Blob): Promise<Perfil>;
+  // Tira o avatar (avatar_url = null) e apaga o arquivo do bucket.
+  removerMeuAvatar(): Promise<Perfil>;
 };

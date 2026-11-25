@@ -9,6 +9,7 @@
 // para o mock falhar nos mesmos casos que o Supabase. A entrada já chega
 // validada por service.ts.
 import { ErroIdentidade } from "./erros";
+import { novoCaminhoAvatar, novoCaminhoFoto } from "./fotos";
 import type {
   AtualizacaoPerfil,
   CategoriaServico,
@@ -290,5 +291,52 @@ export const servicoMock: ServicoIdentidade = {
         .filter((f) => f.prestadora_id === prestadoraId)
         .sort((a, b) => a.criada_em.localeCompare(b.criada_em) || a.id - b.id),
     );
+  },
+
+  // #17: mesmas regras do banco (trigger exigir_prestadora e RLS da dona).
+  // O arquivo em si não é guardado: no mock não há Storage.
+  async enviarMinhaFoto(arquivo) {
+    const id = exigirSessao();
+    const perfil = estado.perfis.find((p) => p.id === id);
+    if (perfil?.papel !== "prestadora") {
+      throw new ErroIdentidade("permissao", "Só prestadoras podem enviar fotos.");
+    }
+    const nova: FotoPortfolio = {
+      id: Math.max(0, ...estado.fotos.map((f) => f.id)) + 1,
+      prestadora_id: id,
+      caminho: novoCaminhoFoto(id, arquivo.type),
+      criada_em: new Date().toISOString(),
+    };
+    estado.fotos.push(nova);
+    return copiar(nova);
+  },
+
+  async apagarMinhaFoto(fotoId) {
+    const id = exigirSessao();
+    const indice = estado.fotos.findIndex((f) => f.id === fotoId && f.prestadora_id === id);
+    if (indice === -1) throw new ErroIdentidade("nao_encontrado", "Foto não encontrada.");
+    estado.fotos.splice(indice, 1);
+  },
+
+  // #18: qualquer conta. No mock não há Storage: o link aponta para o próprio
+  // arquivo no navegador (blob:), só para a tela mostrar a foto escolhida.
+  async enviarMeuAvatar(arquivo) {
+    const id = exigirSessao();
+    const perfil = estado.perfis.find((p) => p.id === id);
+    if (!perfil) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+    const url =
+      typeof URL.createObjectURL === "function"
+        ? URL.createObjectURL(arquivo)
+        : `https://mock.invalid/avatares/${novoCaminhoAvatar(id, arquivo.type)}`;
+    Object.assign(perfil, { avatar_url: url, atualizado_em: new Date().toISOString() });
+    return copiar(perfil);
+  },
+
+  async removerMeuAvatar() {
+    const id = exigirSessao();
+    const perfil = estado.perfis.find((p) => p.id === id);
+    if (!perfil) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+    Object.assign(perfil, { avatar_url: null, atualizado_em: new Date().toISOString() });
+    return copiar(perfil);
   },
 };

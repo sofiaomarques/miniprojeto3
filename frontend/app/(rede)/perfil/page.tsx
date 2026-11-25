@@ -43,6 +43,20 @@ export default async function PerfilPage() {
             {perfil.bio}
           </p>
         )}
+        <Link
+          href="/perfil/editar"
+          className="mt-1 flex min-h-11 items-center rounded-full border border-vinho px-5 text-sm font-bold text-vinho focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vinho"
+        >
+          Editar perfil
+        </Link>
+        {perfil.papel === "prestadora" && (
+          <Link
+            href="/perfil/fotos"
+            className="flex min-h-11 items-center rounded-full border border-vinho px-5 text-sm font-bold text-vinho focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vinho"
+          >
+            Minhas fotos
+          </Link>
+        )}
         <BotaoSair />
       </div>
 
