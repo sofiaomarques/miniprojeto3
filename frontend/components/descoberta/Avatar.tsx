@@ -1,24 +1,32 @@
-// Foto de perfil redonda; sem foto, mostra a inicial do nome.
-const TAMANHOS = {
-  p: "h-10 w-10 text-base",
-  m: "h-12 w-12 text-lg",
-  g: "h-20 w-20 text-2xl",
-} as const;
+// Avatar no estilo do protótipo: foto de perfil quando existe; sem foto, as
+// iniciais do nome sobre um fundo da paleta.
+import { iniciaisDe } from "@/lib/descoberta/texto";
 
-type Props = { nome: string | null; url: string | null; tamanho?: keyof typeof TAMANHOS };
+type Props = {
+  nome: string | null;
+  url: string | null;
+  tamanho: number;
+  fundo?: "rosa" | "areia" | "papel";
+};
 
-export function Avatar({ nome, url, tamanho = "m" }: Props) {
-  const classe = `${TAMANHOS[tamanho]} shrink-0 rounded-full`;
+const FUNDOS = { rosa: "bg-rosa", areia: "bg-areia", papel: "bg-papel" } as const;
+
+export function Avatar({ nome, url, tamanho, fundo = "rosa" }: Props) {
+  const estilo = { width: tamanho, height: tamanho, fontSize: tamanho * 0.36 };
   if (url) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={url} alt="" className={`${classe} object-cover`} />;
+    return <img src={url} alt="" style={estilo} className="shrink-0 rounded-full object-cover" />;
   }
   return (
     <span
       aria-hidden="true"
-      className={`${classe} flex items-center justify-center bg-zinc-200 font-semibold text-zinc-700`}
+      style={estilo}
+      className={`flex shrink-0 items-center justify-center rounded-full font-display font-semibold text-vinho-escuro ${FUNDOS[fundo]}`}
     >
-      {nome?.trim()[0]?.toUpperCase() ?? "?"}
+      {iniciaisDe(nome)}
     </span>
   );
 }
+
+// Alterna rosa e areia na lista, como no protótipo.
+export const tomDaPosicao = (i: number) => (i % 2 === 0 ? "rosa" : "areia");

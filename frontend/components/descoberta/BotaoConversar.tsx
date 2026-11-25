@@ -1,12 +1,14 @@
 "use client";
 
-// Botão "Conversar": a cliente logada abre (ou cria) a conversa com a
-// prestadora no chat da P3; quem não está logada vai para o login e volta
-// para a página dela depois.
+// "Conversar e pedir orçamento": a cliente logada abre (ou cria) a conversa
+// com a prestadora no chat da P3; quem não está logada vai para o login e
+// volta para a página dela depois.
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { IconeChat } from "@/components/rede/icones";
+import { classeBotao } from "@/components/rede/Tela";
 import { iniciarConversa } from "@/lib/chat/service";
 import { ERRO_DESLOGADA } from "@/lib/chat/types";
 import type { Perfil } from "@/lib/identidade/types";
@@ -16,9 +18,6 @@ type Props = {
   usuaria: Perfil | null | undefined; // undefined = ainda carregando a sessão
 };
 
-const BOTAO =
-  "inline-flex min-h-11 w-full items-center justify-center rounded bg-zinc-900 px-5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 active:bg-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto";
-
 export function BotaoConversar({ prestadoraId, usuaria }: Props) {
   const router = useRouter();
   const [ocupado, setOcupado] = useState(false);
@@ -26,24 +25,22 @@ export function BotaoConversar({ prestadoraId, usuaria }: Props) {
   const linkLogin = `/entrar?next=${encodeURIComponent(`/prestadoras/${prestadoraId}`)}`;
 
   if (usuaria?.id === prestadoraId) {
-    return <p className="text-sm text-zinc-500">Este é o seu perfil público.</p>;
+    return <p className="text-center text-sm text-suave">Este é o seu perfil público.</p>;
   }
   if (usuaria?.papel === "prestadora") {
-    return <p className="text-sm text-zinc-500">Só clientes podem iniciar uma conversa.</p>;
+    return <p className="text-center text-sm text-suave">Só clientes podem iniciar uma conversa.</p>;
   }
   if (usuaria && usuaria.papel === null) {
     return (
-      <p className="text-sm text-zinc-600">
-        <Link href="/onboarding" className="underline">
-          Conclua seu cadastro
-        </Link>{" "}
-        para conversar.
-      </p>
+      <Link href="/onboarding" className={classeBotao}>
+        Concluir cadastro para conversar
+      </Link>
     );
   }
   if (usuaria === null) {
     return (
-      <Link href={linkLogin} className={BOTAO}>
+      <Link href={linkLogin} className={classeBotao}>
+        <IconeChat size={20} />
         Entrar para conversar
       </Link>
     );
@@ -68,18 +65,19 @@ export function BotaoConversar({ prestadoraId, usuaria }: Props) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2">
       <button
         type="button"
         onClick={conversar}
         disabled={ocupado || usuaria === undefined}
         aria-busy={ocupado || undefined}
-        className={BOTAO}
+        className={`${classeBotao} disabled:opacity-60`}
       >
-        {ocupado ? "Abrindo conversa…" : "Conversar"}
+        <IconeChat size={20} />
+        {ocupado ? "Abrindo conversa…" : "Conversar e pedir orçamento"}
       </button>
       {erro && (
-        <p role="alert" className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+        <p role="alert" className="text-center text-sm text-vinho">
           {erro}
         </p>
       )}
