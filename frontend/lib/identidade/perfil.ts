@@ -2,7 +2,7 @@
 // serviço adicionar ou remover. As regras de verdade (limites, quem pode
 // gravar) continuam no service.ts e no banco; aqui só a parte sem rede, que
 // dá para testar sem Supabase.
-import type { AtualizacaoPerfil } from "./types";
+import type { AtualizacaoPerfil, CategoriaServico, ServicoPrestadora } from "./types";
 
 export type EdicaoPerfil = {
   dados: AtualizacaoPerfil;
@@ -45,4 +45,14 @@ export function diferencaCategorias(
     adicionar: [...depois].filter((id) => !antes.has(id)).sort((a, b) => a - b),
     remover: [...antes].filter((id) => !depois.has(id)).sort((a, b) => a - b),
   };
+}
+
+// Nomes dos serviços da prestadora, na ordem do catálogo (#20, resumo no
+// /perfil). Serviço de categoria que não está no catálogo fica de fora.
+export function nomesDosServicos(
+  catalogo: readonly CategoriaServico[],
+  servicos: readonly Pick<ServicoPrestadora, "categoria_id">[],
+): string[] {
+  const marcadas = new Set(servicos.map((s) => s.categoria_id));
+  return catalogo.filter((c) => marcadas.has(c.id)).map((c) => c.nome);
 }

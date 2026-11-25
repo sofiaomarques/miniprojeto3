@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BotaoSair } from "@/components/identidade/BotaoSair";
+import { ResumoPrestadora } from "@/components/identidade/ResumoPrestadora";
 import { Avatar } from "@/components/descoberta/Avatar";
 import { ListaIndicacoes } from "@/components/descoberta/ListaIndicacoes";
 import { BarraAbas, Tela } from "@/components/rede/Tela";
@@ -63,11 +64,7 @@ export default async function PerfilPage() {
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pt-5">
-        {!ehCliente && (
-          <p className="text-[14.5px] leading-[1.45] text-corpo">
-            Seu perfil de prestadora, com serviços e fotos de trabalhos, aparece aqui em breve.
-          </p>
-        )}
+        {!ehCliente && <ResumoPrestadora prestadoraId={perfil.id} />}
         {ehCliente && <ListaIndicacoes clienteId={perfil.id} editavel />}
       </div>
 

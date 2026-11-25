@@ -1,7 +1,7 @@
 // Edição do perfil (#16): leitura do formulário, diferença de categorias e o
 // caminho completo pelo service no modo mock.
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { diferencaCategorias, lerEdicaoPerfil } from "../perfil";
+import { diferencaCategorias, lerEdicaoPerfil, nomesDosServicos } from "../perfil";
 
 function formulario(campos: [string, string][]): FormData {
   const form = new FormData();
@@ -63,6 +63,29 @@ describe("diferencaCategorias", () => {
 
   it("desmarcar tudo remove tudo", () => {
     expect(diferencaCategorias([4, 1], [])).toEqual({ adicionar: [], remover: [1, 4] });
+  });
+});
+
+describe("nomesDosServicos", () => {
+  const catalogo = [
+    { id: 1, nome: "Ar-condicionado" },
+    { id: 2, nome: "Elétrica" },
+    { id: 3, nome: "Encanamento" },
+  ];
+
+  it("devolve os nomes na ordem do catálogo, não na ordem dos serviços", () => {
+    expect(nomesDosServicos(catalogo, [{ categoria_id: 3 }, { categoria_id: 1 }])).toEqual([
+      "Ar-condicionado",
+      "Encanamento",
+    ]);
+  });
+
+  it("sem serviços, lista vazia", () => {
+    expect(nomesDosServicos(catalogo, [])).toEqual([]);
+  });
+
+  it("ignora categoria que não está no catálogo", () => {
+    expect(nomesDosServicos(catalogo, [{ categoria_id: 2 }, { categoria_id: 99 }])).toEqual(["Elétrica"]);
   });
 });
 
