@@ -1,16 +1,20 @@
-// Estados de carregamento, vazio e erro usados nas telas da descoberta.
+// Estados de carregamento, vazio e erro, no visual do protótipo.
 import type { ReactNode } from "react";
 
 export function Carregando({ texto, linhas = 3 }: { texto: string; linhas?: number }) {
   return (
-    <div role="status" aria-live="polite" className="space-y-3">
+    <div role="status" aria-live="polite" className="flex flex-col gap-3">
       <span className="sr-only">{texto}</span>
       {Array.from({ length: linhas }, (_, i) => (
-        <div key={i} aria-hidden="true" className="flex animate-pulse gap-3 rounded-lg border bg-white p-3">
-          <div className="h-12 w-12 shrink-0 rounded-full bg-zinc-200" />
-          <div className="flex-1 space-y-2 py-1">
-            <div className="h-3 w-1/2 rounded bg-zinc-200" />
-            <div className="h-3 w-1/3 rounded bg-zinc-200" />
+        <div
+          key={i}
+          aria-hidden="true"
+          className="flex animate-pulse items-center gap-3 rounded-[20px] border border-borda bg-papel p-3.5"
+        >
+          <div className="h-[52px] w-[52px] shrink-0 rounded-full bg-areia" />
+          <div className="flex flex-1 flex-col gap-2">
+            <div className="h-3.5 w-1/2 rounded bg-areia" />
+            <div className="h-3 w-1/3 rounded bg-areia" />
           </div>
         </div>
       ))}
@@ -19,21 +23,25 @@ export function Carregando({ texto, linhas = 3 }: { texto: string; linhas?: numb
 }
 
 export function Vazio({ children }: { children: ReactNode }) {
-  return <div className="rounded-lg border bg-white p-4 text-sm text-zinc-600">{children}</div>;
+  return (
+    <div className="rounded-[18px] border border-borda bg-papel p-4 text-[14.5px] leading-[1.45] text-corpo">
+      {children}
+    </div>
+  );
 }
 
 export function Erro({ mensagem, onTentarDeNovo }: { mensagem: string; onTentarDeNovo?: () => void }) {
   return (
     <div
       role="alert"
-      className="flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-2 rounded-[18px] border border-vinho/30 bg-rosa-claro p-3.5 text-sm text-vinho-escuro"
     >
       <p>{mensagem}</p>
       {onTentarDeNovo && (
         <button
           type="button"
           onClick={onTentarDeNovo}
-          className="min-h-11 rounded border border-red-300 bg-white px-3 font-medium hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-red-700"
+          className="min-h-11 self-start rounded-full border border-vinho px-4 font-bold text-vinho focus-visible:outline-2 focus-visible:outline-vinho"
         >
           Tentar de novo
         </button>
