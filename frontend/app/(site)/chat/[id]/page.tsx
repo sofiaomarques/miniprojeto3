@@ -38,8 +38,10 @@ export default function ConversaPage() {
 
   const [estado, setEstado] = useState<Estado>({ tipo: "carregando" });
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
-  // Texto lido pelo leitor de tela quando chega mensagem nova.
-  const [avisoNova, setAvisoNova] = useState("");
+  // Texto lido pelo leitor de tela quando chega mensagem nova. `vez` muda a
+  // cada mensagem para o DOM mudar mesmo com o texto repetido (senão o
+  // role="status" fica em silêncio a partir da 2ª).
+  const [avisoNova, setAvisoNova] = useState({ texto: "", vez: 0 });
   const fim = useRef<HTMLDivElement>(null);
   // Última lista na tela, para a assinatura saber o maior id já carregado.
   const mensagensRef = useRef<Mensagem[]>([]);
@@ -50,6 +52,7 @@ export default function ConversaPage() {
     let atual = true;
     setEstado({ tipo: "carregando" });
     setMensagens([]);
+    setAvisoNova({ texto: "", vez: 0 });
 
     if (conversaId === null) {
       setEstado({ tipo: "nao-encontrada" });
@@ -106,27 +109,47 @@ export default function ConversaPage() {
     const id = conversaPronta.id;
     const nomeOutra = conversaPronta.outra.nome || "a outra pessoa";
     const ultimoId = Math.max(0, ...mensagensRef.current.map((m) => m.id));
+    let ativa = true;
+
+    // Marca como lidas as mensagens recebidas que estão na tela. Só com a aba
+    // na frente: com ela escondida, continuam não lidas (e o badge conta).
+    function lerRecebidas() {
+      if (document.visibilityState !== "visible") return;
+      const temNaoLida = mensagensRef.current.some(
+        (m) => m.autorId !== usuariaPronta && m.lidaEm === null,
+      );
+      if (!temNaoLida) return;
+      marcarLidas(id)
+        .then(() => {
+          if (!ativa) return;
+          const agora = new Date().toISOString();
+          setMensagens((ms) =>
+            ms.map((m) => (m.autorId !== usuariaPronta && m.lidaEm === null ? { ...m, lidaEm: agora } : m)),
+          );
+        })
+        .catch(() => {
+          // Ficam não lidas; a próxima vez que a aba voltar tenta de novo.
+        });
+    }
 
     const cancelar = assinarMensagens(id, ultimoId, (nova) => {
+      mensagensRef.current = juntarMensagens(mensagensRef.current, nova);
       setMensagens((atuais) => juntarMensagens(atuais, nova));
       if (nova.autorId === usuariaPronta) return;
 
-      setAvisoNova(`Nova mensagem de ${nomeOutra}`);
-      // Só conta como lida se a aba está na frente; senão continua não lida.
-      if (document.visibilityState === "visible") {
-        marcarLidas(id)
-          .then(() => {
-            const agora = new Date().toISOString();
-            setMensagens((ms) =>
-              ms.map((m) => (m.id === nova.id && m.lidaEm === null ? { ...m, lidaEm: agora } : m)),
-            );
-          })
-          .catch(() => {
-            // Fica não lida; a próxima abertura da conversa tenta de novo.
-          });
-      }
+      const previa = nova.texto.length > 100 ? `${nova.texto.slice(0, 100)}…` : nova.texto;
+      setAvisoNova((a) => ({ texto: `Nova mensagem de ${nomeOutra}: ${previa}`, vez: a.vez + 1 }));
+      lerRecebidas();
     });
-    return cancelar;
+
+    // Mensagem que chegou com a aba escondida vira lida quando ela volta.
+    document.addEventListener("visibilitychange", lerRecebidas);
+
+    return () => {
+      ativa = false;
+      cancelar();
+      document.removeEventListener("visibilitychange", lerRecebidas);
+    };
   }, [conversaPronta, usuariaPronta]);
 
   useEffect(() => {
@@ -176,7 +199,8 @@ export default function ConversaPage() {
       {/* Sem aria-live no histórico: o leitor de tela leria tudo ao abrir.
           Mensagem nova é anunciada só por este aviso. */}
       <p role="status" className="sr-only">
-        {avisoNova}
+        {avisoNova.texto}
+        {avisoNova.vez % 2 === 1 ? "​" : ""}
       </p>
       <div className="flex-1 space-y-2 overflow-y-auto" aria-label="Mensagens">
         {mensagens.length === 0 && (

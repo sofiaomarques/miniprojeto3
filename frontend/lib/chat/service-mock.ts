@@ -20,7 +20,15 @@ import {
 const conversas: ConversaMock[] = CONVERSAS_MOCK.map((c) => ({ ...c }));
 const mensagens: Mensagem[] = MENSAGENS_MOCK.map((m) => ({ ...m }));
 let proximaConversaId = Math.max(0, ...conversas.map((c) => c.id)) + 1;
-let proximaMensagemId = Math.max(0, ...mensagens.map((m) => m.id)) + 1;
+
+// Ids de mensagens novas a partir do relógio: cada aba tem a própria memória,
+// e um contador por aba repetiria ids (a mensagem da outra aba seria descartada
+// como duplicada). Cabe com folga no limite seguro de inteiros do JS.
+let ultimoIdGerado = 0;
+function novoIdMensagem(): number {
+  ultimoIdGerado = Math.max(ultimoIdGerado + 1, Date.now() * 1000 + Math.floor(Math.random() * 1000));
+  return ultimoIdGerado;
+}
 
 // Tempo real no mock (#37): avisa quem assinou nesta aba e, pelo
 // BroadcastChannel, as outras abas abertas do mesmo site. Assim dá para ver
@@ -40,7 +48,6 @@ outrasAbas?.addEventListener("message", (evento: MessageEvent<Mensagem>) => {
   const mensagem = evento.data;
   if (mensagens.some((m) => m.id === mensagem.id)) return;
   mensagens.push(mensagem);
-  proximaMensagemId = Math.max(proximaMensagemId, mensagem.id + 1);
   avisar(mensagem);
 });
 
@@ -118,7 +125,7 @@ export async function enviarMensagem(conversaId: number, texto: string): Promise
   const { id } = await exigirEu();
   if (!minhaConversa(conversaId, id)) throw new Error("Conversa não encontrada.");
   const nova: Mensagem = {
-    id: proximaMensagemId++,
+    id: novoIdMensagem(),
     conversaId,
     autorId: id,
     texto,
