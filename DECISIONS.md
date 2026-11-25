@@ -63,6 +63,21 @@ uma estrutura de dados no `core/`, qual o Big O da operação principal, ou o
 que mudaria se a rede crescesse 100 vezes. Se mediram com `make bench`, colem a
 saída e uma frase dizendo o que os números mostram.
 
+## Deploy
+
+- **URL pública:** https://miniprojeto3-phi.vercel.app
+- **Onde roda:** o front (Next) na Vercel, com Root Directory `frontend`. Auth,
+  banco e arquivos ficam no Supabase.
+- **Por que sem Render:** o guia 08 usa o Render para hospedar o backend
+  FastAPI do modelo. Este projeto não usa esse backend: o front fala direto com
+  o Supabase usando a chave publishable, e quem protege os dados é a RLS do
+  banco. Sem servidor próprio, não há nada para subir no Render.
+- **Variáveis na Vercel:** `NEXT_PUBLIC_SUPABASE_URL` e
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. A `NEXT_PUBLIC_USE_MOCKS` é ignorada
+  em produção, então a URL pública sempre usa o Supabase de verdade.
+- **Para conferir:** cadastro → entrar → buscar prestadora → abrir o perfil →
+  avaliar → chat.
+
 ## Testes de RLS
 
 ### Avaliações com duas contas (#28)
