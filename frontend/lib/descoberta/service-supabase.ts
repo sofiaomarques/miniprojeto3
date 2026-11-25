@@ -105,7 +105,9 @@ export async function listarCategorias(): Promise<CategoriaResumo[]> {
 export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<PrestadoraResumo[]> {
   let consulta = clienteSupabase().from("prestadoras_resumo").select("*");
   if (filtros.categoriaId) {
-    consulta = consulta.contains("categorias", [{ id: filtros.categoriaId }]);
+    // `categorias` é jsonb: o valor vai como texto JSON (cs.[{"id":3}]). Um
+    // array de objetos viraria cs.{[object Object]} e o Postgres recusa.
+    consulta = consulta.contains("categorias", JSON.stringify([{ id: filtros.categoriaId }]));
   }
   if (filtros.cidade?.trim()) {
     const termo = normalizarTexto(filtros.cidade).replace(/[%_,*\\]/g, " ");
