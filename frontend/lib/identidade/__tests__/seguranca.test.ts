@@ -9,15 +9,16 @@ const fonte = (arquivo: string) => readFileSync(PASTA + arquivo, "utf8");
 
 describe("lib/identidade não expõe nem usa credencial administrativa", () => {
   it("encontra os arquivos do módulo", () => {
-    expect(ARQUIVOS.sort()).toEqual([
+    // Pelo menos estes; arquivo novo entra sozinho nas checagens abaixo
+    // (it.each(ARQUIVOS)), sem precisar mexer nesta lista.
+    expect(ARQUIVOS.sort()).toEqual(expect.arrayContaining([
       "auth.ts",
       "erros.ts",
       "mocks.ts",
-      "rotas.ts",
       "service.ts",
       "sessao.ts",
       "types.ts",
-    ]);
+    ]));
   });
 
   it.each(ARQUIVOS)("%s não cita service_role, secret key nem lê variáveis de ambiente", (arquivo) => {
