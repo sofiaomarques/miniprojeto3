@@ -12,9 +12,10 @@ import { BolhaMensagem } from "@/components/chat/BolhaMensagem";
 import { CampoMensagem } from "@/components/chat/CampoMensagem";
 import { RespostasRapidas } from "@/components/chat/RespostasRapidas";
 import { IconeCasa, IconeVoltar } from "@/components/rede/icones";
-import { Avatar, Tela } from "@/components/rede/Tela";
+import { Avatar } from "@/components/descoberta/Avatar";
+import { Tela } from "@/components/rede/Tela";
 import { Aviso } from "@/components/ui/Aviso";
-import { iniciais, respostasRapidas } from "@/lib/chat/respostas";
+import { respostasRapidas } from "@/lib/chat/respostas";
 import {
   assinarMensagens,
   enviarMensagem,
@@ -183,7 +184,12 @@ export default function ConversaPage() {
         <IconeVoltar size={24} />
       </Link>
       {estado.tipo === "pronta" && (
-        <Avatar iniciais={iniciais(estado.conversa.outra.nome)} tamanho={42} fundo="papel" />
+        <Avatar
+          nome={estado.conversa.outra.nome}
+          url={estado.conversa.outra.avatarUrl}
+          tamanho={42}
+          fundo="papel"
+        />
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-px">
         <h1 className="truncate text-base font-bold">{titulo}</h1>

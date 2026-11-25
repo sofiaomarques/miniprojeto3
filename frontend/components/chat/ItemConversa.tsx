@@ -1,7 +1,6 @@
 import Link from "next/link";
 
-import { Avatar } from "@/components/rede/Tela";
-import { iniciais } from "@/lib/chat/respostas";
+import { Avatar } from "@/components/descoberta/Avatar";
 import type { Conversa } from "@/lib/chat/types";
 
 type Props = { conversa: Conversa; usuariaId: string | null };
@@ -18,7 +17,7 @@ export function ItemConversa({ conversa, usuariaId }: Props) {
       href={`/chat/${conversa.id}`}
       className="flex items-center gap-3 rounded-[18px] border border-borda bg-papel p-3 focus-visible:outline-2 focus-visible:outline-vinho"
     >
-      <Avatar iniciais={iniciais(outra.nome)} tamanho={46} fundo="rosa" />
+      <Avatar nome={outra.nome} url={outra.avatarUrl} tamanho={46} fundo="rosa" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-base font-bold">{outra.nome || "Participante"}</p>
         <p className={`truncate text-[13.5px] ${naoLidas > 0 ? "font-bold text-texto" : "text-corpo"}`}>
