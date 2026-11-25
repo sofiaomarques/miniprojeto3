@@ -73,8 +73,12 @@ saída e uma frase dizendo o que os números mostram.
   o Supabase usando a chave publishable, e quem protege os dados é a RLS do
   banco. Sem servidor próprio, não há nada para subir no Render.
 - **Variáveis na Vercel:** `NEXT_PUBLIC_SUPABASE_URL` e
-  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. A `NEXT_PUBLIC_USE_MOCKS` é ignorada
-  em produção, então a URL pública sempre usa o Supabase de verdade.
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. A `NEXT_PUBLIC_USE_MOCKS` só é
+  ignorada no deploy de produção, então a URL pública sempre usa o Supabase de
+  verdade. Nos previews de PR ela continua valendo: deixem sem definir (ou
+  `false`) na Vercel para o preview também usar o banco.
+- **Banco:** as migrations 01, 02 e 03 precisam estar aplicadas, em ordem, no
+  Supabase compartilhado (são aplicadas à mão). Sem a 03 o chat não funciona.
 - **Para conferir:** cadastro → entrar → buscar prestadora → abrir o perfil →
   avaliar → chat.
 
