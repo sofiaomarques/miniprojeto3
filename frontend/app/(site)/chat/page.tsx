@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 import { AvisoDeslogada } from "@/components/chat/AvisoDeslogada";
 import { ItemConversa } from "@/components/chat/ItemConversa";
-import { listarConversas, obterUsuariaAtualId } from "@/lib/chat/service";
+import { assinarNaoLidas, listarConversas, obterUsuariaAtualId } from "@/lib/chat/service";
 import type { Conversa } from "@/lib/chat/types";
 
 type Estado =
@@ -19,6 +19,9 @@ export default function ChatPage() {
 
   useEffect(() => {
     let atual = true;
+    let cancelar: (() => void) | null = null;
+    let espera: ReturnType<typeof setTimeout> | null = null;
+
     (async () => {
       const usuariaId = await obterUsuariaAtualId();
       if (!atual) return;
@@ -27,12 +30,29 @@ export default function ChatPage() {
         return;
       }
       const conversas = await listarConversas();
-      if (atual) setEstado({ tipo: "pronta", conversas, usuariaId });
+      if (!atual) return;
+      setEstado({ tipo: "pronta", conversas, usuariaId });
+
+      // #38: mensagem nova ou lida atualiza a prévia, a ordem e os contadores
+      // da lista sem recarregar. Vários eventos juntos viram uma consulta.
+      cancelar = assinarNaoLidas(() => {
+        if (espera) clearTimeout(espera);
+        espera = setTimeout(() => {
+          listarConversas()
+            .then((lista) => atual && setEstado({ tipo: "pronta", conversas: lista, usuariaId }))
+            .catch(() => {
+              // Mantém a lista na tela; a próxima mudança tenta de novo.
+            });
+        }, 300);
+      });
     })().catch(() => {
       if (atual) setEstado({ tipo: "erro" });
     });
+
     return () => {
       atual = false;
+      if (espera) clearTimeout(espera);
+      cancelar?.();
     };
   }, []);
 

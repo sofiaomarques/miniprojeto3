@@ -49,6 +49,13 @@ export type CancelarAssinatura = () => void;
 // Plano B quando o Realtime não conecta: consulta o banco nesse intervalo.
 export const INTERVALO_CONSULTA_MS = 2500;
 
+// Não lidas (#38): avisa que o total pode ter mudado (mensagem nova ou
+// mensagens marcadas como lidas); quem assina chama contarNaoLidas() de novo.
+export type AoMudarNaoLidas = () => void;
+
+// Rede de segurança do contador: recontagem nesse intervalo, mesmo sem evento.
+export const INTERVALO_CONTADOR_MS = 15000;
+
 // Junta uma mensagem à lista sem duplicar: a própria mensagem enviada chega
 // duas vezes (resposta do insert e evento do Realtime). Mantém a ordem.
 export function juntarMensagens(lista: Mensagem[], nova: Mensagem): Mensagem[] {

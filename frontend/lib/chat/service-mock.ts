@@ -10,6 +10,7 @@ import type { Perfil } from "@/lib/identidade/types";
 import { CONVERSAS_MOCK, type ConversaMock, MENSAGENS_MOCK } from "./mocks";
 import {
   type AoChegarMensagem,
+  type AoMudarNaoLidas,
   type CancelarAssinatura,
   type Conversa,
   ERRO_DESLOGADA,
@@ -38,10 +39,18 @@ const ouvintes = new Set<Ouvinte>();
 const outrasAbas =
   typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel("rede-chat-mock");
 
+// Não lidas (#38): quem assina é avisado quando o total pode ter mudado.
+const ouvintesNaoLidas = new Set<AoMudarNaoLidas>();
+
+function avisarNaoLidas() {
+  for (const aoMudar of ouvintesNaoLidas) aoMudar();
+}
+
 function avisar(mensagem: Mensagem) {
   for (const o of ouvintes) {
     if (o.conversaId === mensagem.conversaId) o.aoChegar({ ...mensagem });
   }
+  avisarNaoLidas();
 }
 
 outrasAbas?.addEventListener("message", (evento: MessageEvent<Mensagem>) => {
@@ -178,9 +187,17 @@ export async function marcarLidas(conversaId: number): Promise<number> {
       marcadas++;
     }
   }
+  if (marcadas > 0) avisarNaoLidas();
   return marcadas;
 }
 
 export async function contarNaoLidas(): Promise<number> {
   return (await listarConversas()).reduce((total, c) => total + c.naoLidas, 0);
+}
+
+export function assinarNaoLidas(aoMudar: AoMudarNaoLidas): CancelarAssinatura {
+  ouvintesNaoLidas.add(aoMudar);
+  return () => {
+    ouvintesNaoLidas.delete(aoMudar);
+  };
 }
