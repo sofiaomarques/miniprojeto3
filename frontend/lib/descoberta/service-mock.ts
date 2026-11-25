@@ -19,8 +19,16 @@ import type {
   PrestadoraResumo,
 } from "./types";
 
-const avaliacoes: AvaliacaoMock[] = AVALIACOES_MOCK.map((a) => ({ ...a }));
-let proximoId = Math.max(0, ...avaliacoes.map((a) => a.id)) + 1;
+let avaliacoes: AvaliacaoMock[] = [];
+let proximoId = 1;
+
+// Volta as avaliações ao estado inicial (para testes; o mock da identidade
+// tem o seu próprio redefinirMocks).
+export function redefinirAvaliacoesMock(): void {
+  avaliacoes = AVALIACOES_MOCK.map((a) => ({ ...a }));
+  proximoId = Math.max(0, ...avaliacoes.map((a) => a.id)) + 1;
+}
+redefinirAvaliacoesMock();
 
 // Como a view `avaliacoes_publicas`: mostra nome e avatar de quem avaliou.
 // Lê o estado atual do mock da identidade, não a lista inicial.

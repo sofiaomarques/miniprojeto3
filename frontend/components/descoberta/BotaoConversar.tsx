@@ -11,11 +11,12 @@ import { IconeChat } from "@/components/rede/icones";
 import { classeBotao } from "@/components/rede/Tela";
 import { iniciarConversa } from "@/lib/chat/service";
 import { ERRO_DESLOGADA } from "@/lib/chat/types";
-import type { Perfil } from "@/lib/identidade/types";
+
+import type { MinhaSessao } from "./useMeuPerfil";
 
 type Props = {
   prestadoraId: string;
-  usuaria: Perfil | null | undefined; // undefined = ainda carregando a sessão
+  usuaria: MinhaSessao; // undefined = ainda carregando a sessão
 };
 
 export function BotaoConversar({ prestadoraId, usuaria }: Props) {
@@ -24,6 +25,13 @@ export function BotaoConversar({ prestadoraId, usuaria }: Props) {
   const [erro, setErro] = useState<string | null>(null);
   const linkLogin = `/entrar?next=${encodeURIComponent(`/prestadoras/${prestadoraId}`)}`;
 
+  if (usuaria === "erro") {
+    return (
+      <p role="alert" className="text-center text-sm text-vinho">
+        Não consegui confirmar sua conta. Recarregue a página para conversar.
+      </p>
+    );
+  }
   if (usuaria?.id === prestadoraId) {
     return <p className="text-center text-sm text-suave">Este é o seu perfil público.</p>;
   }

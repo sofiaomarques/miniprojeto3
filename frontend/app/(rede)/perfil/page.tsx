@@ -1,5 +1,3 @@
-import Link from "next/link"; // usado pelos links "Editar perfil" (#56) e "Minhas fotos" (#59)
-
 import { BotaoSair } from "@/components/identidade/BotaoSair";
 import { Avatar } from "@/components/descoberta/Avatar";
 import { ListaIndicacoes } from "@/components/descoberta/ListaIndicacoes";

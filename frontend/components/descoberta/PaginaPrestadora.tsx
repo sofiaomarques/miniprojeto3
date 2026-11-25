@@ -90,9 +90,11 @@ export function PaginaPrestadora({ id }: { id: string }) {
 
   const { perfil, categorias, fotos, avaliacoes, notaMedia, totalAvaliacoes } = estado.prestadora;
   const primeiroNome = perfil.nome?.split(" ")[0] ?? "esta prestadora";
-  const minhaAvaliacao = usuaria ? avaliacoes.find((a) => a.clienteId === usuaria.id) : undefined;
-  // Só cliente (ou quem ainda não entrou) vê o link de avaliar.
-  const podeAvaliar = usuaria === null || usuaria?.papel === "cliente";
+  const minhaAvaliacao =
+    usuaria && usuaria !== "erro" ? avaliacoes.find((a) => a.clienteId === usuaria.id) : undefined;
+  // Só cliente (ou quem ainda não entrou) vê o link de avaliar; com erro na
+  // sessão o link some, para não mandar quem já está logada para o login.
+  const podeAvaliar = usuaria === null || (usuaria !== "erro" && usuaria?.papel === "cliente");
 
   return (
     <>

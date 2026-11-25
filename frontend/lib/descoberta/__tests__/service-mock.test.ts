@@ -19,7 +19,10 @@ import { mediaComUmaCasa, normalizarTexto } from "../texto";
 
 const idCategoria = (nome: string) => CATEGORIAS_MOCK.find((c) => c.nome === nome)!.id;
 
-beforeEach(() => redefinirMocks());
+beforeEach(() => {
+  redefinirMocks();
+  mock.redefinirAvaliacoesMock();
+});
 
 describe("busca (mock)", () => {
   it("usa as categorias da identidade", async () => {

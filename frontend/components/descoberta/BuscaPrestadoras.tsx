@@ -52,10 +52,11 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
 
   useEffect(() => {
     let atual = true; // ignora respostas de buscas antigas
-    setPrestadoras(null);
-    setErro(null);
     window.history.replaceState(null, "", paraUrl(filtros));
+    // A lista anterior fica na tela durante a espera; só some quando a busca começa.
     const espera = setTimeout(() => {
+      setPrestadoras(null);
+      setErro(null);
       buscarPrestadoras(filtros).then(
         (lista) => atual && setPrestadoras(lista),
         (err) => {

@@ -18,10 +18,12 @@ function lerFiltros({ categoria, cidade, ordem }: Params): FiltrosBusca {
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<Params> }) {
   const [params, perfil] = await Promise.all([searchParams, perfilOuNull()]);
+  const filtros = lerFiltros(params);
 
   return (
     <Tela className="h-dvh">
-      <BuscaPrestadoras perfil={perfil} filtrosIniciais={lerFiltros(params)} />
+      {/* key: uma navegação para outros filtros (ex.: aba "Buscar" -> "/") recria a busca. */}
+      <BuscaPrestadoras key={JSON.stringify(filtros)} perfil={perfil} filtrosIniciais={filtros} />
       <BarraAbas ativa="buscar" />
     </Tela>
   );
