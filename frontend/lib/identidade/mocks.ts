@@ -186,6 +186,13 @@ export function definirUsuariaMock(id: string | null): void {
 
 // Cópias, para quem chama não alterar o estado por fora do service.
 const copiar = <T>(valor: T): T => structuredClone(valor);
+
+// Todos os perfis do estado atual (com o que o onboarding e a edição mudaram),
+// sem o filtro de visibilidade da RLS. Para outros mocks (P2, P3) imitarem
+// views que expõem nome e avatar, como `avaliacoes_publicas`. Só existe no mock.
+export function perfisMockAtuais(): Perfil[] {
+  return copiar(estado.perfis);
+}
 const porId = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
 function exigirSessao(): string {

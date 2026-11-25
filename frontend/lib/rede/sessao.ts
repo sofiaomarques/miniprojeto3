@@ -32,12 +32,3 @@ export async function exigirConta(voltarPara: string): Promise<Perfil | null> {
   if (!perfil.papel) redirect("/onboarding");
   return perfil;
 }
-
-// "Ana Paula Souza" -> "AS"; sem nome, "?".
-export function iniciaisDe(nome: string | null): string {
-  const partes = (nome ?? "").trim().split(/\s+/).filter(Boolean);
-  if (partes.length === 0) return "?";
-  const primeira = partes[0][0];
-  const ultima = partes.length > 1 ? partes[partes.length - 1][0] : "";
-  return (primeira + ultima).toUpperCase();
-}
