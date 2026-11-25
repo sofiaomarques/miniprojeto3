@@ -19,7 +19,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { usarMocks } from "@/lib/supabase/config";
 import { ErroIdentidade } from "./erros";
-import { BUCKET_PORTFOLIO, MENSAGENS_FOTO, novoCaminhoFoto, validarArquivoFoto } from "./fotos";
+import {
+  BUCKET_AVATARES,
+  BUCKET_PORTFOLIO,
+  caminhoDoAvatar,
+  MENSAGEM_AVATAR_GRANDE,
+  MENSAGENS_FOTO,
+  novoCaminhoAvatar,
+  novoCaminhoFoto,
+  validarArquivoAvatar,
+  validarArquivoFoto,
+} from "./fotos";
 import { servicoMock } from "./mocks";
 import type {
   AtualizacaoPerfil,
@@ -242,6 +252,15 @@ function comValidacao(impl: ServicoIdentidade): ServicoIdentidade {
         throw new ErroIdentidade("validacao", "Foto inválida.");
       }
       return impl.apagarMinhaFoto(fotoId);
+    },
+
+    async enviarMeuAvatar(arquivo) {
+      if (typeof arquivo !== "object" || arquivo === null) {
+        throw new ErroIdentidade("validacao", "Escolha uma foto.");
+      }
+      const erro = validarArquivoAvatar(arquivo);
+      if (erro) throw new ErroIdentidade("validacao", erro);
+      return impl.enviarMeuAvatar(arquivo);
     },
   };
 }
@@ -566,17 +585,67 @@ export function criarServicoSupabase(cliente: ClienteSupabase): ServicoIdentidad
         throw new ErroIdentidade("nao_encontrado", "Foto não encontrada.");
       }
     },
+
+    async enviarMeuAvatar(arquivo) {
+      const id = await exigirSessao();
+      const antes = await buscarPerfil(id);
+      if (!antes) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+      const caminho = novoCaminhoAvatar(id, arquivo.type);
+      const bucket = cliente.storage.from(BUCKET_AVATARES);
+
+      // 1) arquivo novo (nome aleatório: o link antigo em cache não muda)
+      const envio = await bucket.upload(caminho, arquivo, { contentType: arquivo.type, upsert: false });
+      if (envio.error) {
+        throw erroDoStorage(envio.error, "Não foi possível enviar a foto de perfil. Tente de novo.", {
+          grande: MENSAGEM_AVATAR_GRANDE,
+          permissao: "Entre na sua conta para trocar a foto de perfil.",
+        });
+      }
+
+      // 2) link público em perfis.avatar_url; se falhar, desfaz o envio
+      const url = bucket.getPublicUrl(caminho).data.publicUrl;
+      let perfil: Perfil;
+      try {
+        const linha = dados(
+          await cliente
+            .from("perfis")
+            .update({ avatar_url: url })
+            .eq("id", id)
+            .select(SELECT_PERFIL)
+            .maybeSingle(),
+          TRADUCOES_PERFIL,
+        );
+        if (!linha) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+        perfil = paraPerfil(linha as Linha);
+      } catch (erro) {
+        await bucket.remove([caminho]);
+        throw erro;
+      }
+
+      // 3) apaga o avatar anterior (se era deste bucket). Se falhar, a troca
+      //    já valeu: fica só um arquivo antigo sem uso, não um perfil quebrado.
+      const anterior = caminhoDoAvatar(antes.avatar_url);
+      if (anterior && anterior !== caminho) await bucket.remove([anterior]);
+      return perfil;
+    },
   };
 }
 
 // Erro do Supabase Storage → ErroIdentidade com mensagem fixa (nunca a crua).
-function erroDoStorage(erro: unknown, padrao: string): ErroIdentidade {
+function erroDoStorage(
+  erro: unknown,
+  padrao: string,
+  mensagens: { grande?: string; permissao?: string } = {},
+): ErroIdentidade {
   const e = (erro ?? {}) as { statusCode?: unknown; status?: unknown };
   const status = Number(e.statusCode ?? e.status);
-  if (status === 413) return new ErroIdentidade("validacao", MENSAGENS_FOTO.grande);
+  if (status === 413) return new ErroIdentidade("validacao", mensagens.grande ?? MENSAGENS_FOTO.grande);
   if (status === 415) return new ErroIdentidade("validacao", MENSAGENS_FOTO.tipo);
   if (status === 401 || status === 403) {
-    return new ErroIdentidade("permissao", "Só prestadoras podem mexer nas fotos da própria galeria.");
+    return new ErroIdentidade(
+      "permissao",
+      mensagens.permissao ?? "Só prestadoras podem mexer nas fotos da própria galeria.",
+    );
   }
   return new ErroIdentidade("indisponivel", padrao);
 }
