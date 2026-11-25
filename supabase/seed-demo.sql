@@ -17,25 +17,42 @@
 -- Como rodar: no Supabase de DESENVOLVIMENTO, pelo SQL Editor (que roda como
 -- postgres) ou com psql, DEPOIS das migrations 01, 02 e 03:
 --   psql "$DATABASE_URL" -f supabase/seed-demo.sql
--- Pode rodar de novo: apaga as 6 contas de demonstração (e, em cascata, tudo
--- o que é delas) e recria. Não toca em nenhuma outra conta.
+-- Pode rodar de novo: refaz serviços, avaliações e conversas entre as 6
+-- contas e volta perfis e senhas ao estado da demo. As contas não são
+-- apagadas, então fotos e avatar enviados pelo site continuam. Não toca em
+-- nenhuma outra conta.
 -- NUNCA rode em produção: a senha das contas está no README.
 
 begin;
 
 -- ===========================================================================
--- 0. Limpa a demonstração anterior (perfis, avaliações, conversas e
---    mensagens saem em cascata a partir de auth.users)
+-- 0. Limpa a demonstração anterior, sem apagar as contas
 -- ===========================================================================
-delete from auth.users
-where id in (
-  '00000000-0000-4000-8000-0000000000a1',
-  '00000000-0000-4000-8000-0000000000a2',
-  '00000000-0000-4000-8000-0000000000a3',
-  '00000000-0000-4000-8000-0000000000a4',
-  '00000000-0000-4000-8000-0000000000c1',
-  '00000000-0000-4000-8000-0000000000c2'
-);
+-- As contas e os perfis ficam (são atualizados abaixo): assim as fotos do
+-- portfólio e o avatar enviados pelo site sobrevivem a uma nova rodada.
+-- Apagar a conta levaria as linhas de fotos_portfolio em cascata e deixaria
+-- os arquivos órfãos no Storage, que o SQL não consegue apagar.
+-- Sai só o que o seed cria entre as contas da demo (mensagens saem em
+-- cascata com as conversas).
+create temporary table demo_ids (id uuid primary key) on commit drop;
+insert into demo_ids (id) values
+  ('00000000-0000-4000-8000-0000000000a1'),
+  ('00000000-0000-4000-8000-0000000000a2'),
+  ('00000000-0000-4000-8000-0000000000a3'),
+  ('00000000-0000-4000-8000-0000000000a4'),
+  ('00000000-0000-4000-8000-0000000000c1'),
+  ('00000000-0000-4000-8000-0000000000c2');
+
+delete from public.conversas
+where cliente_id in (select id from demo_ids)
+  and prestadora_id in (select id from demo_ids);
+
+delete from public.avaliacoes
+where cliente_id in (select id from demo_ids)
+  and prestadora_id in (select id from demo_ids);
+
+delete from public.servicos_prestadora
+where prestadora_id in (select id from demo_ids);
 
 -- ===========================================================================
 -- 1. Contas (Supabase Auth) com senha demo12345 e e-mail já confirmado
@@ -69,7 +86,14 @@ select
   jsonb_build_object('nome', c.nome),
   now() - interval '20 days', now() - interval '20 days',
   '', '', '', ''
-from demo_contas c;
+from demo_contas c
+-- Já existe (rodada anterior): volta o e-mail, a senha demo12345 e a
+-- confirmação, caso alguém tenha mudado pelo site.
+on conflict (id) do update
+set email              = excluded.email,
+    encrypted_password = excluded.encrypted_password,
+    email_confirmed_at = excluded.email_confirmed_at,
+    updated_at         = now();
 
 insert into auth.identities (
   id, user_id, provider_id, provider, identity_data,
@@ -79,11 +103,12 @@ select
   gen_random_uuid(), c.id, c.id::text, 'email',
   jsonb_build_object('sub', c.id::text, 'email', c.email, 'email_verified', true),
   now(), now() - interval '20 days', now() - interval '20 days'
-from demo_contas c;
+from demo_contas c
+on conflict (provider_id, provider) do nothing;
 
 -- ===========================================================================
--- 2. Perfis (o trigger da 01 já criou a linha com o nome; aqui entra o resto,
---    como faria o onboarding)
+-- 2. Perfis (o trigger da 01 cria a linha quando a conta nasce; aqui entra o
+--    resto, como faria o onboarding). avatar_url não muda: fica o do site.
 -- ===========================================================================
 update public.perfis p
 set papel  = v.papel,
@@ -126,9 +151,9 @@ join public.categorias_servico c on c.nome = v.categoria;
 insert into public.avaliacoes (prestadora_id, cliente_id, nota, comentario, criada_em)
 values
   ('00000000-0000-4000-8000-0000000000a1', '00000000-0000-4000-8000-0000000000c1', 5,
-   'Instalou o split no mesmo dia e deixou tudo limpo. Me senti segura em casa.', now() - interval '12 days'),
+   'Limpou o split com todo cuidado e deixou tudo limpo. Me senti segura em casa.', now() - interval '10 days 21 hours'),
   ('00000000-0000-4000-8000-0000000000a1', '00000000-0000-4000-8000-0000000000c2', 4,
-   'Pontual e cuidadosa. Só demorou um pouco para responder no chat.', now() - interval '9 days'),
+   'Pontual e cuidadosa. Instalou a máquina de lavar e explicou como limpar o filtro.', now() - interval '9 days'),
   ('00000000-0000-4000-8000-0000000000a2', '00000000-0000-4000-8000-0000000000c2', 5,
    'Resolveu o vazamento da pia em meia hora e explicou o que tinha acontecido.', now() - interval '7 days'),
   ('00000000-0000-4000-8000-0000000000a3', '00000000-0000-4000-8000-0000000000c1', 5,
@@ -146,7 +171,7 @@ with conversa as (
   insert into public.conversas (cliente_id, prestadora_id, criada_em)
   values
     ('00000000-0000-4000-8000-0000000000c1', '00000000-0000-4000-8000-0000000000a1', now() - interval '13 days'),
-    ('00000000-0000-4000-8000-0000000000c2', '00000000-0000-4000-8000-0000000000a1', now() - interval '1 day'),
+    ('00000000-0000-4000-8000-0000000000c2', '00000000-0000-4000-8000-0000000000a1', now() - interval '11 days'),
     ('00000000-0000-4000-8000-0000000000c1', '00000000-0000-4000-8000-0000000000a3', now() - interval '6 days'),
     ('00000000-0000-4000-8000-0000000000c2', '00000000-0000-4000-8000-0000000000a2', now() - interval '8 days')
   returning id, cliente_id, prestadora_id
@@ -160,14 +185,19 @@ join (values
   ('c1', 'a1', 'a1', 'Oi, Beatriz! Fica R$ 150 com a higienização. Posso ir quinta de manhã.', interval '13 days' - interval '20 minutes', true),
   ('c1', 'a1', 'c1', 'Fechado! Moro em Manaíra, te mando o endereço certinho na quarta.', interval '13 days' - interval '35 minutes', true),
   ('c1', 'a1', 'a1', 'Combinado. Até quinta!', interval '12 days', true),
-  ('c1', 'a1', 'c1', 'Marina, o ar ficou ótimo, obrigada! Já deixei minha avaliação.', interval '12 days' - interval '6 hours', false),
-  -- Fernanda × Marina: pedido novo, ainda não lido pela Marina
-  ('c2', 'a1', 'c2', 'Oi! Você instala ar-condicionado em apartamento? É um 9 mil BTUs.', interval '1 day', false),
+  ('c1', 'a1', 'c1', 'Marina, o ar ficou ótimo, obrigada! Já deixei minha avaliação.', interval '10 days 20 hours', false),
+  -- Fernanda × Marina: já foi cliente (avaliou a instalação da máquina) e
+  -- agora faz um pedido novo, ainda não lido pela Marina
+  ('c2', 'a1', 'c2', 'Oi, Marina! Você instala máquina de lavar? Acabei de me mudar para o Bessa.', interval '11 days', true),
+  ('c2', 'a1', 'a1', 'Instalo sim! Consigo ir amanhã às 14h, fica R$ 90.', interval '11 days' - interval '15 minutes', true),
+  ('c2', 'a1', 'c2', 'Ótimo, até amanhã!', interval '11 days' - interval '20 minutes', true),
+  ('c2', 'a1', 'c2', 'Oi, Marina! Agora preciso instalar um 9 mil BTUs no apartamento novo, você faz?', interval '1 day', false),
   ('c2', 'a1', 'c2', 'Já tenho o suporte, falta só a instalação.', interval '1 day' - interval '2 minutes', false),
-  -- Beatriz × Joana: montagem marcada; a Beatriz ainda não viu a última
+  -- Beatriz × Joana: montagem feita e avaliada; a Beatriz ainda não viu o
+  -- agradecimento da Joana
   ('c1', 'a3', 'c1', 'Oi, Joana! Preciso montar um guarda-roupa de 6 portas. Você tem horário sábado?', interval '6 days', true),
   ('c1', 'a3', 'a3', 'Tenho sim, às 9h. Fica R$ 180 e levo tudo que precisa.', interval '6 days' - interval '1 hour', true),
-  ('c1', 'a3', 'a3', 'Passando para confirmar: amanhã às 9h, tudo certo?', interval '2 hours', false),
+  ('c1', 'a3', 'a3', 'Oi, Beatriz! Obrigada pela avaliação, qualquer coisa é só chamar.', interval '4 days 22 hours', false),
   -- Fernanda × Camila: conversa encerrada, tudo lido
   ('c2', 'a2', 'c2', 'Oi, Camila! A torneira da cozinha está pingando. Você atende no Bessa?', interval '8 days', true),
   ('c2', 'a2', 'a2', 'Atendo sim! Consigo passar amanhã à tarde.', interval '8 days' - interval '30 minutes', true),

@@ -54,7 +54,9 @@ O `supabase/seed-demo.sql` cria contas fixas, perfis, serviços, avaliações e
 conversas em João Pessoa, para testar e apresentar o site. Rodem no Supabase
 de **desenvolvimento**, depois das migrations 01, 02 e 03, pelo SQL Editor ou
 com `psql "$DATABASE_URL" -f supabase/seed-demo.sql`. Pode rodar de novo: ele
-apaga e recria só estas contas.
+refaz serviços, avaliações e conversas destas contas e volta a senha para a
+de baixo, sem apagar as fotos e o avatar enviados pelo site. Não mexe em
+nenhuma outra conta.
 
 Todas as contas usam a senha **`demo12345`**:
 
@@ -69,6 +71,10 @@ Todas as contas usam a senha **`demo12345`**:
 
 As fotos do portfólio não estão no seed (o SQL não envia arquivos para o
 Storage): enviem pelo próprio site, entrando como a prestadora.
+
+O repositório é público e a senha está aqui, então qualquer pessoa pode
+entrar nessas contas. Se alguém mudar um perfil, apagar uma avaliação ou
+trocar a senha, é só rodar o seed de novo.
 
 ## Primeiros passos do time
 
