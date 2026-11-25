@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BotaoInicio } from "./BotaoInicio";
 import { IconeBusca, IconeCasa, IconeChat, IconePessoa } from "./icones";
 
 // Coluna de celular centralizada; no desktop vira um "aparelho" no meio da página.
@@ -14,6 +15,7 @@ export function Tela({
     <div
       className={`mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-crema shadow-xl ${className}`}
     >
+      <BotaoInicio />
       {children}
     </div>
   );
