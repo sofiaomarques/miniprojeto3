@@ -173,6 +173,12 @@ export async function contarNaoLidas(): Promise<number> {
   return data as number;
 }
 
+// Cada assinatura tem um canal com nome próprio. O realtime-js reaproveita o
+// canal quando o nome já existe; no StrictMode do dev o efeito monta, desmonta
+// (removeChannel é assíncrono) e monta de novo, e o .on() cairia num canal já
+// assinado. O contador de não lidas também pode estar em dois lugares da tela.
+let numeroCanal = 0;
+
 // Tempo real (#37). Ouve os INSERTs de `mensagens` desta conversa pelo
 // Supabase Realtime, que respeita a RLS: só chega o que a usuária pode ler.
 // A 03_chat.sql (#43) põe `mensagens` na publicação supabase_realtime.
@@ -233,7 +239,7 @@ export function assinarMensagens(
   }
 
   const canal = supabase
-    .channel(`chat:mensagens:${conversaId}`)
+    .channel(`chat:mensagens:${conversaId}:${++numeroCanal}`)
     .on(
       "postgres_changes",
       {
@@ -273,10 +279,6 @@ export function assinarMensagens(
 // só entrega as linhas que ela pode ler. Cada evento chama aoMudar, que conta
 // de novo com nao_lidas(). A recontagem a cada INTERVALO_CONTADOR_MS cobre o
 // Realtime fora do ar.
-// Cada assinatura tem um canal com nome próprio: o contador pode aparecer em
-// mais de um lugar da tela (aba Conversas e navbar) ao mesmo tempo.
-let canaisNaoLidas = 0;
-
 export function assinarNaoLidas(aoMudar: AoMudarNaoLidas): CancelarAssinatura {
   const supabase = cliente();
   let ativa = true;
@@ -285,7 +287,7 @@ export function assinarNaoLidas(aoMudar: AoMudarNaoLidas): CancelarAssinatura {
   };
 
   const canal = supabase
-    .channel(`chat:nao-lidas:${++canaisNaoLidas}`)
+    .channel(`chat:nao-lidas:${++numeroCanal}`)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "mensagens" }, avisar)
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mensagens" }, avisar)
     .subscribe();
