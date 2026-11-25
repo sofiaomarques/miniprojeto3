@@ -1,7 +1,7 @@
 "use client";
 // A página só compõe componentes; as regras e queries ficam em lib/chat.
-// Mensagens novas chegam em tempo real (#37). "Pedir orçamento" e o visual
-// do protótipo entram na #39.
+// Mensagens novas chegam em tempo real (#37). Visual do protótipo "Rede de
+// Mulheres" (components/rede) e respostas rápidas de orçamento (#39).
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -10,6 +10,11 @@ import { useEffect, useRef, useState } from "react";
 import { AvisoDeslogada } from "@/components/chat/AvisoDeslogada";
 import { BolhaMensagem } from "@/components/chat/BolhaMensagem";
 import { CampoMensagem } from "@/components/chat/CampoMensagem";
+import { RespostasRapidas } from "@/components/chat/RespostasRapidas";
+import { IconeVoltar } from "@/components/rede/icones";
+import { Avatar, Tela } from "@/components/rede/Tela";
+import { Aviso } from "@/components/ui/Aviso";
+import { iniciais, respostasRapidas } from "@/lib/chat/respostas";
 import {
   assinarMensagens,
   enviarMensagem,
@@ -42,6 +47,10 @@ export default function ConversaPage() {
   // cada mensagem para o DOM mudar mesmo com o texto repetido (senão o
   // role="status" fica em silêncio a partir da 2ª).
   const [avisoNova, setAvisoNova] = useState({ texto: "", vez: 0 });
+  // Texto do campo de mensagem (as respostas rápidas preenchem).
+  const [texto, setTexto] = useState("");
+  // "Tentar de novo" no erro: muda para refazer o carregamento.
+  const [tentativa, setTentativa] = useState(0);
   const fim = useRef<HTMLDivElement>(null);
   // Última lista na tela, para a assinatura saber o maior id já carregado.
   const mensagensRef = useRef<Mensagem[]>([]);
@@ -53,6 +62,7 @@ export default function ConversaPage() {
     setEstado({ tipo: "carregando" });
     setMensagens([]);
     setAvisoNova({ texto: "", vez: 0 });
+    setTexto("");
 
     if (conversaId === null) {
       setEstado({ tipo: "nao-encontrada" });
@@ -98,7 +108,7 @@ export default function ConversaPage() {
     return () => {
       atual = false;
     };
-  }, [conversaId]);
+  }, [conversaId, tentativa]);
 
   // Tempo real (#37): assina quando a conversa termina de carregar e cancela
   // ao sair da tela ou trocar de conversa.
@@ -162,39 +172,66 @@ export default function ConversaPage() {
     setMensagens((atuais) => juntarMensagens(atuais, nova));
   }
 
-  if (estado.tipo === "carregando") return <p className="text-sm text-zinc-500">Carregando…</p>;
-  if (estado.tipo === "deslogada") return <AvisoDeslogada voltarPara={`/chat/${params.id}`} />;
-  if (estado.tipo === "erro") {
-    return (
-      <p role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-        Não consegui abrir a conversa. Tente de novo.
-      </p>
-    );
-  }
-  if (estado.tipo === "nao-encontrada") {
-    return (
-      <div className="space-y-2">
-        <p className="rounded border bg-white p-4 text-sm text-zinc-600">Conversa não encontrada.</p>
-        <Link href="/chat" className="text-sm text-rose-700 underline">
-          Voltar para as conversas
-        </Link>
+  // Cabeçalho rosa do protótipo; sem conversa carregada, só o voltar.
+  const cabecalho = (titulo: string, subtitulo?: string) => (
+    <div className="flex items-center gap-2 bg-rosa px-3 py-4">
+      <Link
+        href="/chat"
+        aria-label="Voltar para as conversas"
+        className="flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-vinho"
+      >
+        <IconeVoltar size={24} />
+      </Link>
+      {estado.tipo === "pronta" && (
+        <Avatar iniciais={iniciais(estado.conversa.outra.nome)} tamanho={42} fundo="papel" />
+      )}
+      <div className="flex min-w-0 flex-1 flex-col gap-px">
+        <h1 className="truncate text-base font-bold">{titulo}</h1>
+        {subtitulo && <span className="text-[12.5px] text-corpo">{subtitulo}</span>}
       </div>
+    </div>
+  );
+
+  if (estado.tipo !== "pronta") {
+    return (
+      <Tela className="h-dvh">
+        {cabecalho("Conversa")}
+        <div className="flex-1 px-5 pt-6">
+          {estado.tipo === "carregando" && <p className="text-sm text-suave">Carregando conversa…</p>}
+          {estado.tipo === "deslogada" && <AvisoDeslogada voltarPara={`/chat/${params.id}`} />}
+          {estado.tipo === "nao-encontrada" && (
+            <Aviso tipo="info">
+              Conversa não encontrada.{" "}
+              <Link href="/chat" className="font-bold text-vinho underline">
+                Ver suas conversas
+              </Link>
+            </Aviso>
+          )}
+          {estado.tipo === "erro" && (
+            <div className="space-y-3">
+              <Aviso tipo="erro">Não consegui abrir a conversa. Confira sua conexão.</Aviso>
+              <button
+                type="button"
+                onClick={() => setTentativa((t) => t + 1)}
+                className="min-h-10 rounded-full border border-campo bg-papel px-4 text-sm font-bold text-vinho"
+              >
+                Tentar de novo
+              </button>
+            </div>
+          )}
+        </div>
+      </Tela>
     );
   }
 
   const { conversa, usuariaId } = estado;
+  const souCliente = conversa.clienteId === usuariaId;
+  const nomeOutra = conversa.outra.nome || "Participante";
+  const respostas = respostasRapidas(souCliente ? "cliente" : "prestadora", conversa.outra.nome);
+
   return (
-    <div className="flex h-[calc(100dvh-9rem)] flex-col gap-3">
-      <header className="flex items-center gap-3 border-b pb-3">
-        <Link
-          href="/chat"
-          className="-m-2 p-2 text-sm text-zinc-500 hover:text-zinc-900"
-          aria-label="Voltar para as conversas"
-        >
-          ←
-        </Link>
-        <h1 className="truncate text-lg font-bold">{conversa.outra.nome || "Conversa"}</h1>
-      </header>
+    <Tela className="h-dvh">
+      {cabecalho(nomeOutra, souCliente ? "Prestadora" : "Cliente")}
 
       {/* Sem aria-live no histórico: o leitor de tela leria tudo ao abrir.
           Mensagem nova é anunciada só por este aviso. */}
@@ -202,19 +239,42 @@ export default function ConversaPage() {
         {avisoNova.texto}
         {avisoNova.vez % 2 === 1 ? "​" : ""}
       </p>
-      <div className="flex-1 space-y-2 overflow-y-auto" aria-label="Mensagens">
+      <div
+        className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto px-4 pb-2 pt-5"
+        aria-label="Mensagens"
+      >
         {mensagens.length === 0 && (
-          <p className="text-center text-sm text-zinc-500">
-            Diga oi e conte qual serviço você precisa.
+          <p className="my-auto text-center text-sm leading-relaxed text-corpo">
+            {souCliente
+              ? `Diga oi e conte para ${nomeOutra.split(" ")[0]} qual serviço você precisa.`
+              : "Ainda não há mensagens nesta conversa."}
           </p>
         )}
         {mensagens.map((m) => (
           <BolhaMensagem key={m.id} mensagem={m} minha={m.autorId === usuariaId} />
         ))}
+
+        <div className="mt-1.5">
+          <RespostasRapidas respostas={respostas} aoEscolher={setTexto} />
+        </div>
+
+        {souCliente && mensagens.length > 0 && (
+          <div className="mt-1.5 flex flex-col gap-2.5 rounded-[18px] bg-areia p-3.5">
+            <span className="text-sm leading-snug text-corpo">
+              Serviço concluído? Sua avaliação ajuda outras mulheres a escolher com segurança.
+            </span>
+            <Link
+              href={`/prestadoras/${conversa.prestadoraId}`}
+              className="flex h-11 items-center justify-center rounded-full bg-vinho text-[14.5px] font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vinho"
+            >
+              Avaliar {nomeOutra.split(" ")[0]}
+            </Link>
+          </div>
+        )}
         <div ref={fim} />
       </div>
 
-      <CampoMensagem onEnviar={enviar} />
-    </div>
+      <CampoMensagem texto={texto} aoMudar={setTexto} onEnviar={enviar} />
+    </Tela>
   );
 }
