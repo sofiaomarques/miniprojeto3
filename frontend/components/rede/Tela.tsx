@@ -42,26 +42,6 @@ export function Rotulo({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function Avatar({
-  iniciais,
-  tamanho,
-  fundo,
-}: {
-  iniciais: string;
-  tamanho: number;
-  fundo: "rosa" | "areia" | "papel";
-}) {
-  const bg = { rosa: "bg-rosa", areia: "bg-areia", papel: "bg-papel" }[fundo];
-  return (
-    <div
-      style={{ width: tamanho, height: tamanho, fontSize: tamanho * 0.36 }}
-      className={`flex shrink-0 items-center justify-center rounded-full font-display font-semibold text-vinho-escuro ${bg}`}
-    >
-      {iniciais}
-    </div>
-  );
-}
-
 const ABAS = [
   { id: "buscar", rotulo: "Buscar", href: "/", Icone: IconeBusca },
   { id: "conversas", rotulo: "Conversas", href: "/chat", Icone: IconeChat },
