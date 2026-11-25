@@ -48,6 +48,28 @@ make dev-front  # site em localhost:3000
 
 Se algum comando falhar, vejam o [guia 00](docs/guias/00-setup.md).
 
+## Dados de demonstração
+
+O `supabase/seed-demo.sql` cria contas fixas, perfis, serviços, avaliações e
+conversas em João Pessoa, para testar e apresentar o site. Rodem no Supabase
+de **desenvolvimento**, depois das migrations 01, 02 e 03, pelo SQL Editor ou
+com `psql "$DATABASE_URL" -f supabase/seed-demo.sql`. Pode rodar de novo: ele
+apaga e recria só estas contas.
+
+Todas as contas usam a senha **`demo12345`**:
+
+| E-mail | Conta | O que tem |
+|---|---|---|
+| `marina@demo.test` | Prestadora (ar-condicionado) | 2 avaliações (média 4,5) e 2 conversas, 3 mensagens não lidas |
+| `camila@demo.test` | Prestadora (encanamento) | 1 avaliação e 1 conversa |
+| `joana@demo.test` | Prestadora (montagem de móveis) | 1 avaliação e 1 conversa |
+| `aline@demo.test` | Prestadora (elétrica) | 1 avaliação, sem conversas |
+| `beatriz@demo.test` | Cliente | 3 avaliações feitas e 2 conversas, 1 não lida |
+| `fernanda@demo.test` | Cliente | 2 avaliações feitas e 2 conversas |
+
+As fotos do portfólio não estão no seed (o SQL não envia arquivos para o
+Storage): enviem pelo próprio site, entrando como a prestadora.
+
 ## Primeiros passos do time
 
 1. Leiam o código existente (Supabase em `frontend/lib/supabase`). Toda feature
