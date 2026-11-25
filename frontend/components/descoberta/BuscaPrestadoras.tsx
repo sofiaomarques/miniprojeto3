@@ -77,127 +77,135 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
 
   return (
     <>
-      <div className="flex flex-col gap-3.5 rounded-b-[28px] bg-rosa px-5 pb-4 pt-5">
-        <div className="flex items-center justify-end gap-3 text-[13.5px]">
-          {!perfil ? (
-            <Link href="/entrar" className="inline-block px-1 py-2.5 font-bold text-vinho">
-              Entrar
-            </Link>
-          ) : !perfil.papel ? (
-            <Link href="/onboarding" className="inline-block px-1 py-2.5 font-bold text-vinho">
-              Concluir cadastro
-            </Link>
-          ) : (
-            <span className="truncate py-2.5 text-corpo">
-              Olá, {perfil.nome?.split(" ")[0] ?? "você"}
-            </span>
-          )}
-        </div>
-        <h1 className="font-display text-[26px] font-semibold leading-[1.15]">
-          Do que você precisa hoje?
-        </h1>
-        <label className="flex h-12 items-center gap-2.5 rounded-3xl bg-papel px-3.5 text-suave">
-          <IconePino size={20} className="text-vinho" />
-          <input
-            type="search"
-            aria-label="Cidade"
-            placeholder="Em qual cidade? Ex.: João Pessoa"
-            value={filtros.cidade ?? ""}
-            onChange={(e) => setFiltros({ ...filtros, cidade: e.target.value })}
-            className="min-w-0 flex-1 bg-transparent text-base text-texto outline-none placeholder:text-suave"
-          />
-        </label>
-      </div>
-
-      <nav aria-label="Serviços" className="flex gap-2 overflow-x-auto px-5 pb-1 pt-3.5">
-        {chips.map((c) => {
-          const on = c.id === filtros.categoriaId;
-          return (
-            <button
-              key={c.id ?? "todos"}
-              type="button"
-              onClick={() => setFiltros({ ...filtros, categoriaId: c.id })}
-              aria-pressed={on}
-              className={`flex h-10 shrink-0 items-center rounded-full px-3.5 text-[13.5px] focus-visible:outline-2 focus-visible:outline-vinho ${
-                on ? "bg-vinho font-bold text-white" : "bg-areia font-medium text-texto"
-              }`}
-            >
-              {c.nome}
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pb-4 pt-2">
-        <div className="flex items-center justify-between gap-2">
-          <Rotulo>{filtros.ordenarPor === "nome" ? "Em ordem alfabética" : "Melhores avaliadas"}</Rotulo>
-          <label className="flex items-center gap-1 text-[13px] text-suave">
-            <span className="sr-only">Ordenar por</span>
-            <select
-              value={filtros.ordenarPor ?? "nota"}
-              onChange={(e) => setFiltros({ ...filtros, ordenarPor: e.target.value as OrdenarPor })}
-              className="min-h-11 rounded-full bg-transparent px-2 text-[13px] font-bold text-vinho"
-            >
-              <option value="nota">Melhor nota</option>
-              <option value="nome">Nome (A–Z)</option>
-            </select>
+      <div className="rounded-b-[28px] bg-rosa pb-4 pt-5 md:pb-7 md:pt-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3.5 px-5">
+          <div className="flex items-center justify-end gap-3 text-[13.5px]">
+            {!perfil ? (
+              <Link href="/entrar" className="inline-block px-1 py-2.5 font-bold text-vinho">
+                Entrar
+              </Link>
+            ) : !perfil.papel ? (
+              <Link href="/onboarding" className="inline-block px-1 py-2.5 font-bold text-vinho">
+                Concluir cadastro
+              </Link>
+            ) : (
+              <span className="truncate py-2.5 text-corpo">
+                Olá, {perfil.nome?.split(" ")[0] ?? "você"}
+              </span>
+            )}
+          </div>
+          <h1 className="font-display text-[26px] font-semibold leading-[1.15] md:text-[34px]">
+            Do que você precisa hoje?
+          </h1>
+          <label className="flex h-12 items-center gap-2.5 rounded-3xl bg-papel px-3.5 text-suave md:max-w-xl">
+            <IconePino size={20} className="text-vinho" />
+            <input
+              type="search"
+              aria-label="Cidade"
+              placeholder="Em qual cidade? Ex.: João Pessoa"
+              value={filtros.cidade ?? ""}
+              onChange={(e) => setFiltros({ ...filtros, cidade: e.target.value })}
+              className="min-w-0 flex-1 bg-transparent text-base text-texto outline-none placeholder:text-suave"
+            />
           </label>
         </div>
+      </div>
 
-        {erro && <Erro mensagem={erro} onTentarDeNovo={() => setTentativa((t) => t + 1)} />}
-        {!erro && prestadoras === null && <Carregando texto="Buscando prestadoras…" />}
+      {/* No computador (lg) os serviços viram uma coluna ao lado da lista. */}
+      <div className="flex min-h-0 flex-1 flex-col md:mx-auto md:w-full md:max-w-6xl lg:flex-row lg:gap-2">
+        <nav
+          aria-label="Serviços"
+          className="flex gap-2 overflow-x-auto px-5 pb-1 pt-3.5 lg:w-60 lg:shrink-0 lg:flex-col lg:self-start lg:overflow-visible lg:pr-0 lg:pt-6"
+        >
+          {chips.map((c) => {
+            const on = c.id === filtros.categoriaId;
+            return (
+              <button
+                key={c.id ?? "todos"}
+                type="button"
+                onClick={() => setFiltros({ ...filtros, categoriaId: c.id })}
+                aria-pressed={on}
+                className={`flex h-10 shrink-0 items-center rounded-full px-3.5 text-[13.5px] lg:h-auto lg:min-h-10 lg:py-2 lg:text-left focus-visible:outline-2 focus-visible:outline-vinho ${
+                  on ? "bg-vinho font-bold text-white" : "bg-areia font-medium text-texto"
+                }`}
+              >
+                {c.nome}
+              </button>
+            );
+          })}
+        </nav>
 
-        <p aria-live="polite" className="sr-only">
-          {prestadoras
-            ? `${prestadoras.length} ${prestadoras.length === 1 ? "prestadora encontrada" : "prestadoras encontradas"}`
-            : ""}
-        </p>
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pb-4 pt-2 md:overflow-visible md:pb-10 lg:pt-6">
+          <div className="flex items-center justify-between gap-2">
+            <Rotulo>{filtros.ordenarPor === "nome" ? "Em ordem alfabética" : "Melhores avaliadas"}</Rotulo>
+            <label className="flex items-center gap-1 text-[13px] text-suave">
+              <span className="sr-only">Ordenar por</span>
+              <select
+                value={filtros.ordenarPor ?? "nota"}
+                onChange={(e) => setFiltros({ ...filtros, ordenarPor: e.target.value as OrdenarPor })}
+                className="min-h-11 rounded-full bg-transparent px-2 text-[13px] font-bold text-vinho"
+              >
+                <option value="nota">Melhor nota</option>
+                <option value="nome">Nome (A–Z)</option>
+              </select>
+            </label>
+          </div>
 
-        {prestadoras?.length === 0 && (
-          <Vazio>
-            {temFiltro ? (
-              <>
-                Nenhuma prestadora encontrada com esses filtros.{" "}
-                <button
-                  type="button"
-                  onClick={() => setFiltros({ ordenarPor: filtros.ordenarPor })}
-                  className="font-bold text-vinho underline"
-                >
-                  Limpar filtros
-                </button>
-              </>
-            ) : (
-              "Ainda não há prestadoras cadastradas."
-            )}
-          </Vazio>
-        )}
+          {erro && <Erro mensagem={erro} onTentarDeNovo={() => setTentativa((t) => t + 1)} />}
+          {!erro && prestadoras === null && <Carregando texto="Buscando prestadoras…" />}
 
-        {prestadoras && prestadoras.length > 0 && (
-          <ul className="flex flex-col gap-3">
-            {prestadoras.map((p, i) => (
-              <li key={p.id}>
-                <Link
-                  href={`/prestadoras/${p.id}`}
-                  className="flex w-full items-center gap-3 rounded-[20px] border border-borda bg-papel p-3.5 focus-visible:outline-2 focus-visible:outline-vinho active:bg-rosa-claro"
-                >
-                  <Avatar nome={p.nome} url={p.avatarUrl} tamanho={52} fundo={tomDaPosicao(i)} />
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <b className="truncate text-base">{p.nome}</b>
-                    <span className="truncate text-[13.5px] text-suave">
-                      {linhaServicoCidade(p.categorias, p.cidade)}
-                    </span>
-                    <span className="text-[13px] text-suave">
-                      {p.totalAvaliacoes === 0
-                        ? "Sem avaliações ainda"
-                        : `${p.totalAvaliacoes} ${p.totalAvaliacoes === 1 ? "avaliação pública" : "avaliações públicas"}`}
-                    </span>
-                  </div>
-                  <SeloNota nota={p.notaMedia} total={p.totalAvaliacoes} />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+          <p aria-live="polite" className="sr-only">
+            {prestadoras
+              ? `${prestadoras.length} ${prestadoras.length === 1 ? "prestadora encontrada" : "prestadoras encontradas"}`
+              : ""}
+          </p>
+
+          {prestadoras?.length === 0 && (
+            <Vazio>
+              {temFiltro ? (
+                <>
+                  Nenhuma prestadora encontrada com esses filtros.{" "}
+                  <button
+                    type="button"
+                    onClick={() => setFiltros({ ordenarPor: filtros.ordenarPor })}
+                    className="font-bold text-vinho underline"
+                  >
+                    Limpar filtros
+                  </button>
+                </>
+              ) : (
+                "Ainda não há prestadoras cadastradas."
+              )}
+            </Vazio>
+          )}
+
+          {prestadoras && prestadoras.length > 0 && (
+            <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {prestadoras.map((p, i) => (
+                <li key={p.id}>
+                  <Link
+                    href={`/prestadoras/${p.id}`}
+                    className="flex h-full w-full items-center gap-3 rounded-[20px] border border-borda bg-papel p-3.5 hover:border-vinho/40 focus-visible:outline-2 focus-visible:outline-vinho active:bg-rosa-claro"
+                  >
+                    <Avatar nome={p.nome} url={p.avatarUrl} tamanho={52} fundo={tomDaPosicao(i)} />
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <b className="truncate text-base">{p.nome}</b>
+                      <span className="truncate text-[13.5px] text-suave">
+                        {linhaServicoCidade(p.categorias, p.cidade)}
+                      </span>
+                      <span className="text-[13px] text-suave">
+                        {p.totalAvaliacoes === 0
+                          ? "Sem avaliações ainda"
+                          : `${p.totalAvaliacoes} ${p.totalAvaliacoes === 1 ? "avaliação pública" : "avaliações públicas"}`}
+                      </span>
+                    </div>
+                    <SeloNota nota={p.notaMedia} total={p.totalAvaliacoes} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </>
   );

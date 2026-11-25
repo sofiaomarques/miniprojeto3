@@ -1,7 +1,7 @@
 // Página inicial = busca de prestadoras. A sessão é lida no servidor (para o
 // "Entrar"/"Olá" não piscar); a busca em si roda no navegador.
 import { BuscaPrestadoras } from "@/components/descoberta/BuscaPrestadoras";
-import { BarraAbas, Tela } from "@/components/rede/Tela";
+import { BarraAbas, BarraTopo, Tela } from "@/components/rede/Tela";
 import type { FiltrosBusca } from "@/lib/descoberta/types";
 import { perfilOuNull } from "@/lib/rede/sessao";
 
@@ -21,10 +21,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const filtros = lerFiltros(params);
 
   return (
-    <Tela className="h-dvh">
+    // No celular a tela tem a altura da janela e só a lista rola; no computador a página rola.
+    <Tela largura="larga" className="h-dvh md:h-auto">
+      <BarraTopo ativa="buscar" />
       {/* key: uma navegação para outros filtros (ex.: aba "Buscar" -> "/") recria a busca. */}
       <BuscaPrestadoras key={JSON.stringify(filtros)} perfil={perfil} filtrosIniciais={filtros} />
-      <BarraAbas ativa="buscar" />
+      <BarraAbas ativa="buscar" className="md:hidden" />
     </Tela>
   );
 }
