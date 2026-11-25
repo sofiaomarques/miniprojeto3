@@ -147,7 +147,9 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
         {!erro && prestadoras === null && <Carregando texto="Buscando prestadoras…" />}
 
         <p aria-live="polite" className="sr-only">
-          {prestadoras ? `${prestadoras.length} prestadoras encontradas` : ""}
+          {prestadoras
+            ? `${prestadoras.length} ${prestadoras.length === 1 ? "prestadora encontrada" : "prestadoras encontradas"}`
+            : ""}
         </p>
 
         {prestadoras?.length === 0 && (

@@ -8,7 +8,10 @@ import {
   ID_PRESTADORA_ALINE,
   ID_PRESTADORA_CAMILA,
   ID_PRESTADORA_MARINA,
+  ID_SEM_PAPEL,
+  definirUsuariaMock,
   redefinirMocks,
+  servicoMock,
 } from "@/lib/identidade/mocks";
 
 import * as mock from "../service-mock";
@@ -62,6 +65,25 @@ describe("página da prestadora (mock)", () => {
     await expect(
       mock.criarAvaliacao(ID_CLIENTE_BEATRIZ, { prestadoraId: ID_PRESTADORA_CAMILA, nota: 5 }),
     ).rejects.toThrow();
+  });
+});
+
+describe("contas criadas no onboarding (mock)", () => {
+  it("quem vira cliente consegue avaliar", async () => {
+    definirUsuariaMock(ID_SEM_PAPEL);
+    await servicoMock.escolherMeuPapel("cliente", "Nova Cliente");
+    const nova = await mock.criarAvaliacao(ID_SEM_PAPEL, {
+      prestadoraId: ID_PRESTADORA_MARINA,
+      nota: 5,
+    });
+    expect(nova.clienteNome).toBe("Nova Cliente");
+  });
+
+  it("quem vira prestadora aparece na busca", async () => {
+    definirUsuariaMock(ID_SEM_PAPEL);
+    await servicoMock.escolherMeuPapel("prestadora", "Nova Prestadora");
+    const lista = await mock.buscarPrestadoras({});
+    expect(lista.map((p) => p.id)).toContain(ID_SEM_PAPEL);
   });
 });
 

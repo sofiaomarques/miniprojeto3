@@ -23,7 +23,7 @@ export type ConversaMock = {
 
 export const CONVERSAS_MOCK: readonly ConversaMock[] = [
   // id 1 = Beatriz × Marina: é a conversa que o botão "Conversar" da P2 abre
-  // no mock (lib/descoberta/conversa.ts devolve { id: 1 }).
+  // no mock quando Beatriz está logada (iniciarConversa devolve a existente).
   {
     id: 1,
     clienteId: ID_CLIENTE_BEATRIZ,
