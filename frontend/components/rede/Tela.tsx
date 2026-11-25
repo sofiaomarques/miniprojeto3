@@ -3,17 +3,21 @@ import Link from "next/link";
 import { IconeBusca, IconeCasa, IconeChat, IconePessoa } from "./icones";
 
 // Coluna de celular centralizada; no desktop vira um "aparelho" no meio da página.
+// Com largura="larga", a partir de md a coluna ocupa a página toda e cada tela
+// limita o próprio conteúdo (ex.: max-w-6xl). Só a busca e a prestadora usam.
 export function Tela({
   children,
   className = "",
+  largura = "celular",
 }: {
   children: React.ReactNode;
   className?: string;
+  largura?: "celular" | "larga";
 }) {
+  const classeLargura =
+    largura === "larga" ? "max-w-[430px] shadow-xl md:max-w-none md:shadow-none" : "max-w-[430px] shadow-xl";
   return (
-    <div
-      className={`mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-crema shadow-xl ${className}`}
-    >
+    <div className={`mx-auto flex min-h-dvh w-full flex-col bg-crema ${classeLargura} ${className}`}>
       {children}
     </div>
   );
