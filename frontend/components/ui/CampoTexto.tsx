@@ -17,8 +17,8 @@ export function CampoTexto({ rotulo, erro, dica, id, className = "", ...resto }:
   const descricao = [idDica, idErro].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className="space-y-1">
-      <label htmlFor={idCampo} className="block text-sm font-medium text-zinc-800">
+    <div className="flex flex-col gap-1">
+      <label htmlFor={idCampo} className="block text-[13.5px] font-medium text-texto">
         {rotulo}
       </label>
       <input
@@ -26,22 +26,22 @@ export function CampoTexto({ rotulo, erro, dica, id, className = "", ...resto }:
         aria-invalid={erro ? true : undefined}
         aria-describedby={descricao}
         className={[
-          "block w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-900",
-          "placeholder:text-zinc-400 focus:outline-2 focus:outline-offset-0",
+          "block h-[46px] w-full rounded-[14px] border bg-papel px-3.5 text-[15px] text-texto",
+          "placeholder:text-suave focus:outline-2 focus:outline-offset-0",
           erro
-            ? "border-red-500 focus:outline-red-500"
-            : "border-zinc-300 focus:outline-zinc-900",
+            ? "border-red-600 focus:outline-red-600"
+            : "border-campo focus:outline-vinho",
           className,
         ].join(" ")}
         {...resto}
       />
       {dica && (
-        <p id={idDica} className="text-xs text-zinc-500">
+        <p id={idDica} className="text-xs text-suave">
           {dica}
         </p>
       )}
       {erro && (
-        <p id={idErro} className="text-xs text-red-600">
+        <p id={idErro} className="text-xs font-medium text-red-700">
           {erro}
         </p>
       )}

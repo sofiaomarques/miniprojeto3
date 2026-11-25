@@ -12,9 +12,9 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const ESTILOS: Record<Variante, string> = {
-  primario: "bg-zinc-900 text-white hover:bg-zinc-700",
-  secundario: "border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-100",
-  texto: "text-zinc-600 underline-offset-4 hover:text-zinc-900 hover:underline",
+  primario: "bg-vinho text-white hover:bg-vinho-escuro",
+  secundario: "border border-campo bg-papel text-texto hover:bg-areia",
+  texto: "font-bold text-vinho underline-offset-4 hover:underline",
 };
 
 export function Botao({
@@ -31,7 +31,7 @@ export function Botao({
   const base =
     variante === "texto"
       ? "text-sm"
-      : "rounded-md px-4 py-2 text-sm font-medium transition-colors";
+      : "inline-flex h-[52px] items-center justify-center gap-2 rounded-full px-6 text-base font-bold transition-colors";
   return (
     <button
       type={type}
@@ -41,7 +41,7 @@ export function Botao({
         base,
         ESTILOS[variante],
         larguraTotal ? "w-full" : "",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vinho",
         "disabled:cursor-not-allowed disabled:opacity-60",
         className,
       ].join(" ")}
