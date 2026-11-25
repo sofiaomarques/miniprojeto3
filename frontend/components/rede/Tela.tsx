@@ -75,11 +75,15 @@ const ABAS = [
   { id: "perfil", rotulo: "Perfil", href: "/perfil", Icone: IconePessoa },
 ] as const;
 
-export function BarraAbas({ ativa }: { ativa: (typeof ABAS)[number]["id"] }) {
+type Aba = (typeof ABAS)[number]["id"];
+
+// Barra de abas de baixo, do celular. Nas telas largas, passe className="md:hidden"
+// e use a BarraTopo no lugar.
+export function BarraAbas({ ativa, className = "" }: { ativa: Aba; className?: string }) {
   return (
     <nav
       aria-label="Principal"
-      className="flex border-t border-borda bg-papel px-5 pb-5 pt-2.5"
+      className={`flex border-t border-borda bg-papel px-5 pb-5 pt-2.5 ${className}`}
     >
       {ABAS.map(({ id, rotulo, href, Icone }) => {
         const on = id === ativa;
@@ -98,6 +102,38 @@ export function BarraAbas({ ativa }: { ativa: (typeof ABAS)[number]["id"] }) {
         );
       })}
     </nav>
+  );
+}
+
+// Navegação do computador (a partir de md): marca à esquerda e as mesmas abas
+// da BarraAbas no topo. No celular fica escondida.
+export function BarraTopo({ ativa }: { ativa?: Aba }) {
+  return (
+    <header className="sticky top-0 z-10 hidden border-b border-borda bg-papel md:block">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-5 py-2.5">
+        <Link href="/" aria-label="Rede de Mulheres, ir para a busca" className="rounded-full">
+          <Marca />
+        </Link>
+        <nav aria-label="Principal" className="flex gap-1">
+          {ABAS.map(({ id, rotulo, href, Icone }) => {
+            const on = id === ativa;
+            return (
+              <Link
+                key={id}
+                href={href}
+                aria-current={on ? "page" : undefined}
+                className={`flex min-h-11 items-center gap-2 rounded-full px-4 text-[14.5px] focus-visible:outline-2 focus-visible:outline-vinho ${
+                  on ? "bg-rosa font-bold text-vinho" : "font-medium text-suave hover:bg-rosa-claro"
+                }`}
+              >
+                <Icone />
+                {rotulo}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+    </header>
   );
 }
 
