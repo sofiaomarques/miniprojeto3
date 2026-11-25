@@ -9,7 +9,13 @@
 import { usarMocks } from "@/lib/supabase/config";
 import * as mock from "./service-mock";
 import * as real from "./service-supabase";
-import { type Conversa, LIMITE_TEXTO_MENSAGEM, type Mensagem } from "./types";
+import {
+  type AoChegarMensagem,
+  type CancelarAssinatura,
+  type Conversa,
+  LIMITE_TEXTO_MENSAGEM,
+  type Mensagem,
+} from "./types";
 
 const impl = usarMocks ? mock : real;
 
@@ -60,6 +66,18 @@ export function iniciarConversa(prestadoraId: string): Promise<Conversa> {
 // Marca como lidas as mensagens recebidas na conversa; devolve quantas.
 export function marcarLidas(conversaId: number): Promise<number> {
   return impl.marcarLidas(conversaId);
+}
+
+// Tempo real (#37): chama aoChegar a cada mensagem nova da conversa (inclusive
+// as enviadas pela própria usuária; use juntarMensagens para não duplicar).
+// Devolve a função que cancela a assinatura. ultimoIdConhecido = maior id já
+// na tela, para a recuperação e o plano B não repetirem mensagens antigas.
+export function assinarMensagens(
+  conversaId: number,
+  ultimoIdConhecido: number,
+  aoChegar: AoChegarMensagem,
+): CancelarAssinatura {
+  return impl.assinarMensagens(conversaId, ultimoIdConhecido, aoChegar);
 }
 
 // Total de mensagens não lidas da usuária (para o <UnreadBadge />).
