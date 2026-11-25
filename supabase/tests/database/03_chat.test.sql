@@ -41,6 +41,8 @@ select is(
 select has_function('public', 'iniciar_conversa', array['uuid'], 'iniciar_conversa(uuid) existe');
 select has_function('public', 'marcar_lidas', array['bigint'], 'marcar_lidas(bigint) existe');
 select has_function('public', 'nao_lidas', 'nao_lidas() existe');
+select has_function('public', 'participantes_das_minhas_conversas', 'participantes_das_minhas_conversas() existe');
+select ok(exists (select 1 from pg_indexes where schemaname = 'public' and indexname = 'mensagens_autor_id_idx'), 'índice em mensagens.autor_id');
 
 -- ---------------------------------------------------------------------------
 -- 2. GRANTs mínimos
@@ -53,6 +55,7 @@ select ok(not has_table_privilege('authenticated', 'public.conversas', 'insert')
 select ok(not has_column_privilege('authenticated', 'public.mensagens', 'criada_em', 'insert'), 'app não escolhe criada_em');
 select ok(not has_column_privilege('authenticated', 'public.mensagens', 'lida_em', 'insert'), 'app não escolhe lida_em');
 select ok(not has_function_privilege('anon', 'public.iniciar_conversa(uuid)', 'execute'), 'anon não executa iniciar_conversa');
+select ok(not has_function_privilege('anon', 'public.participantes_das_minhas_conversas()', 'execute'), 'anon não executa participantes_das_minhas_conversas');
 
 -- ---------------------------------------------------------------------------
 -- 3. iniciar_conversa (como a cliente A)
@@ -182,6 +185,10 @@ select is(
   0::bigint,
   'outra cliente não vê o perfil da cliente da conversa'
 );
+select is_empty(
+  $$ select 1 from public.participantes_das_minhas_conversas() $$,
+  'outra cliente não recebe participantes de conversas dos outros'
+);
 reset role;
 
 -- id da conversa A–P, lido como admin, para os próximos testes
@@ -222,10 +229,14 @@ select is((select nao_lidas from public.conversas_resumo), 1, 'resumo conta 1 n�
 
 select set_config('request.jwt.claims', '{"sub": "c0000000-0000-0000-0000-000000000003", "role": "authenticated"}', true);
 select is(public.nao_lidas(), 2, 'prestadora tem 2 não lidas');
+select is_empty(
+  $$ select 1 from public.perfis where id = 'a0000000-0000-0000-0000-000000000001' $$,
+  'com conversa, prestadora ainda não lê o perfil da cliente direto'
+);
 select is(
-  (select nome from public.perfis where id = 'a0000000-0000-0000-0000-000000000001'),
-  'Ana',
-  'com conversa, prestadora vê o perfil da cliente'
+  (select array[nome, avatar_url] from public.participantes_das_minhas_conversas() where id = 'a0000000-0000-0000-0000-000000000001'),
+  array['Ana', null],
+  'prestadora recebe só nome e avatar da cliente da conversa'
 );
 select is((select count(*) from public.conversas_resumo), 1::bigint, 'conversa aparece na lista da prestadora');
 select is((select outra_nome from public.conversas_resumo), 'Ana', 'resumo da prestadora mostra a cliente');

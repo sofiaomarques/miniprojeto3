@@ -50,6 +50,8 @@ create table public.mensagens (
 
 create index mensagens_conversa_criada_idx on public.mensagens (conversa_id, criada_em);
 create index mensagens_nao_lidas_idx on public.mensagens (conversa_id) where lida_em is null;
+-- FK sem índice: o on delete cascade de uma conta varreria a tabela toda.
+create index mensagens_autor_id_idx on public.mensagens (autor_id);
 
 -- ===========================================================================
 -- Funções auxiliares
@@ -116,20 +118,27 @@ create policy mensagens_insert_da_autora on public.mensagens
 
 -- Sem policy de update/delete em mensagens: só marcar_lidas() muda lida_em.
 
--- Na 01, perfis de cliente só são visíveis para a própria dona. Quem conversa
--- precisa ver a outra participante (nome e avatar na lista), então esta
--- policy libera o perfil de quem divide uma conversa com a usuária logada.
--- Policies de select somam (OR) com a perfis_leitura_publica da 01.
--- Sem recursão: a policy de conversas não lê perfis.
-create policy perfis_leitura_por_conversa on public.perfis
-  for select to authenticated
-  using (
-    exists (
-      select 1 from public.conversas c
-      where (select auth.uid()) in (c.cliente_id, c.prestadora_id)
-        and perfis.id in (c.cliente_id, c.prestadora_id)
-    )
+-- Na 01, perfis de cliente só são visíveis para a própria dona. A lista de
+-- conversas precisa do nome e do avatar da outra participante, mas não do
+-- resto do perfil (bio, cidade...). Por isso não há policy nova em perfis:
+-- esta função devolve só essas colunas, e só de quem divide uma conversa com
+-- a usuária logada. É security definer para passar pela RLS de perfis; a
+-- view conversas_resumo usa ela no join.
+create function public.participantes_das_minhas_conversas()
+returns table (id uuid, nome text, avatar_url text, papel text)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.id, p.nome, p.avatar_url, p.papel
+  from public.perfis p
+  where exists (
+    select 1 from public.conversas c
+    where (select auth.uid()) in (c.cliente_id, c.prestadora_id)
+      and p.id in (c.cliente_id, c.prestadora_id)
   );
+$$;
 
 -- ===========================================================================
 -- RPCs
@@ -221,9 +230,10 @@ $$;
 --   outra_*: a outra participante (nome e avatar na lista)
 --   ultima_mensagem_*: prévia na lista
 --   nao_lidas: mensagens recebidas ainda não lidas nesta conversa
--- security_invoker: a view respeita a RLS de conversas, mensagens e perfis.
--- left join: se a RLS esconder o perfil, a conversa continua na lista (sem
--- nome); outra_id vem da conversa, então nunca é null.
+-- security_invoker: a view respeita a RLS de conversas e mensagens. O perfil
+-- da outra vem de participantes_das_minhas_conversas() (só nome, avatar e
+-- papel). left join: sem perfil, a conversa continua na lista (sem nome);
+-- outra_id vem da conversa, então nunca é null.
 -- ===========================================================================
 create view public.conversas_resumo
 with (security_invoker = true) as
@@ -242,7 +252,7 @@ select
   u.autor_id       as ultima_mensagem_autor_id,
   coalesce(n.nao_lidas, 0) as nao_lidas
 from public.conversas c
-left join public.perfis outra
+left join public.participantes_das_minhas_conversas() outra
   on outra.id = case when c.cliente_id = (select auth.uid())
                      then c.prestadora_id else c.cliente_id end
 left join lateral (
@@ -278,10 +288,12 @@ revoke all on function public.participa_da_conversa(bigint) from public, anon;
 revoke all on function public.iniciar_conversa(uuid)        from public, anon;
 revoke all on function public.marcar_lidas(bigint)          from public, anon;
 revoke all on function public.nao_lidas()                   from public, anon;
+revoke all on function public.participantes_das_minhas_conversas() from public, anon;
 grant execute on function public.participa_da_conversa(bigint) to authenticated;
 grant execute on function public.iniciar_conversa(uuid)        to authenticated;
 grant execute on function public.marcar_lidas(bigint)          to authenticated;
 grant execute on function public.nao_lidas()                   to authenticated;
+grant execute on function public.participantes_das_minhas_conversas() to authenticated;
 
 -- ===========================================================================
 -- Realtime (respeita a RLS de select de cada tabela)
