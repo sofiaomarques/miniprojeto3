@@ -42,6 +42,11 @@ select has_function('public', 'iniciar_conversa', array['uuid'], 'iniciar_conver
 select has_function('public', 'marcar_lidas', array['bigint'], 'marcar_lidas(bigint) existe');
 select has_function('public', 'nao_lidas', 'nao_lidas() existe');
 select has_function('public', 'participantes_das_minhas_conversas', 'participantes_das_minhas_conversas() existe');
+select is(
+  pg_get_function_result('public.participantes_das_minhas_conversas()'::regprocedure),
+  'TABLE(id uuid, nome text, avatar_url text, papel text)',
+  'participantes_das_minhas_conversas() devolve só id, nome, avatar_url e papel'
+);
 select ok(exists (select 1 from pg_indexes where schemaname = 'public' and indexname = 'mensagens_autor_id_idx'), 'índice em mensagens.autor_id');
 
 -- ---------------------------------------------------------------------------
