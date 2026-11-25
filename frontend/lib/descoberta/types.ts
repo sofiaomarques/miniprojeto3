@@ -1,6 +1,7 @@
 // Contrato da área de descoberta (P2). Datas em ISO 8601 UTC.
-// Os nomes espelham a migration 02_descoberta.sql, em camelCase.
-import type { FotoPortfolio, Perfil } from "./identidade-provisoria";
+// Os nomes espelham a migration 02_descoberta.sql, em camelCase. Perfil e
+// FotoPortfolio são da identidade (P1), com os nomes de coluna do banco.
+import type { FotoPortfolio, Perfil } from "@/lib/identidade/types";
 
 export type CategoriaResumo = {
   id: number;

@@ -84,7 +84,7 @@ export function FormularioAvaliacao({ prestadoraId, clienteId, existente, onSalv
               onClick={() => setNota(valor)}
               aria-pressed={nota === valor}
               aria-label={`${valor} ${valor === 1 ? "estrela" : "estrelas"}`}
-              className={`text-3xl leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-zinc-900 ${
+              className={`flex h-11 w-11 items-center justify-center text-3xl leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-zinc-900 ${
                 valor <= nota ? "text-amber-500" : "text-zinc-300"
               }`}
             >
@@ -105,7 +105,7 @@ export function FormularioAvaliacao({ prestadoraId, clienteId, existente, onSalv
           maxLength={LIMITE_COMENTARIO}
           rows={3}
           disabled={ocupada}
-          className="w-full rounded border border-zinc-300 p-2 text-sm"
+          className="w-full rounded border border-zinc-300 p-2 text-base sm:text-sm"
         />
         <p className="text-right text-xs text-zinc-500">
           {comentario.length}/{LIMITE_COMENTARIO}
@@ -123,20 +123,20 @@ export function FormularioAvaliacao({ prestadoraId, clienteId, existente, onSalv
         </p>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <button
           type="submit"
           disabled={ocupada}
-          className="rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="min-h-11 rounded bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {ocupada ? "Salvando..." : existente ? "Salvar alterações" : "Enviar avaliação"}
+          {ocupada ? "Salvando…" : existente ? "Salvar alterações" : "Enviar avaliação"}
         </button>
         {existente && (
           <button
             type="button"
             onClick={apagar}
             disabled={ocupada}
-            className="rounded border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-11 rounded border border-red-300 px-4 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Apagar
           </button>

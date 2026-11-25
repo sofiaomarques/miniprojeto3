@@ -3,39 +3,41 @@
 // componente ListaIndicacoes, que a P1 também usa no perfil da cliente (#18).
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
+import { Carregando, Vazio } from "@/components/descoberta/Estados";
 import { ListaIndicacoes } from "@/components/descoberta/ListaIndicacoes";
-import { usuarioAtualId } from "@/lib/descoberta/sessao";
+import { useMeuPerfil } from "@/components/descoberta/useMeuPerfil";
 
 export default function MinhasIndicacoesPage() {
-  // undefined = descobrindo quem está logada; null = ninguém logada.
-  const [clienteId, setClienteId] = useState<string | null | undefined>(undefined);
-
-  useEffect(() => {
-    usuarioAtualId().then(setClienteId, () => setClienteId(null));
-  }, []);
+  const usuaria = useMeuPerfil();
 
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Minhas indicações</h1>
-      {clienteId === undefined && (
-        <p role="status" className="text-sm text-zinc-600">
-          Carregando...
-        </p>
-      )}
-      {clienteId === null && (
-        <p className="rounded border bg-white p-4 text-sm text-zinc-600">
+      {usuaria === undefined && <Carregando texto="Carregando…" linhas={2} />}
+      {usuaria === null && (
+        <Vazio>
           Entre na sua conta para ver suas indicações.{" "}
           <Link
             href={`/entrar?next=${encodeURIComponent("/minhas-indicacoes")}`}
-            className="underline"
+            className="font-medium underline"
           >
             Entrar
           </Link>
-        </p>
+        </Vazio>
       )}
-      {clienteId && <ListaIndicacoes clienteId={clienteId} editavel />}
+      {usuaria?.papel === "prestadora" && (
+        <Vazio>Indicações são as avaliações que clientes fazem. Contas de prestadora não avaliam.</Vazio>
+      )}
+      {usuaria && usuaria.papel === null && (
+        <Vazio>
+          <Link href="/onboarding" className="font-medium underline">
+            Conclua seu cadastro
+          </Link>{" "}
+          para avaliar prestadoras.
+        </Vazio>
+      )}
+      {usuaria?.papel === "cliente" && <ListaIndicacoes clienteId={usuaria.id} editavel />}
     </div>
   );
 }

@@ -14,6 +14,10 @@ import {
 } from "@/lib/descoberta/service";
 import type { Avaliacao } from "@/lib/descoberta/types";
 
+import { Avatar } from "./Avatar";
+import { NotaAvaliacao } from "./Estrelas";
+import { Carregando, Erro, Vazio } from "./Estados";
+
 type Props = { clienteId: string; editavel?: boolean };
 
 export function ListaIndicacoes({ clienteId, editavel = false }: Props) {
@@ -90,37 +94,24 @@ export function ListaIndicacoes({ clienteId, editavel = false }: Props) {
 
   if (indicacoes === null && !erro) {
     return (
-      <p role="status" className="text-sm text-zinc-600">
-        {editavel ? "Carregando suas indicações..." : "Carregando indicações..."}
-      </p>
+      <Carregando
+        texto={editavel ? "Carregando suas indicações…" : "Carregando indicações…"}
+        linhas={2}
+      />
     );
   }
 
   return (
     <div className="space-y-3">
       {erro && (
-        <p
-          role="alert"
-          className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700"
-        >
-          {erro}
-          {indicacoes === null && (
-            <>
-              {" "}
-              <button
-                type="button"
-                onClick={() => setTentativa((t) => t + 1)}
-                className="underline"
-              >
-                Tentar de novo
-              </button>
-            </>
-          )}
-        </p>
+        <Erro
+          mensagem={erro}
+          onTentarDeNovo={indicacoes === null ? () => setTentativa((t) => t + 1) : undefined}
+        />
       )}
 
       {indicacoes?.length === 0 && (
-        <p className="rounded border bg-white p-4 text-sm text-zinc-600">
+        <Vazio>
           {editavel ? (
             <>
               Você ainda não avaliou ninguém.{" "}
@@ -131,7 +122,7 @@ export function ListaIndicacoes({ clienteId, editavel = false }: Props) {
           ) : (
             "Nenhuma indicação ainda."
           )}
-        </p>
+        </Vazio>
       )}
 
       {indicacoes && indicacoes.length > 0 && (
@@ -143,19 +134,8 @@ export function ListaIndicacoes({ clienteId, editavel = false }: Props) {
                   href={`/prestadoras/${a.prestadoraId}`}
                   className="flex min-w-0 items-center gap-3 hover:underline"
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 font-semibold">
-                    {a.prestadoraAvatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={a.prestadoraAvatarUrl}
-                        alt=""
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      a.prestadoraNome[0]?.toUpperCase()
-                    )}
-                  </span>
-                  <span className="truncate font-medium">{a.prestadoraNome}</span>
+                  <Avatar nome={a.prestadoraNome} url={a.prestadoraAvatarUrl} tamanho="p" />
+                  <span className="truncate font-medium">{a.prestadoraNome || "Prestadora"}</span>
                 </Link>
                 <time dateTime={a.criadaEm} className="shrink-0 text-xs text-zinc-500">
                   {new Date(a.criadaEm).toLocaleDateString("pt-BR")}
@@ -175,7 +155,7 @@ export function ListaIndicacoes({ clienteId, editavel = false }: Props) {
                     <select
                       value={nota}
                       onChange={(e) => setNota(Number(e.target.value))}
-                      className="ml-2 rounded border px-2 py-1"
+                      className="ml-2 min-h-11 rounded border bg-white px-2 text-base sm:min-h-0 sm:py-1 sm:text-sm"
                     >
                       {[5, 4, 3, 2, 1].map((n) => (
                         <option key={n} value={n}>
@@ -190,22 +170,23 @@ export function ListaIndicacoes({ clienteId, editavel = false }: Props) {
                       value={comentario}
                       onChange={(e) => setComentario(e.target.value)}
                       rows={3}
-                      className="mt-1 w-full rounded border px-2 py-1"
+                      maxLength={1000}
+                      className="mt-1 w-full rounded border px-2 py-1 text-base sm:text-sm"
                     />
                   </label>
                   <div className="flex gap-2">
                     <button
                       type="submit"
                       disabled={ocupada}
-                      className="rounded bg-zinc-900 px-3 py-1 text-sm text-white disabled:opacity-50"
+                      className="min-h-11 rounded bg-zinc-900 px-4 text-sm text-white disabled:opacity-50 sm:min-h-0 sm:py-1.5"
                     >
-                      Salvar
+                      {ocupada ? "Salvando…" : "Salvar"}
                     </button>
                     <button
                       type="button"
                       disabled={ocupada}
                       onClick={() => setEditandoId(null)}
-                      className="rounded border px-3 py-1 text-sm"
+                      className="min-h-11 rounded border bg-white px-4 text-sm sm:min-h-0 sm:py-1.5"
                     >
                       Cancelar
                     </button>
@@ -213,18 +194,19 @@ export function ListaIndicacoes({ clienteId, editavel = false }: Props) {
                 </form>
               ) : (
                 <>
-                  <p role="img" aria-label={`${a.nota} de 5 estrelas`} className="text-amber-500">
-                    {"★".repeat(a.nota)}
-                    <span className="text-zinc-300">{"★".repeat(5 - a.nota)}</span>
-                  </p>
-                  {a.comentario && <p className="text-sm text-zinc-700">{a.comentario}</p>}
+                  <NotaAvaliacao nota={a.nota} />
+                  {a.comentario && (
+                    <p className="whitespace-pre-line break-words text-sm text-zinc-700">
+                      {a.comentario}
+                    </p>
+                  )}
                   {editavel && (
-                    <div className="flex gap-3 text-sm">
+                    <div className="flex gap-1 text-sm">
                       <button
                         type="button"
                         disabled={ocupada}
                         onClick={() => comecarEdicao(a)}
-                        className="underline disabled:opacity-50"
+                        className="min-h-11 px-2 underline disabled:opacity-50 sm:min-h-0 sm:py-1"
                       >
                         Editar
                       </button>
@@ -232,7 +214,7 @@ export function ListaIndicacoes({ clienteId, editavel = false }: Props) {
                         type="button"
                         disabled={ocupada}
                         onClick={() => void apagar(a)}
-                        className="text-red-700 underline disabled:opacity-50"
+                        className="min-h-11 px-2 text-red-700 underline disabled:opacity-50 sm:min-h-0 sm:py-1"
                       >
                         Apagar
                       </button>
