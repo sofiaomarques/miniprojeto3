@@ -33,9 +33,9 @@ export function FormularioCadastro() {
     return (
       <div className="space-y-4">
         <Aviso tipo="sucesso">{estado.sucesso}</Aviso>
-        <p className="text-sm text-zinc-600">
+        <p className="text-[14.5px] text-suave">
           Já confirmou?{" "}
-          <Link href="/entrar" className="font-medium text-zinc-900 underline">
+          <Link href="/entrar" className="font-bold text-vinho">
             Entrar
           </Link>
         </p>
