@@ -1,6 +1,6 @@
-// Edição do próprio perfil (#16). Página nova ao lado do /perfil do #53, que
-// continua igual: ela só ganha o link "Editar perfil". A página só compõe;
-// as regras ficam em lib/identidade (service.ts e perfil.ts).
+// Edição do próprio perfil (#16), aberta pelo botão "Editar perfil" do
+// /perfil. A página só compõe; as regras ficam em lib/identidade (service.ts
+// e perfil.ts).
 import Link from "next/link";
 
 import { CampoAvatar } from "@/components/identidade/CampoAvatar";

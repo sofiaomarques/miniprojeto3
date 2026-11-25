@@ -1,6 +1,6 @@
-// Fotos dos trabalhos da prestadora (#17). Página nova ao lado do /perfil do
-// #53, no mesmo visual; o /perfil só ganha um link para cá. A página só
-// compõe: regras em lib/identidade, galeria em components/identidade.
+// Fotos dos trabalhos da prestadora (#17), aberta pelo botão "Minhas fotos"
+// do /perfil. A página só compõe: regras em lib/identidade, galeria em
+// components/identidade.
 import Link from "next/link";
 
 import { GaleriaEditavel } from "@/components/identidade/GaleriaEditavel";
