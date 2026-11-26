@@ -113,7 +113,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:gap-7">
         <nav
           aria-label="Serviços"
-          className="flex gap-2 overflow-x-auto px-5 pb-1 pt-3.5 md:px-0 lg:w-56 lg:shrink-0 lg:flex-col lg:self-start lg:overflow-visible lg:pt-6"
+          className="flex gap-2 overflow-x-auto px-5 pb-1 pt-3.5 md:px-0 lg:w-56 lg:shrink-0 lg:sticky lg:top-16 lg:flex-col lg:self-start lg:overflow-visible lg:pt-6"
         >
           {chips.map((c) => {
             const on = c.id === filtros.categoriaId;
@@ -178,7 +178,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
           )}
 
           {prestadoras && prestadoras.length > 0 && (
-            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {prestadoras.map((p, i) => (
                 <li key={p.id}>
                   <Link

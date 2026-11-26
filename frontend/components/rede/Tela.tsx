@@ -5,7 +5,8 @@ import { IconeBusca, IconeCasa, IconeChat, IconePessoa } from "./icones";
 // Moldura de todas as telas, responsiva por padrão. No celular é uma coluna
 // de tela cheia. A partir de md ocupa a página toda: cada faixa (cabeçalho rosa,
 // barra de abas, conteúdo) vai de ponta a ponta, com o conteúdo centralizado em
-// até 72rem (regra .tela em globals.css). Telas de formulário passam
+// até 72rem (regra .tela em globals.css, que vence o md:px-* dos filhos
+// diretos). Telas de formulário passam
 // estreita: no computador viram um cartão centralizado, que não estica.
 export function Tela({
   children,
