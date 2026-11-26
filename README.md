@@ -24,25 +24,30 @@ Este é o treino final antes do hackathon de novembro.
 
 ## Como começar
 
-Instalem as dependências uma vez:
+Este projeto não usa o backend FastAPI do modelo (`backend/`): o front fala
+direto com o Supabase, e a RLS do banco protege os dados (ver a seção Deploy
+do [DECISIONS.md](DECISIONS.md)). Por isso `make check`, `make dev-back`, `make seed` e
+`make test` não se aplicam.
+
+Instalem as dependências uma vez (Node 22 ou mais novo):
 
 ```bash
-cd backend && uv sync && cd ..
 cd frontend && npm install && cp .env.local.example .env.local && cd ..
 ```
+
+No `frontend/.env.local`, preencham `NEXT_PUBLIC_SUPABASE_URL` e
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, ou usem `NEXT_PUBLIC_USE_MOCKS=true`
+para rodar com dados de mentira.
 
 Depois validem o ambiente:
 
 ```bash
-make check      # tudo precisa ficar verde
-make seed       # cria 3 usuários de exemplo
-make test       # deve mostrar "4 passed, 10 skipped"
+cd frontend && npm test && npx tsc --noEmit && cd ..
 ```
 
-Para rodar o projeto, abram dois terminais:
+Para rodar o projeto:
 
 ```bash
-make dev-back   # API em localhost:8000, Swagger em localhost:8000/docs
 make dev-front  # site em localhost:3000
 ```
 
