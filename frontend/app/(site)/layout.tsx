@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { MenuConta } from "@/components/identidade/MenuConta";
+import { NavegacaoPrincipal } from "@/components/identidade/NavegacaoPrincipal";
 
 // Moldura das telas do chat. Busca, prestadora, avaliação e perfil ficam em (rede).
 export default function SiteLayout({
@@ -13,6 +14,7 @@ export default function SiteLayout({
           <Link href="/" className="font-bold">
             Rede de Mulheres
           </Link>
+          <NavegacaoPrincipal />
           <MenuConta />
         </div>
       </nav>
