@@ -4,9 +4,9 @@
 // ordenação, com os dados do service da descoberta. Os filtros ficam na URL
 // (?categoria=&cidade=&ordem=) para o link poder ser compartilhado.
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { IconePino } from "@/components/rede/icones";
+import { IconeFechar, IconePino } from "@/components/rede/icones";
 import { Rotulo } from "@/components/rede/Tela";
 import { buscarPrestadoras, listarCategorias } from "@/lib/descoberta/service";
 import type {
@@ -18,7 +18,7 @@ import type {
 import type { Perfil } from "@/lib/identidade/types";
 
 import { Avatar, tomDaPosicao } from "./Avatar";
-import { linhaServicoCidade } from "./Categorias";
+import { textoCategorias, textoCidade } from "./Categorias";
 import { Carregando, Erro, Vazio } from "./Estados";
 import { SeloNota } from "./Estrelas";
 
@@ -42,6 +42,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
   const [erro, setErro] = useState<string | null>(null);
   // Muda a cada "Tentar de novo" para a busca rodar outra vez.
   const [tentativa, setTentativa] = useState(0);
+  const campoCidade = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     listarCategorias().then(setCategorias, (err) => {
@@ -96,17 +97,40 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
         <h1 className="font-display text-[26px] font-semibold leading-[1.15] md:text-[34px]">
           Do que você precisa hoje?
         </h1>
-        <label className="flex h-12 items-center gap-2.5 rounded-3xl bg-papel px-3.5 text-suave md:max-w-xl">
-          <IconePino size={20} className="text-vinho" />
+        {/* A busca já roda enquanto se digita; o submit só fecha o teclado do celular. */}
+        <form
+          role="search"
+          onSubmit={(e) => {
+            e.preventDefault();
+            campoCidade.current?.blur();
+          }}
+          className="flex h-12 items-center gap-2.5 rounded-3xl bg-papel pl-3.5 pr-1.5 text-suave has-[input:focus]:outline-2 has-[input:focus]:outline-vinho md:max-w-xl"
+        >
+          <IconePino size={20} className="shrink-0 text-vinho" />
           <input
+            ref={campoCidade}
             type="search"
+            enterKeyHint="search"
             aria-label="Cidade"
             placeholder="Em qual cidade? Ex.: João Pessoa"
             value={filtros.cidade ?? ""}
             onChange={(e) => setFiltros({ ...filtros, cidade: e.target.value })}
-            className="min-w-0 flex-1 bg-transparent text-base text-texto outline-none placeholder:text-suave"
+            className="min-w-0 flex-1 bg-transparent text-base text-texto outline-none placeholder:text-suave [&::-webkit-search-cancel-button]:appearance-none"
           />
-        </label>
+          {filtros.cidade && (
+            <button
+              type="button"
+              aria-label="Limpar cidade"
+              onClick={() => {
+                setFiltros({ ...filtros, cidade: undefined });
+                campoCidade.current?.focus();
+              }}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-vinho hover:bg-rosa-claro focus-visible:outline-2 focus-visible:outline-vinho"
+            >
+              <IconeFechar size={18} />
+            </button>
+          )}
+        </form>
       </div>
 
       {/* No computador (lg) os serviços viram uma coluna ao lado da lista. */}
@@ -188,13 +212,20 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
                     <Avatar nome={p.nome} url={p.avatarUrl} tamanho={52} fundo={tomDaPosicao(i)} />
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <b className="truncate text-base">{p.nome}</b>
-                      <span className="truncate text-[13.5px] text-suave">
-                        {linhaServicoCidade(p.categorias, p.cidade)}
-                      </span>
-                      <span className="text-[13px] text-suave">
-                        {p.totalAvaliacoes === 0
-                          ? "Sem avaliações ainda"
-                          : `${p.totalAvaliacoes} ${p.totalAvaliacoes === 1 ? "avaliação pública" : "avaliações públicas"}`}
+                      {p.categorias.length > 0 && (
+                        <span className="truncate text-[13.5px] text-suave">
+                          {textoCategorias(p.categorias)}
+                        </span>
+                      )}
+                      {/* Cidade em linha própria: no fim da linha de serviços ela sumia no truncate. */}
+                      <span className="flex min-w-0 items-center gap-1 text-[13px] text-suave">
+                        <IconePino size={14} className="shrink-0 text-vinho" />
+                        <span className="truncate">
+                          {textoCidade(p.cidade)} ·{" "}
+                          {p.totalAvaliacoes === 0
+                            ? "Sem avaliações ainda"
+                            : `${p.totalAvaliacoes} ${p.totalAvaliacoes === 1 ? "avaliação" : "avaliações"}`}
+                        </span>
                       </span>
                     </div>
                     <SeloNota nota={p.notaMedia} total={p.totalAvaliacoes} />

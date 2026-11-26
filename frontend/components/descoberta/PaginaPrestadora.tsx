@@ -6,14 +6,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { IconeVoltar } from "@/components/rede/icones";
+import { IconePino, IconeVoltar } from "@/components/rede/icones";
 import { Rotulo } from "@/components/rede/Tela";
 import { obterPrestadora } from "@/lib/descoberta/service";
 import type { PrestadoraDetalhe } from "@/lib/descoberta/types";
 
 import { Avatar } from "./Avatar";
 import { BotaoConversar } from "./BotaoConversar";
-import { linhaServicoCidade } from "./Categorias";
+import { textoCategorias, textoCidade } from "./Categorias";
 import { Carregando, Erro, Vazio } from "./Estados";
 import { NotaMedia } from "./Estrelas";
 import { GaleriaPortfolio } from "./GaleriaPortfolio";
@@ -106,7 +106,13 @@ export function PaginaPrestadora({ id }: { id: string }) {
             <h1 className="break-words font-display text-[25px] font-semibold leading-[1.1] md:text-[32px]">
               {perfil.nome}
             </h1>
-            <span className="text-sm text-corpo">{linhaServicoCidade(categorias, perfil.cidade)}</span>
+            {categorias.length > 0 && (
+              <span className="text-sm text-corpo">{textoCategorias(categorias)}</span>
+            )}
+            <span className="flex items-center gap-1 text-sm text-corpo">
+              <IconePino size={16} className="shrink-0 text-vinho" />
+              {textoCidade(perfil.cidade)}
+            </span>
             <NotaMedia nota={notaMedia} total={totalAvaliacoes} />
           </div>
         </div>
