@@ -32,7 +32,7 @@ export default function ErroPerfil({
   }
 
   return (
-    <Tela className="h-dvh">
+    <Tela className="h-dvh md:h-auto">
       <div className="flex flex-1 flex-col gap-4 px-5 pt-8">
         <h1 className="font-display text-[26px] font-semibold leading-[1.15]">Meu perfil</h1>
         <Erro

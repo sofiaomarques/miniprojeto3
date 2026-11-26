@@ -81,7 +81,7 @@ export async function ResumoPrestadora({ prestadoraId }: { prestadoraId: string 
 
       <Link
         href={`/prestadoras/${prestadoraId}`}
-        className="flex min-h-11 items-center justify-center rounded-full bg-vinho px-5 text-[14.5px] font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vinho"
+        className="flex min-h-11 items-center justify-center rounded-full bg-vinho px-5 md:self-start md:px-8 text-[14.5px] font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vinho"
       >
         Ver meu perfil público
       </Link>

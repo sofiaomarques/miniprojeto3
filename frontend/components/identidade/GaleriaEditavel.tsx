@@ -76,7 +76,7 @@ export function GaleriaEditavel({ prestadoraId }: { prestadoraId: string }) {
     <div className="flex flex-col gap-4">
       {erro && <Aviso tipo="erro">{erro}</Aviso>}
 
-      <label className={`${classeBotao} cursor-pointer ${enviando ? "pointer-events-none opacity-60" : ""}`}>
+      <label className={`${classeBotao} cursor-pointer md:w-80 md:self-start ${enviando ? "pointer-events-none opacity-60" : ""}`}>
         {enviando ? "Enviando…" : "Adicionar foto"}
         <input
           ref={campoArquivo}
@@ -90,7 +90,7 @@ export function GaleriaEditavel({ prestadoraId }: { prestadoraId: string }) {
           }}
         />
       </label>
-      <p className="-mt-2 text-center text-xs text-suave">JPG, PNG ou WebP, até 5 MB.</p>
+      <p className="-mt-2 text-center text-xs text-suave md:w-80">JPG, PNG ou WebP, até 5 MB.</p>
 
       {fotos === null && <p className="text-sm text-suave">Carregando suas fotos…</p>}
       {fotos?.length === 0 && (
@@ -100,7 +100,7 @@ export function GaleriaEditavel({ prestadoraId }: { prestadoraId: string }) {
       )}
 
       {fotos && fotos.length > 0 && (
-        <ul className="grid grid-cols-2 gap-3">
+        <ul className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
           {fotos.map((foto, indice) => {
             const url = urlFotoPortfolio(foto.caminho);
             const descricao = `Trabalho ${indice + 1} de ${fotos.length}`;
