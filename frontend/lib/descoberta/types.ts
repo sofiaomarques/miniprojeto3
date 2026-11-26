@@ -17,6 +17,15 @@ export type PrestadoraResumo = {
   categorias: CategoriaResumo[]; // a "função" da prestadora (ex.: encanamento)
   notaMedia: number | null; // null quando ainda não tem avaliações; 1 casa decimal
   totalAvaliacoes: number;
+  precos: PrecoCategoria[]; // preço base de cada serviço (05_precos_servicos.sql)
+};
+
+// Preço base de um serviço da prestadora. Vem do service de preços da
+// identidade (P1), não da view prestadoras_resumo.
+export type PrecoCategoria = {
+  categoriaId: number;
+  precoBase: number | null; // null = "a combinar"
+  aceitaNegociar: boolean; // sempre false quando não há preço
 };
 
 export type Avaliacao = {
@@ -34,7 +43,8 @@ export type Avaliacao = {
   clienteAvatarUrl: string | null;
 };
 
-export type OrdenarPor = "nota" | "nome";
+// "preco": do mais barato ao mais caro (ver lib/descoberta/precos.ts).
+export type OrdenarPor = "nota" | "preco";
 
 export type FiltrosBusca = {
   categoriaId?: number;
@@ -49,6 +59,7 @@ export type PrestadoraDetalhe = {
   avaliacoes: Avaliacao[];
   notaMedia: number | null;
   totalAvaliacoes: number;
+  precos: PrecoCategoria[];
 };
 
 export type DadosAvaliacao = {

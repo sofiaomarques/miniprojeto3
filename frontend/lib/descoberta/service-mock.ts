@@ -5,9 +5,11 @@
 // sem autoavaliação, só cliente avalia, só prestadora é avaliada,
 // só a autora edita ou apaga.
 import { CATEGORIAS_MOCK, perfisMockAtuais, servicoMock } from "@/lib/identidade/mocks";
+import { servicoPrecosMock } from "@/lib/identidade/precos-mock";
 import type { Perfil } from "@/lib/identidade/types";
 
 import { AVALIACOES_MOCK, type AvaliacaoMock } from "./mocks";
+import { ordenarPorPreco, paraPrecosCategoria } from "./precos";
 import { mediaComUmaCasa, normalizarTexto } from "./texto";
 import type {
   Avaliacao,
@@ -67,6 +69,7 @@ async function resumir(perfil: Perfil): Promise<PrestadoraResumo> {
     categorias: await categoriasDe(perfil.id),
     notaMedia: mediaComUmaCasa(notas),
     totalAvaliacoes: notas.length,
+    precos: paraPrecosCategoria(await servicoPrecosMock.listarPrecos({ prestadoraId: perfil.id })),
   };
 }
 
@@ -88,7 +91,7 @@ export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<Prestado
   });
   const porNome = (a: PrestadoraResumo, b: PrestadoraResumo) =>
     a.nome.localeCompare(b.nome, "pt-BR");
-  if (filtros.ordenarPor === "nome") return resultado.sort(porNome);
+  if (filtros.ordenarPor === "preco") return ordenarPorPreco(resultado, filtros.categoriaId);
   // "nota" (padrão): maior primeiro, sem avaliação por último, empate por nome.
   return resultado.sort((a, b) => (b.notaMedia ?? -1) - (a.notaMedia ?? -1) || porNome(a, b));
 }
@@ -115,6 +118,7 @@ export async function obterPrestadora(id: string): Promise<PrestadoraDetalhe | n
     avaliacoes: lista,
     notaMedia: resumo.notaMedia,
     totalAvaliacoes: resumo.totalAvaliacoes,
+    precos: resumo.precos,
   };
 }
 

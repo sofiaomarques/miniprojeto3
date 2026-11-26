@@ -30,7 +30,7 @@ function paraUrl(filtros: FiltrosBusca): string {
   const params = new URLSearchParams();
   if (filtros.categoriaId) params.set("categoria", String(filtros.categoriaId));
   if (filtros.cidade?.trim()) params.set("cidade", filtros.cidade.trim());
-  if (filtros.ordenarPor === "nome") params.set("ordem", "nome");
+  if (filtros.ordenarPor === "preco") params.set("ordem", "preco");
   const texto = params.toString();
   return texto ? `/?${texto}` : "/";
 }
@@ -159,7 +159,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
 
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pb-4 pt-2 md:overflow-visible md:px-0 md:pb-10 lg:pt-6">
           <div className="flex items-center justify-between gap-2">
-            <Rotulo>{filtros.ordenarPor === "nome" ? "Em ordem alfabética" : "Melhores avaliadas"}</Rotulo>
+            <Rotulo>{filtros.ordenarPor === "preco" ? "Menor preço primeiro" : "Melhores avaliadas"}</Rotulo>
             <label className="flex items-center gap-1 text-[13px] text-suave">
               <span className="sr-only">Ordenar por</span>
               <select
@@ -168,7 +168,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
                 className="min-h-11 rounded-full bg-transparent px-2 text-[13px] font-bold text-vinho"
               >
                 <option value="nota">Melhor nota</option>
-                <option value="nome">Nome (A–Z)</option>
+                <option value="preco">Menor preço</option>
               </select>
             </label>
           </div>
