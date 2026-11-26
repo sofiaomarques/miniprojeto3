@@ -53,6 +53,11 @@ export const IconePino = (p: P) => (
     <circle cx="12" cy="10" r="2.5" />
   </Base>
 );
+export const IconeFechar = (p: P) => (
+  <Base {...p}>
+    <path d="M6 6l12 12M18 6L6 18" />
+  </Base>
+);
 export const IconeEscudo = (p: P) => (
   <Base {...p}>
     <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />
