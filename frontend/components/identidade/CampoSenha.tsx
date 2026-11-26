@@ -18,6 +18,9 @@ export function CampoSenha(props: Props) {
       acessorio={
         <button
           type="button"
+          // Sem isto o clique tira o foco do input, o que dispara a validação
+          // ao sair do campo e tira o cursor de onde a pessoa estava digitando.
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => setVisivel((v) => !v)}
           aria-label={visivel ? "Ocultar senha" : "Mostrar senha"}
           aria-pressed={visivel}
