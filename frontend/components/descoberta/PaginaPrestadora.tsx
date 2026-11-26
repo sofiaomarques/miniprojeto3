@@ -18,6 +18,7 @@ import { Carregando, Erro, Vazio } from "./Estados";
 import { NotaMedia } from "./Estrelas";
 import { GaleriaPortfolio } from "./GaleriaPortfolio";
 import { ListaAvaliacoes } from "./ListaAvaliacoes";
+import { ServicosEPrecos } from "./ServicosEPrecos";
 import { useMeuPerfil } from "./useMeuPerfil";
 
 type Estado =
@@ -129,6 +130,12 @@ export function PaginaPrestadora({ id }: { id: string }) {
         )}
 
         <div className="flex flex-1 flex-col gap-4 px-5 pt-4 md:col-start-2 md:row-span-3 md:row-start-1 md:gap-6 md:px-0 md:pt-0">
+          <ServicosEPrecos
+            categorias={categorias}
+            precos={estado.prestadora.precos}
+            ehDona={usuaria !== "erro" && usuaria?.id === perfil.id}
+          />
+
           <section className="flex flex-col gap-2">
             <Rotulo>Trabalhos realizados</Rotulo>
             <GaleriaPortfolio fotos={fotos} nome={perfil.nome} />
