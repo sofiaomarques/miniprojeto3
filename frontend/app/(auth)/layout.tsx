@@ -5,7 +5,7 @@ import { Marca, Tela } from "@/components/rede/Tela";
 export default function LayoutConta({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <MolduraRede>
-      <Tela className="gap-6 px-6 py-8">
+      <Tela estreita className="gap-6 px-6 py-8">
         <Marca />
         {children}
       </Tela>

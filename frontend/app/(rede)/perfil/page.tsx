@@ -14,7 +14,7 @@ export default async function PerfilPage() {
 
   if (!perfil) {
     return (
-      <Tela className="h-dvh">
+      <Tela className="h-dvh md:h-auto">
         <div className="flex-1 px-5 pt-8">
           <Aviso tipo="erro">
             Não foi possível carregar sua conta agora. Recarregue a página em alguns instantes.
@@ -31,7 +31,7 @@ export default async function PerfilPage() {
     .join(" · ");
 
   return (
-    <Tela className="h-dvh">
+    <Tela className="h-dvh md:h-auto">
       <div className="flex flex-col items-center gap-2 rounded-b-[28px] bg-rosa px-5 pb-5 pt-8 text-center">
         <Avatar nome={perfil.nome} url={perfil.avatar_url} tamanho={84} fundo="papel" />
         <h1 className="font-display text-[26px] font-semibold leading-[1.15]">
@@ -46,7 +46,7 @@ export default async function PerfilPage() {
         <BotaoSair />
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pt-5">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pt-5 md:overflow-visible md:pb-10">
         {!ehCliente && (
           <p className="text-[14.5px] leading-[1.45] text-corpo">
             Seu perfil de prestadora, com serviços e fotos de trabalhos, aparece aqui em breve.

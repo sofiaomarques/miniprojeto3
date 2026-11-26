@@ -11,7 +11,7 @@ export default async function AvaliarPage({ params }: { params: Promise<{ id: st
   const perfil = await exigirConta(`/avaliar/${id}`);
 
   return (
-    <Tela className="gap-[22px] px-6 pb-8 pt-5">
+    <Tela estreita className="gap-[22px] px-6 pb-8 pt-5">
       {!perfil ? (
         <Aviso tipo="erro">
           Não foi possível carregar sua conta agora. Recarregue a página em alguns instantes.

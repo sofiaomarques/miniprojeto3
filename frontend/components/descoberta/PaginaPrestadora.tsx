@@ -103,7 +103,7 @@ export function PaginaPrestadora({ id }: { id: string }) {
         <div className="flex items-center gap-3.5">
           <Avatar nome={perfil.nome} url={perfil.avatar_url} tamanho={72} fundo="papel" />
           <div className="flex min-w-0 flex-col gap-1">
-            <h1 className="break-words font-display text-[25px] font-semibold leading-[1.1]">
+            <h1 className="break-words font-display text-[25px] font-semibold leading-[1.1] md:text-[32px]">
               {perfil.nome}
             </h1>
             <span className="text-sm text-corpo">{linhaServicoCidade(categorias, perfil.cidade)}</span>
@@ -112,34 +112,39 @@ export function PaginaPrestadora({ id }: { id: string }) {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 px-5 pt-[18px]">
+      {/* Celular: bio, fotos, avaliações e o botão fixo embaixo. Computador (md):
+          bio e botão numa coluna à esquerda, fotos e avaliações à direita. O botão
+          ocupa as linhas 2 e 3 para o sticky acompanhar a rolagem da coluna da direita. */}
+      <div className="flex flex-1 flex-col md:grid md:flex-none md:grid-cols-[minmax(0,300px)_minmax(0,1fr)] md:grid-rows-[auto_auto_1fr] md:gap-x-8 md:pb-10 md:pt-8 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-x-10">
         {perfil.bio && (
-          <p className="whitespace-pre-line break-words text-[14.5px] leading-normal text-corpo">
+          <p className="whitespace-pre-line break-words px-5 pt-[18px] text-[14.5px] leading-normal text-corpo md:col-start-1 md:row-start-1 md:px-0 md:pb-4 md:pt-0">
             {perfil.bio}
           </p>
         )}
 
-        <section className="flex flex-col gap-2">
-          <Rotulo>Trabalhos realizados</Rotulo>
-          <GaleriaPortfolio fotos={fotos} nome={perfil.nome} />
-        </section>
+        <div className="flex flex-1 flex-col gap-4 px-5 pt-4 md:col-start-2 md:row-span-3 md:row-start-1 md:gap-6 md:px-0 md:pt-0">
+          <section className="flex flex-col gap-2">
+            <Rotulo>Trabalhos realizados</Rotulo>
+            <GaleriaPortfolio fotos={fotos} nome={perfil.nome} />
+          </section>
 
-        <section className="flex flex-col gap-2 pb-4">
-          <Rotulo>Avaliações</Rotulo>
-          <ListaAvaliacoes avaliacoes={avaliacoes} />
-        </section>
-      </div>
+          <section className="flex flex-col gap-2 pb-4">
+            <Rotulo>Avaliações</Rotulo>
+            <ListaAvaliacoes avaliacoes={avaliacoes} />
+          </section>
+        </div>
 
-      <div className="sticky bottom-0 flex flex-col gap-1 border-t border-borda bg-papel px-5 pb-[26px] pt-3">
-        <BotaoConversar prestadoraId={perfil.id} usuaria={usuaria} />
-        {podeAvaliar && (
-          <Link
-            href={`/avaliar/${perfil.id}`}
-            className="flex min-h-11 items-center justify-center text-[14.5px] font-bold text-vinho"
-          >
-            {minhaAvaliacao ? "Editar sua avaliação" : `Já foi atendida? Avaliar ${primeiroNome}`}
-          </Link>
-        )}
+        <div className="sticky bottom-0 flex flex-col gap-1 border-t border-borda bg-papel px-5 pb-[26px] pt-3 md:top-20 md:col-start-1 md:row-start-2 md:row-end-4 md:self-start md:rounded-[20px] md:border md:pb-3 md:pt-4">
+          <BotaoConversar prestadoraId={perfil.id} usuaria={usuaria} />
+          {podeAvaliar && (
+            <Link
+              href={`/avaliar/${perfil.id}`}
+              className="flex min-h-11 items-center justify-center text-[14.5px] font-bold text-vinho"
+            >
+              {minhaAvaliacao ? "Editar sua avaliação" : `Já foi atendida? Avaliar ${primeiroNome}`}
+            </Link>
+          )}
+        </div>
       </div>
     </>
   );
