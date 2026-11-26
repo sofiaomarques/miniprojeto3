@@ -39,6 +39,26 @@ Exemplo:
 > - **O que cortamos e por quê:** o "Em alta". Quem abre o app quer ver o
 >   treino de hoje dos amigos, não o post mais curtido da semana.
 
+### Excluir a conta apaga tudo dela (#46)
+
+- **Contexto:** a Edge Function `excluir-conta` apaga os arquivos da conta no
+  Storage e depois chama `auth.admin.deleteUser`. Todas as FKs para `perfis`
+  são `on delete cascade`, então a exclusão leva junto: perfil, serviços e
+  fotos do portfólio (01); as avaliações que a conta escreveu **e** as que
+  recebeu (02); as conversas dela e todas as mensagens dessas conversas,
+  inclusive as da outra pessoa (03).
+- **Opções:** apagar tudo em cascata; ou manter avaliações e conversas
+  anonimizadas ("Conta excluída"), trocando as FKs para `on delete set null`.
+- **Escolha:** apagar tudo, como o banco já faz. Quem sai não deixa nome,
+  nota nem mensagem para trás, e não precisamos tratar autora nula em
+  `avaliacoes_publicas`, `prestadoras_resumo` nem no chat.
+- **O que cortamos e por quê:** a estabilidade da nota. Se uma cliente exclui
+  a conta, as avaliações dela somem e a nota média e o total de avaliações da
+  prestadora mudam. A outra pessoa da conversa perde o histórico. O botão
+  "Excluir conta" precisa avisar isso antes de confirmar. Para mudar de ideia,
+  basta uma migration trocando as FKs de `avaliacoes`, `conversas` e
+  `mensagens`.
+
 ## Features
 
 Listem as features que o time vai construir, quem é o dono de cada uma e por
@@ -62,6 +82,25 @@ Contem uma escolha técnica que o time fez e por quê. Por exemplo, por que usou
 uma estrutura de dados no `core/`, qual o Big O da operação principal, ou o
 que mudaria se a rede crescesse 100 vezes. Se mediram com `make bench`, colem a
 saída e uma frase dizendo o que os números mostram.
+
+## Deploy
+
+- **URL pública:** https://miniprojeto3-phi.vercel.app
+- **Onde roda:** o front (Next) na Vercel, com Root Directory `frontend`. Auth,
+  banco e arquivos ficam no Supabase.
+- **Por que sem Render:** o guia 08 usa o Render para hospedar o backend
+  FastAPI do modelo. Este projeto não usa esse backend: o front fala direto com
+  o Supabase usando a chave publishable, e quem protege os dados é a RLS do
+  banco. Sem servidor próprio, não há nada para subir no Render.
+- **Variáveis na Vercel:** `NEXT_PUBLIC_SUPABASE_URL` e
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. A `NEXT_PUBLIC_USE_MOCKS` só é
+  ignorada no deploy de produção, então a URL pública sempre usa o Supabase de
+  verdade. Nos previews de PR ela continua valendo: deixem sem definir (ou
+  `false`) na Vercel para o preview também usar o banco.
+- **Banco:** as migrations 01, 02 e 03 precisam estar aplicadas, em ordem, no
+  Supabase compartilhado (são aplicadas à mão). Sem a 03 o chat não funciona.
+- **Para conferir:** cadastro → entrar → buscar prestadora → abrir o perfil →
+  avaliar → chat.
 
 ## Testes de RLS
 

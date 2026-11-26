@@ -21,7 +21,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const filtros = lerFiltros(params);
 
   return (
-    <Tela className="h-dvh">
+    // No celular a tela tem a altura da janela e só a lista rola; no computador a página rola.
+    <Tela className="h-dvh md:h-auto">
       {/* key: uma navegação para outros filtros (ex.: aba "Buscar" -> "/") recria a busca. */}
       <BuscaPrestadoras key={JSON.stringify(filtros)} perfil={perfil} filtrosIniciais={filtros} />
       <BarraAbas ativa="buscar" />

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Avatar } from "@/components/descoberta/Avatar";
 import type { Conversa } from "@/lib/chat/types";
 
 type Props = { conversa: Conversa; usuariaId: string | null };
@@ -14,24 +15,19 @@ export function ItemConversa({ conversa, usuariaId }: Props) {
   return (
     <Link
       href={`/chat/${conversa.id}`}
-      className="flex items-center gap-3 rounded border bg-white p-3 hover:bg-zinc-50"
+      className="flex items-center gap-3 rounded-[18px] border border-borda bg-papel p-3 focus-visible:outline-2 focus-visible:outline-vinho"
     >
-      <div
-        aria-hidden
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-100 font-semibold text-rose-700"
-      >
-        {outra.nome.charAt(0).toUpperCase() || "?"}
-      </div>
+      <Avatar nome={outra.nome} url={outra.avatarUrl} tamanho={46} fundo="rosa" />
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{outra.nome || "Participante"}</p>
-        <p className={`truncate text-sm ${naoLidas > 0 ? "font-semibold text-zinc-900" : "text-zinc-500"}`}>
+        <p className="truncate text-base font-bold">{outra.nome || "Participante"}</p>
+        <p className={`truncate text-[13.5px] ${naoLidas > 0 ? "font-bold text-texto" : "text-corpo"}`}>
           {previa}
         </p>
       </div>
       {naoLidas > 0 && (
         <span
           aria-label={`${naoLidas} não lida${naoLidas > 1 ? "s" : ""}`}
-          className="rounded-full bg-rose-600 px-2 py-0.5 text-xs font-semibold text-white"
+          className="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-vinho px-1.5 text-xs font-bold text-white"
         >
           {naoLidas}
         </span>
