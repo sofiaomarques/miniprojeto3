@@ -9,10 +9,10 @@ Três áreas, uma pessoa por área: **P1** identidade, **P2** descoberta, **P3**
 ## Estrutura
 - `frontend/app/` rotas, em grupos: `(auth)/` `cadastro`, `entrar`, `onboarding` e callback;
   `(rede)/` início (a busca), `prestadoras/[id]`, `perfil` (inclui as indicações da cliente),
-  `avaliar/[id]`; `(site)/` `chat` e `chat/[id]`. `login`, `buscar`, `minhas-indicacoes` e
+  `avaliar/[id]`, `chat` e `chat/[id]`. `login`, `buscar`, `minhas-indicacoes` e
   `p/[slug]` são só redirects de links antigos: não recriar essas telas
 - `frontend/components/` peças de tela, por área (`ui`, `rede`, `identidade`, `descoberta`, `chat`).
-  Avatar é o de `components/descoberta/Avatar`; o de `rede/Tela.tsx` é antigo e sai com o #64
+  Avatar é o de `components/descoberta/Avatar`
 - `frontend/lib/` regras e acesso a dados, por área (`identidade`, `descoberta`, `chat`, `rede`,
   `supabase`). `lib/rede/sessao.ts` é a sessão das telas (Server Components)
 - `frontend/middleware.ts` renova a sessão do Supabase

@@ -4,7 +4,7 @@
 // marca o que a usuária recebeu.
 //
 // Quem está logada vem do mock da identidade (P1); ver mocks.ts.
-import { PERFIS_MOCK } from "@/lib/identidade/mocks";
+import { perfisMockAtuais } from "@/lib/identidade/mocks";
 import { servicoIdentidade } from "@/lib/identidade/service";
 import type { Perfil } from "@/lib/identidade/types";
 import { CONVERSAS_MOCK, type ConversaMock, MENSAGENS_MOCK } from "./mocks";
@@ -60,8 +60,10 @@ outrasAbas?.addEventListener("message", (evento: MessageEvent<Mensagem>) => {
   avisar(mensagem);
 });
 
+// Estado atual da identidade mock: nome e avatar mudados no perfil aparecem
+// no chat, como na conversas_resumo real.
 function perfil(id: string): Perfil | undefined {
-  return PERFIS_MOCK.find((p) => p.id === id);
+  return perfisMockAtuais().find((p) => p.id === id);
 }
 
 async function eu(): Promise<Perfil | null> {
