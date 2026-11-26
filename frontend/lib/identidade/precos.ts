@@ -143,7 +143,8 @@ function erroDoBanco(erro: NonNullable<ErroBanco>): ErroIdentidade {
   }
   switch (codigo) {
     case "42501":
-      return new ErroIdentidade("permissao", "Só prestadoras podem definir preços.", codigo);
+      // RLS ou coluna fora do GRANT da 05.
+      return new ErroIdentidade("permissao", "Você não tem permissão para isso.", codigo);
     case "23514":
     case "22P02":
     case "22003":
@@ -182,21 +183,38 @@ export function criarServicoPrecosSupabase(cliente: ClienteSupabase): ServicoPre
     return perfil.id;
   }
 
+  // Sem filtro lê todos os serviços de todas as prestadoras: a busca não tem
+  // paginação. O Supabase corta em max_rows (1000 por padrão); acima disso
+  // as que sobrarem apareceriam "a combinar" e iriam para o fim da ordem
+  // por preço. Folga grande para o projeto; se crescer, paginar a busca.
+  async function listarPrecos(filtro: FiltroPrecos = {}): Promise<PrecoServico[]> {
+    let consulta = cliente.from("servicos_prestadora").select(SELECT_PRECO);
+    if (filtro.prestadoraId) consulta = consulta.eq("prestadora_id", filtro.prestadoraId);
+    if (filtro.categoriaId) consulta = consulta.eq("categoria_id", filtro.categoriaId);
+    const linhas = dados(
+      await consulta
+        .order("prestadora_id", { ascending: true })
+        .order("categoria_id", { ascending: true }),
+    );
+    return ((linhas ?? []) as Record<string, unknown>[]).map(paraPreco);
+  }
+
   return {
-    async listarPrecos(filtro = {}) {
-      let consulta = cliente.from("servicos_prestadora").select(SELECT_PRECO);
-      if (filtro.prestadoraId) consulta = consulta.eq("prestadora_id", filtro.prestadoraId);
-      if (filtro.categoriaId) consulta = consulta.eq("categoria_id", filtro.categoriaId);
-      const linhas = dados(
-        await consulta
-          .order("prestadora_id", { ascending: true })
-          .order("categoria_id", { ascending: true }),
-      );
-      return ((linhas ?? []) as Record<string, unknown>[]).map(paraPreco);
-    },
+    listarPrecos,
 
     async salvarMeusPrecos(alteracoes) {
       const id = await exigirPrestadora();
+      // Confere antes se todos os serviços ainda são dela, para não gravar só
+      // metade (o mock faz igual). Sobra uma corrida pequena: se ela tirar um
+      // serviço em outra aba entre esta leitura e os updates, os anteriores
+      // ficam gravados e a tela mostra o erro abaixo.
+      const meus = new Set((await listarPrecos({ prestadoraId: id })).map((p) => p.categoria_id));
+      if (alteracoes.some((a) => !meus.has(a.categoria_id))) {
+        throw new ErroIdentidade(
+          "nao_encontrado",
+          "Um dos serviços não está mais no seu perfil. Recarregue a página.",
+        );
+      }
       const salvos: PrecoServico[] = [];
       // Um update por serviço (no máximo 8 categorias). A RLS também exige
       // prestadora_id = auth.uid(); linha que não é dela volta vazia, sem erro.

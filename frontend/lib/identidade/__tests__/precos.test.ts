@@ -116,11 +116,19 @@ describe("preços (mock)", () => {
     expect(ar.preco_base).toBe(150);
   });
 
+  it("tirar e marcar de novo (sem ler no meio) também volta 'a combinar'", async () => {
+    definirUsuariaMock(ID_PRESTADORA_MARINA);
+    await servicoMock.removerMeuServico(1);
+    await new Promise((r) => setTimeout(r, 2)); // criado_em diferente
+    await servicoMock.adicionarMeuServico(1);
+    const [ar] = await servicoPrecosMock.listarPrecos({ prestadoraId: ID_PRESTADORA_MARINA });
+    expect(ar.preco_base).toBeNull();
+  });
+
   it("tirar o serviço e marcar de novo volta 'a combinar', como no banco", async () => {
     definirUsuariaMock(ID_PRESTADORA_MARINA);
     await servicoMock.removerMeuServico(1);
     expect(await servicoPrecosMock.listarPrecos({ prestadoraId: ID_PRESTADORA_MARINA })).toEqual([]);
-    await new Promise((r) => setTimeout(r, 2)); // criado_em diferente
     await servicoMock.adicionarMeuServico(1);
     const [ar] = await servicoPrecosMock.listarPrecos({ prestadoraId: ID_PRESTADORA_MARINA });
     expect(ar).toMatchObject({ categoria_id: 1, preco_base: null, aceita_negociar: false });
@@ -148,6 +156,22 @@ describe("validação na frente das duas implementações", () => {
   });
 });
 
+// Responde como o banco: perfil da sessão, a lista de serviços dela (leitura
+// antes de gravar) e a linha gravada pelo update.
+function bancoDaMarina(update: (c: { chamadas: { metodo: string; args: unknown[] }[] }) => { data: unknown; error: unknown }) {
+  return criarClienteFalso({
+    usuaria: ID_PRESTADORA_MARINA,
+    responder: (c) => {
+      if (c.tabela === "perfis") return { data: { id: ID_PRESTADORA_MARINA, papel: "prestadora" }, error: null };
+      if (metodos(c).includes("update")) return update(c);
+      return {
+        data: [{ prestadora_id: ID_PRESTADORA_MARINA, categoria_id: 1, preco_base: 150, aceita_negociar: true }],
+        error: null,
+      };
+    },
+  });
+}
+
 describe("preços (Supabase, cliente falso)", () => {
   it("lista só as colunas do preço, filtrando por prestadora", async () => {
     const falso = criarClienteFalso({
@@ -167,13 +191,10 @@ describe("preços (Supabase, cliente falso)", () => {
   });
 
   it("salvar: update só de preço e negociação, filtrando pelo id da SESSÃO", async () => {
-    const falso = criarClienteFalso({
-      usuaria: ID_PRESTADORA_MARINA,
-      responder: (c) =>
-        c.tabela === "perfis"
-          ? { data: { id: ID_PRESTADORA_MARINA, papel: "prestadora" }, error: null }
-          : { data: { prestadora_id: ID_PRESTADORA_MARINA, categoria_id: 1, preco_base: 99.9, aceita_negociar: false }, error: null },
-    });
+    const falso = bancoDaMarina(() => ({
+      data: { prestadora_id: ID_PRESTADORA_MARINA, categoria_id: 1, preco_base: 99.9, aceita_negociar: true },
+      error: null,
+    }));
     await servicoPrecos(falso.cliente).salvarMeusPrecos([{ categoria_id: 1, preco_base: 99.9, aceita_negociar: true }]);
     const update = falso.consultas.find((c) => metodos(c).includes("update"))!;
     expect(argumentos(update, "update")).toEqual([[{ preco_base: 99.9, aceita_negociar: true }]]);
@@ -184,15 +205,21 @@ describe("preços (Supabase, cliente falso)", () => {
     expect(metodos(update)).toContain("maybeSingle");
   });
 
-  it("0 linhas atingidas (RLS) vira 'nao_encontrado'", async () => {
-    const falso = criarClienteFalso({
-      usuaria: ID_PRESTADORA_MARINA,
-      responder: (c) =>
-        c.tabela === "perfis"
-          ? { data: { id: ID_PRESTADORA_MARINA, papel: "prestadora" }, error: null }
-          : { data: null, error: null },
-    });
-    const erro = await erroDe(servicoPrecos(falso.cliente).salvarMeusPrecos([{ categoria_id: 9, preco_base: 1, aceita_negociar: false }]));
+  it("serviço que não é dela recusa a lista inteira antes de gravar", async () => {
+    const falso = bancoDaMarina(() => ({ data: null, error: null }));
+    const erro = await erroDe(
+      servicoPrecos(falso.cliente).salvarMeusPrecos([
+        { categoria_id: 1, preco_base: 1, aceita_negociar: false },
+        { categoria_id: 9, preco_base: 1, aceita_negociar: false },
+      ]),
+    );
+    expect(erro.codigo).toBe("nao_encontrado");
+    expect(falso.consultas.some((c) => metodos(c).includes("update"))).toBe(false);
+  });
+
+  it("0 linhas atingidas no update (RLS) vira 'nao_encontrado'", async () => {
+    const falso = bancoDaMarina(() => ({ data: null, error: null }));
+    const erro = await erroDe(servicoPrecos(falso.cliente).salvarMeusPrecos([{ categoria_id: 1, preco_base: 1, aceita_negociar: false }]));
     expect(erro.codigo).toBe("nao_encontrado");
   });
 
@@ -204,13 +231,10 @@ describe("preços (Supabase, cliente falso)", () => {
   });
 
   it("erro do banco vira mensagem segura", async () => {
-    const falso = criarClienteFalso({
-      usuaria: ID_PRESTADORA_MARINA,
-      responder: (c) =>
-        c.tabela === "perfis"
-          ? { data: { id: ID_PRESTADORA_MARINA, papel: "prestadora" }, error: null }
-          : { data: null, error: { code: "23514", message: 'violates check constraint "servicos_prestadora_preco_base_faixa"' } },
-    });
+    const falso = bancoDaMarina(() => ({
+      data: null,
+      error: { code: "23514", message: 'violates check constraint "servicos_prestadora_preco_base_faixa"' },
+    }));
     const erro = await erroDe(servicoPrecos(falso.cliente).salvarMeusPrecos([{ categoria_id: 1, preco_base: 1, aceita_negociar: false }]));
     expect(erro.codigo).toBe("validacao");
     expect(erro.message).not.toMatch(/constraint|servicos_prestadora/);

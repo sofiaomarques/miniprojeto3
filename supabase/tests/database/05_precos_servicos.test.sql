@@ -118,6 +118,12 @@ select throws_ok(
   '23514', null, 'preço acima de 99.999,99 é recusado'
 );
 
+select throws_ok(
+  $$ update public.servicos_prestadora set aceita_negociar = null
+     where prestadora_id = 'cccccccc-0000-0000-0000-000000000053' $$,
+  '23502', null, 'aceita_negociar não aceita null'
+);
+
 -- Colunas fora do GRANT
 select throws_ok(
   $$ update public.servicos_prestadora set categoria_id = categoria_id
@@ -139,9 +145,9 @@ select is_empty(
      where prestadora_id = 'cccccccc-0000-0000-0000-000000000053' returning categoria_id $$,
   'Q não altera o preço da P (RLS esconde a linha)'
 );
-select lives_ok(
+select isnt_empty(
   $$ update public.servicos_prestadora set preco_base = 200
-     where prestadora_id = 'dddddddd-0000-0000-0000-000000000054' $$,
+     where prestadora_id = 'dddddddd-0000-0000-0000-000000000054' returning categoria_id $$,
   'Q altera o próprio preço'
 );
 

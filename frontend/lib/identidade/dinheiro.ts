@@ -44,6 +44,9 @@ const MOEDA = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL
 const MOEDA_SEM_CENTAVOS = new Intl.NumberFormat("pt-BR", {
   style: "currency",
   currency: "BRL",
+  // minimumFractionDigits junto: sem ele, navegadores antes do Intl v3
+  // (Chrome < 106, Safari < 15.4) lançam RangeError com moeda e 0 casas.
+  minimumFractionDigits: 0,
   maximumFractionDigits: 0,
 });
 

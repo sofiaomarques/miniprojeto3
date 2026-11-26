@@ -3,9 +3,13 @@
 // nos serviços que existem nos dois.
 //
 // Como no banco, o preço é do SERVIÇO (a linha prestadora × categoria): cada
-// preço guarda o criado_em do serviço a que pertence. Se a prestadora tira o
-// serviço e marca de novo, ele volta com outro criado_em e "a combinar",
-// igual ao DELETE + INSERT do banco.
+// preço guarda o criado_em do serviço a que pertence, e a cada leitura ou
+// escrita os preços de serviços que não existem mais são apagados. Se a
+// prestadora tira o serviço e marca de novo, ele volta "a combinar", igual
+// ao DELETE + INSERT do banco.
+//
+// redefinirMocks() (mocks.ts) não mexe aqui: testes que gravam preço chamam
+// também redefinirPrecosMock().
 import { ErroIdentidade } from "./erros";
 import {
   ID_PRESTADORA_ALINE,
@@ -56,16 +60,24 @@ async function servicosDe(prestadoraId: string): Promise<ServicoPrestadora[]> {
   return servicoMock.listarServicosDaPrestadora(prestadoraId);
 }
 
+const idsPrestadoras = () =>
+  perfisMockAtuais()
+    .filter((p) => p.papel === "prestadora")
+    .map((p) => p.id)
+    .sort();
+
+// Apaga os preços de serviços que saíram (o DELETE da linha no banco).
+async function apagarOrfaos(): Promise<void> {
+  const vivos = new Set((await Promise.all(idsPrestadoras().map(servicosDe))).flat().map(chave));
+  for (const k of precos.keys()) if (!vivos.has(k)) precos.delete(k);
+}
+
 export const servicoPrecosMock: ServicoPrecos = {
   async listarPrecos(filtro = {}) {
+    await apagarOrfaos();
     // Serviços do estado atual da identidade: inclui quem virou prestadora
     // no onboarding e o que foi marcado ou tirado em "Editar perfil".
-    const ids = filtro.prestadoraId
-      ? [filtro.prestadoraId]
-      : perfisMockAtuais()
-          .filter((p) => p.papel === "prestadora")
-          .map((p) => p.id)
-          .sort();
+    const ids = filtro.prestadoraId ? [filtro.prestadoraId] : idsPrestadoras();
     const listas = await Promise.all(ids.map(servicosDe));
     return listas
       .flat()
@@ -80,6 +92,7 @@ export const servicoPrecosMock: ServicoPrecos = {
     if (perfil.papel !== "prestadora") {
       throw new ErroIdentidade("permissao", "Só prestadoras podem definir preços.");
     }
+    await apagarOrfaos();
     const meus = await servicosDe(perfil.id);
     // Confere todos antes de gravar, para não salvar só metade.
     const servicos = alteracoes.map(({ categoria_id }) => {
