@@ -104,7 +104,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
             e.preventDefault();
             campoCidade.current?.blur();
           }}
-          className="flex h-12 items-center gap-2.5 rounded-3xl bg-papel pl-3.5 pr-1.5 text-suave focus-within:outline-2 focus-within:outline-vinho md:max-w-xl"
+          className="flex h-12 items-center gap-2.5 rounded-3xl bg-papel pl-3.5 pr-1.5 text-suave has-[input:focus]:outline-2 has-[input:focus]:outline-vinho md:max-w-xl"
         >
           <IconePino size={20} className="shrink-0 text-vinho" />
           <input
