@@ -77,45 +77,43 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
 
   return (
     <>
-      <div className="rounded-b-[28px] bg-rosa pb-4 pt-5 md:pb-7 md:pt-6">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3.5 px-5">
-          <div className="flex items-center justify-end gap-3 text-[13.5px]">
-            {!perfil ? (
-              <Link href="/entrar" className="inline-block px-1 py-2.5 font-bold text-vinho">
-                Entrar
-              </Link>
-            ) : !perfil.papel ? (
-              <Link href="/onboarding" className="inline-block px-1 py-2.5 font-bold text-vinho">
-                Concluir cadastro
-              </Link>
-            ) : (
-              <span className="truncate py-2.5 text-corpo">
-                Olá, {perfil.nome?.split(" ")[0] ?? "você"}
-              </span>
-            )}
-          </div>
-          <h1 className="font-display text-[26px] font-semibold leading-[1.15] md:text-[34px]">
-            Do que você precisa hoje?
-          </h1>
-          <label className="flex h-12 items-center gap-2.5 rounded-3xl bg-papel px-3.5 text-suave md:max-w-xl">
-            <IconePino size={20} className="text-vinho" />
-            <input
-              type="search"
-              aria-label="Cidade"
-              placeholder="Em qual cidade? Ex.: João Pessoa"
-              value={filtros.cidade ?? ""}
-              onChange={(e) => setFiltros({ ...filtros, cidade: e.target.value })}
-              className="min-w-0 flex-1 bg-transparent text-base text-texto outline-none placeholder:text-suave"
-            />
-          </label>
+      <div className="flex flex-col gap-3.5 rounded-b-[28px] bg-rosa px-5 pb-4 pt-5">
+        <div className="flex items-center justify-end gap-3 text-[13.5px]">
+          {!perfil ? (
+            <Link href="/entrar" className="inline-block px-1 py-2.5 font-bold text-vinho">
+              Entrar
+            </Link>
+          ) : !perfil.papel ? (
+            <Link href="/onboarding" className="inline-block px-1 py-2.5 font-bold text-vinho">
+              Concluir cadastro
+            </Link>
+          ) : (
+            <span className="truncate py-2.5 text-corpo">
+              Olá, {perfil.nome?.split(" ")[0] ?? "você"}
+            </span>
+          )}
         </div>
+        <h1 className="font-display text-[26px] font-semibold leading-[1.15] md:text-[34px]">
+          Do que você precisa hoje?
+        </h1>
+        <label className="flex h-12 items-center gap-2.5 rounded-3xl bg-papel px-3.5 text-suave md:max-w-xl">
+          <IconePino size={20} className="text-vinho" />
+          <input
+            type="search"
+            aria-label="Cidade"
+            placeholder="Em qual cidade? Ex.: João Pessoa"
+            value={filtros.cidade ?? ""}
+            onChange={(e) => setFiltros({ ...filtros, cidade: e.target.value })}
+            className="min-w-0 flex-1 bg-transparent text-base text-texto outline-none placeholder:text-suave"
+          />
+        </label>
       </div>
 
       {/* No computador (lg) os serviços viram uma coluna ao lado da lista. */}
-      <div className="flex min-h-0 flex-1 flex-col md:mx-auto md:w-full md:max-w-6xl lg:flex-row lg:gap-2">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:gap-7">
         <nav
           aria-label="Serviços"
-          className="flex gap-2 overflow-x-auto px-5 pb-1 pt-3.5 lg:w-60 lg:shrink-0 lg:flex-col lg:self-start lg:overflow-visible lg:pr-0 lg:pt-6"
+          className="flex gap-2 overflow-x-auto px-5 pb-1 pt-3.5 md:px-0 lg:w-56 lg:shrink-0 lg:flex-col lg:self-start lg:overflow-visible lg:pt-6"
         >
           {chips.map((c) => {
             const on = c.id === filtros.categoriaId;
@@ -135,7 +133,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
           })}
         </nav>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pb-4 pt-2 md:overflow-visible md:pb-10 lg:pt-6">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pb-4 pt-2 md:overflow-visible md:px-0 md:pb-10 lg:pt-6">
           <div className="flex items-center justify-between gap-2">
             <Rotulo>{filtros.ordenarPor === "nome" ? "Em ordem alfabética" : "Melhores avaliadas"}</Rotulo>
             <label className="flex items-center gap-1 text-[13px] text-suave">
@@ -180,7 +178,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
           )}
 
           {prestadoras && prestadoras.length > 0 && (
-            <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
               {prestadoras.map((p, i) => (
                 <li key={p.id}>
                   <Link
