@@ -18,3 +18,13 @@
   --font-display: "Fraunces", serif;
   --font-corpo: "DM Sans", system-ui, sans-serif;
 }
+
+/* Tela responsiva (components/rede/Tela.tsx). A partir de md, cada filho direto
+   da Tela ocupa a largura toda (o fundo vai de ponta a ponta) e o conteúdo
+   fica centralizado em até 72rem, com no mínimo 1.25rem de margem. Fica fora
+   de @layer para valer sobre o px-* que as telas usam no celular. */
+@media (width >= 48rem) {
+  .tela > * {
+    padding-inline: max(1.25rem, calc((100% - 72rem) / 2));
+  }
+}

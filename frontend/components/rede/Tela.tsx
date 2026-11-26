@@ -2,22 +2,27 @@ import Link from "next/link";
 
 import { IconeBusca, IconeCasa, IconeChat, IconePessoa } from "./icones";
 
-// Coluna de celular centralizada; no desktop vira um "aparelho" no meio da página.
-// Com largura="larga", a partir de md a coluna ocupa a página toda e cada tela
-// limita o próprio conteúdo (ex.: max-w-6xl). Só a busca e a prestadora usam.
+// Moldura de todas as telas, responsiva por padrão. No celular é uma coluna
+// de tela cheia. A partir de md ocupa a página toda: cada faixa (cabeçalho rosa,
+// barra de abas, conteúdo) vai de ponta a ponta, com o conteúdo centralizado em
+// até 72rem (regra .tela em globals.css). Telas de formulário passam
+// estreita: no computador viram um cartão centralizado, que não estica.
 export function Tela({
   children,
   className = "",
-  largura = "celular",
+  estreita = false,
 }: {
   children: React.ReactNode;
   className?: string;
-  largura?: "celular" | "larga";
+  estreita?: boolean;
 }) {
-  const classeLargura =
-    largura === "larga" ? "max-w-[430px] shadow-xl md:max-w-none md:shadow-none" : "max-w-[430px] shadow-xl";
+  const classeComputador = estreita
+    ? "md:my-10 md:min-h-0 md:max-w-lg md:rounded-[28px]"
+    : "tela md:max-w-none md:shadow-none";
   return (
-    <div className={`mx-auto flex min-h-dvh w-full flex-col bg-crema ${classeLargura} ${className}`}>
+    <div
+      className={`mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-crema shadow-xl ${classeComputador} ${className}`}
+    >
       {children}
     </div>
   );
@@ -77,14 +82,18 @@ const ABAS = [
 
 type Aba = (typeof ABAS)[number]["id"];
 
-// Barra de abas de baixo, do celular. Nas telas largas, passe className="md:hidden"
-// e use a BarraTopo no lugar.
-export function BarraAbas({ ativa, className = "" }: { ativa: Aba; className?: string }) {
+// Abas principais. No celular ficam embaixo, como num app; a partir de md
+// sobem para o topo (order-first na coluna da Tela), com a marca à esquerda.
+// Para telas que só mostram as abas no computador, passe className="hidden md:flex".
+export function BarraAbas({ ativa, className = "" }: { ativa?: Aba; className?: string }) {
   return (
     <nav
       aria-label="Principal"
-      className={`flex border-t border-borda bg-papel px-5 pb-5 pt-2.5 ${className}`}
+      className={`flex border-t border-borda bg-papel px-5 pb-5 pt-2.5 md:sticky md:top-0 md:z-10 md:order-first md:items-center md:gap-1 md:border-b md:border-t-0 md:py-2.5 ${className}`}
     >
+      <Link href="/" aria-label="Rede de Mulheres, ir para a busca" className="mr-auto hidden rounded-full md:block">
+        <Marca />
+      </Link>
       {ABAS.map(({ id, rotulo, href, Icone }) => {
         const on = id === ativa;
         return (
@@ -92,8 +101,8 @@ export function BarraAbas({ ativa, className = "" }: { ativa: Aba; className?: s
             key={id}
             href={href}
             aria-current={on ? "page" : undefined}
-            className={`flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs ${
-              on ? "font-bold text-vinho" : "font-medium text-suave"
+            className={`flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 text-xs md:flex-none md:flex-row md:gap-2 md:rounded-full md:px-4 md:text-[14.5px] ${
+              on ? "font-bold text-vinho md:bg-rosa" : "font-medium text-suave md:hover:bg-rosa-claro"
             }`}
           >
             <Icone />
@@ -102,38 +111,6 @@ export function BarraAbas({ ativa, className = "" }: { ativa: Aba; className?: s
         );
       })}
     </nav>
-  );
-}
-
-// Navegação do computador (a partir de md): marca à esquerda e as mesmas abas
-// da BarraAbas no topo. No celular fica escondida.
-export function BarraTopo({ ativa }: { ativa?: Aba }) {
-  return (
-    <header className="sticky top-0 z-10 hidden border-b border-borda bg-papel md:block">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-5 py-2.5">
-        <Link href="/" aria-label="Rede de Mulheres, ir para a busca" className="rounded-full">
-          <Marca />
-        </Link>
-        <nav aria-label="Principal" className="flex gap-1">
-          {ABAS.map(({ id, rotulo, href, Icone }) => {
-            const on = id === ativa;
-            return (
-              <Link
-                key={id}
-                href={href}
-                aria-current={on ? "page" : undefined}
-                className={`flex min-h-11 items-center gap-2 rounded-full px-4 text-[14.5px] focus-visible:outline-2 focus-visible:outline-vinho ${
-                  on ? "bg-rosa font-bold text-vinho" : "font-medium text-suave hover:bg-rosa-claro"
-                }`}
-              >
-                <Icone />
-                {rotulo}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-    </header>
   );
 }
 
