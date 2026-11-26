@@ -18,7 +18,7 @@ import type {
 import type { Perfil } from "@/lib/identidade/types";
 
 import { Avatar, tomDaPosicao } from "./Avatar";
-import { linhaServicoCidade } from "./Categorias";
+import { textoCategorias, textoCidade } from "./Categorias";
 import { Carregando, Erro, Vazio } from "./Estados";
 import { SeloNota } from "./Estrelas";
 
@@ -212,13 +212,20 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
                     <Avatar nome={p.nome} url={p.avatarUrl} tamanho={52} fundo={tomDaPosicao(i)} />
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <b className="truncate text-base">{p.nome}</b>
-                      <span className="truncate text-[13.5px] text-suave">
-                        {linhaServicoCidade(p.categorias, p.cidade)}
-                      </span>
-                      <span className="text-[13px] text-suave">
-                        {p.totalAvaliacoes === 0
-                          ? "Sem avaliações ainda"
-                          : `${p.totalAvaliacoes} ${p.totalAvaliacoes === 1 ? "avaliação pública" : "avaliações públicas"}`}
+                      {p.categorias.length > 0 && (
+                        <span className="truncate text-[13.5px] text-suave">
+                          {textoCategorias(p.categorias)}
+                        </span>
+                      )}
+                      {/* Cidade em linha própria: no fim da linha de serviços ela sumia no truncate. */}
+                      <span className="flex min-w-0 items-center gap-1 text-[13px] text-suave">
+                        <IconePino size={14} className="shrink-0 text-vinho" />
+                        <span className="truncate">
+                          {textoCidade(p.cidade)} ·{" "}
+                          {p.totalAvaliacoes === 0
+                            ? "Sem avaliações ainda"
+                            : `${p.totalAvaliacoes} ${p.totalAvaliacoes === 1 ? "avaliação" : "avaliações"}`}
+                        </span>
                       </span>
                     </div>
                     <SeloNota nota={p.notaMedia} total={p.totalAvaliacoes} />
