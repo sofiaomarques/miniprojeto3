@@ -5,6 +5,7 @@ import { cadastrar } from "@/app/(auth)/acoes";
 import { Aviso } from "@/components/ui/Aviso";
 import { Botao } from "@/components/ui/Botao";
 import { CampoTexto } from "@/components/ui/CampoTexto";
+import { CampoSenha } from "./CampoSenha";
 import {
   ESTADO_INICIAL,
   SENHA_MINIMA,
@@ -67,10 +68,9 @@ export function FormularioCadastro() {
         erro={erro("email")}
         {...ligar}
       />
-      <CampoTexto
+      <CampoSenha
         rotulo="Senha"
         name="senha"
-        type="password"
         autoComplete="new-password"
         minLength={SENHA_MINIMA}
         required
@@ -78,10 +78,9 @@ export function FormularioCadastro() {
         erro={erro("senha")}
         {...ligar}
       />
-      <CampoTexto
+      <CampoSenha
         rotulo="Confirmar senha"
         name="confirmacao"
-        type="password"
         autoComplete="new-password"
         required
         erro={erro("confirmacao")}
