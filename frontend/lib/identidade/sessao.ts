@@ -10,8 +10,8 @@ import type { Perfil } from "./types";
 
 // Perfil da usuária logada, ou null sem sessão. Pode lançar ErroIdentidade
 // (ex.: Supabase fora do ar).
-// cache(): a navbar (MenuConta) e a página pedem o perfil na mesma request;
-// com o cache, o banco é consultado uma vez só por página.
+// cache(): se mais de um componente pedir o perfil na mesma request, o banco
+// é consultado uma vez só por página.
 export const obterMeuPerfilNoServidor = cache(async (): Promise<Perfil | null> => {
   return servicoIdentidade(await criarClienteServidor()).obterMeuPerfil();
 });
