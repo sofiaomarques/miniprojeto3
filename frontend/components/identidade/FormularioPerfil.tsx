@@ -2,6 +2,7 @@
 // Formulário de edição do próprio perfil (#16): nome, cidade, bio e, para a
 // prestadora, os serviços que ela faz (categorias). Usa o visual das telas da
 // Rede de Mulheres (classeCampo e classeBotao de components/rede/Tela).
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { salvarPerfil, type EstadoEdicaoPerfil } from "@/app/(rede)/perfil/editar/acoes";
 import { classeBotao, classeCampo } from "@/components/rede/Tela";
@@ -25,6 +26,7 @@ export function FormularioPerfil({ perfil, categorias, marcadas }: Props) {
   const ehPrestadora = perfil.papel === "prestadora";
 
   return (
+    <>
     <form action={acao} className="flex flex-col gap-4">
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
 
@@ -104,5 +106,16 @@ export function FormularioPerfil({ perfil, categorias, marcadas }: Props) {
         {enviando ? "Salvando…" : "Salvar"}
       </button>
     </form>
+    {/* Fora do form: o link sai da página, então avisa para salvar antes. */}
+    {ehPrestadora && (
+      <p className="text-[13.5px] leading-[1.45] text-corpo">
+        Quanto você cobra em cada serviço? Defina em{" "}
+        <Link href="/perfil/precos" className="font-bold text-vinho underline">
+          Preços dos serviços
+        </Link>
+        . Marcou um serviço novo? Salve antes.
+      </p>
+    )}
+    </>
   );
 }
