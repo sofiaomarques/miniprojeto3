@@ -11,8 +11,9 @@ import { AvisoDeslogada } from "@/components/chat/AvisoDeslogada";
 import { BolhaMensagem } from "@/components/chat/BolhaMensagem";
 import { CampoMensagem } from "@/components/chat/CampoMensagem";
 import { RespostasRapidas } from "@/components/chat/RespostasRapidas";
-import { IconeCasa, IconeVoltar } from "@/components/rede/icones";
 import { Avatar } from "@/components/descoberta/Avatar";
+import { BotaoInicio } from "@/components/rede/BotaoInicio";
+import { IconeVoltar } from "@/components/rede/icones";
 import { Tela } from "@/components/rede/Tela";
 import { Aviso } from "@/components/ui/Aviso";
 import { respostasRapidas } from "@/lib/chat/respostas";
@@ -195,13 +196,7 @@ export default function ConversaPage() {
         <h1 className="truncate text-base font-bold">{titulo}</h1>
         {subtitulo && <span className="text-[12.5px] text-corpo">{subtitulo}</span>}
       </div>
-      <Link
-        href="/"
-        aria-label="Ir para o início"
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-vinho"
-      >
-        <IconeCasa size={22} />
-      </Link>
+      <BotaoInicio />
     </div>
   );
 
