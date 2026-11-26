@@ -1,16 +1,18 @@
 import Link from "next/link";
 
+import { Aviso } from "@/components/ui/Aviso";
+
 // Estado deslogado das telas do chat: leva para o login (P1) e volta depois.
 export function AvisoDeslogada({ voltarPara }: { voltarPara: string }) {
   return (
-    <div className="space-y-2 rounded border bg-white p-4 text-sm text-zinc-600">
-      <p>Entre na sua conta para ver suas conversas.</p>
+    <Aviso tipo="info">
+      Entre na sua conta para ver suas conversas.{" "}
       <Link
         href={`/entrar?next=${encodeURIComponent(voltarPara)}`}
-        className="font-medium text-rose-700 underline"
+        className="font-bold text-vinho underline"
       >
         Entrar
       </Link>
-    </div>
+    </Aviso>
   );
 }

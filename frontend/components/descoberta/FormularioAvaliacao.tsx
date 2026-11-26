@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
+import { BotaoInicio } from "@/components/rede/BotaoInicio";
 import { IconeEstrela, IconeInfo, IconeVoltar } from "@/components/rede/icones";
 import { classeBotao } from "@/components/rede/Tela";
 import {
@@ -95,14 +96,18 @@ export function FormularioAvaliacao({ prestadoraId, clienteId }: Props) {
     void executar(() => apagarAvaliacao(clienteId, existente.id));
   }
 
+  // Seta volta ao perfil; a casinha vai direto para o início.
   const voltar = (
-    <Link
-      href={voltarPara}
-      aria-label="Voltar ao perfil"
-      className="-ml-2.5 flex h-11 w-11 items-center justify-center"
-    >
-      <IconeVoltar size={24} />
-    </Link>
+    <div className="flex items-center justify-between">
+      <Link
+        href={voltarPara}
+        aria-label="Voltar ao perfil"
+        className="-ml-2.5 flex h-11 w-11 items-center justify-center"
+      >
+        <IconeVoltar size={24} />
+      </Link>
+      <BotaoInicio className="-mr-2.5" />
+    </div>
   );
 
   if (erroCarga) {
