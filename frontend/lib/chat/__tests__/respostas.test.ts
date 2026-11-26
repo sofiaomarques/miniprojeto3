@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { iniciais, respostasRapidas } from "../respostas";
+import { respostasRapidas } from "../respostas";
 
 describe("respostasRapidas", () => {
   it("cliente pede orçamento com serviço, bairro e data", () => {
@@ -26,17 +26,5 @@ describe("respostasRapidas", () => {
 
   it("conta sem papel não tem respostas rápidas", () => {
     expect(respostasRapidas(null, "Marina")).toEqual([]);
-  });
-});
-
-describe("iniciais", () => {
-  it("primeira e última palavra", () => {
-    expect(iniciais("Ana Paula Souza")).toBe("AS");
-    expect(iniciais("marina")).toBe("M");
-  });
-
-  it("sem nome vira ?", () => {
-    expect(iniciais(null)).toBe("?");
-    expect(iniciais("   ")).toBe("?");
   });
 });

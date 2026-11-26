@@ -7,7 +7,6 @@ export const metadata: Metadata = {
 };
 
 // Layout mínimo: a moldura fica no layout de cada grupo de rotas ((rede) e (auth)).
-// (site) só guarda o chat até ele passar para (rede).
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
