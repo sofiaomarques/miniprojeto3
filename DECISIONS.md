@@ -39,6 +39,26 @@ Exemplo:
 > - **O que cortamos e por quê:** o "Em alta". Quem abre o app quer ver o
 >   treino de hoje dos amigos, não o post mais curtido da semana.
 
+### Excluir a conta apaga tudo dela (#46)
+
+- **Contexto:** a Edge Function `excluir-conta` apaga os arquivos da conta no
+  Storage e depois chama `auth.admin.deleteUser`. Todas as FKs para `perfis`
+  são `on delete cascade`, então a exclusão leva junto: perfil, serviços e
+  fotos do portfólio (01); as avaliações que a conta escreveu **e** as que
+  recebeu (02); as conversas dela e todas as mensagens dessas conversas,
+  inclusive as da outra pessoa (03).
+- **Opções:** apagar tudo em cascata; ou manter avaliações e conversas
+  anonimizadas ("Conta excluída"), trocando as FKs para `on delete set null`.
+- **Escolha:** apagar tudo, como o banco já faz. Quem sai não deixa nome,
+  nota nem mensagem para trás, e não precisamos tratar autora nula em
+  `avaliacoes_publicas`, `prestadoras_resumo` nem no chat.
+- **O que cortamos e por quê:** a estabilidade da nota. Se uma cliente exclui
+  a conta, as avaliações dela somem e a nota média e o total de avaliações da
+  prestadora mudam. A outra pessoa da conversa perde o histórico. O botão
+  "Excluir conta" precisa avisar isso antes de confirmar. Para mudar de ideia,
+  basta uma migration trocando as FKs de `avaliacoes`, `conversas` e
+  `mensagens`.
+
 ## Features
 
 Listem as features que o time vai construir, quem é o dono de cada uma e por
