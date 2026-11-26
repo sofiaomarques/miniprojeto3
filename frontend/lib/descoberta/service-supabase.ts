@@ -125,9 +125,17 @@ export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<Prestado
           .order("nota_media", { ascending: false, nullsFirst: false })
           .order("nome", { ascending: true });
   // Preços pelo service da P1, numa consulta só (só o serviço filtrado, se houver).
+  // Opcionais: se falharem (ex.: banco ainda sem a 05), todas aparecem "a
+  // combinar" e a busca por nota continua; só a ordem por preço vira erro.
   const [resposta, precos] = await Promise.all([
     consulta,
-    servicoPrecos(clienteSupabase()).listarPrecos({ categoriaId: filtros.categoriaId }),
+    servicoPrecos(clienteSupabase())
+      .listarPrecos({ categoriaId: filtros.categoriaId })
+      .catch((err) => {
+        if (filtros.ordenarPor === "preco") throw err;
+        console.error("Erro ao carregar os preços:", err);
+        return [];
+      }),
   ]);
   const porPrestadora = precosPorPrestadora(precos);
   const resumos = (ou(resposta) as any[]).map((l) => ({
@@ -159,7 +167,13 @@ export async function obterPrestadora(id: string): Promise<PrestadoraDetalhe | n
     identidade.obterPerfil(id),
     identidade.listarFotosDaPrestadora(id),
     listarAvaliacoes(id),
-    servicoPrecos(db).listarPrecos({ prestadoraId: id }),
+    // Opcional, como na busca: sem preços a página continua, tudo "a combinar".
+    servicoPrecos(db)
+      .listarPrecos({ prestadoraId: id })
+      .catch((err) => {
+        console.error("Erro ao carregar os preços:", err);
+        return [];
+      }),
   ]);
   const linhaResumo = ou(resumo);
   if (!linhaResumo || !perfil || perfil.papel !== "prestadora") return null;

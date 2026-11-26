@@ -9,6 +9,9 @@ const A = "00000000-0000-4000-8000-0000000000a1";
 const B = "00000000-0000-4000-8000-0000000000a2";
 const C = "00000000-0000-4000-8000-0000000000a3";
 
+// true = a tabela de preços responde erro (ex.: banco ainda sem a 05).
+let precosQuebrados = false;
+
 const falso = criarClienteFalso({
   responder: (c) => {
     if (c.tabela === "prestadoras_resumo") {
@@ -22,6 +25,7 @@ const falso = criarClienteFalso({
       };
     }
     // servicos_prestadora (preços); numeric pode chegar como texto.
+    if (precosQuebrados) return { data: null, error: { code: "42703", message: "column does not exist" } };
     return {
       data: [
         { prestadora_id: A, categoria_id: 1, preco_base: "200.00", aceita_negociar: false },
@@ -47,5 +51,18 @@ describe("buscarPrestadoras por preço (Supabase)", () => {
     // Sem filtro de serviço: uma consulta só, sem lista de ids.
     expect(argumentos(precos, "eq")).toEqual([]);
     expect(argumentos(precos, "in")).toEqual([]);
+  });
+
+  it("sem preços (erro), a busca por nota continua e todas ficam 'a combinar'", async () => {
+    const { buscarPrestadoras } = await import("../service-supabase");
+    precosQuebrados = true;
+    try {
+      const lista = await buscarPrestadoras({ ordenarPor: "nota" });
+      expect(lista).toHaveLength(3);
+      expect(lista.every((p) => p.precos.length === 0)).toBe(true);
+      await expect(buscarPrestadoras({ ordenarPor: "preco" })).rejects.toThrow();
+    } finally {
+      precosQuebrados = false;
+    }
   });
 });

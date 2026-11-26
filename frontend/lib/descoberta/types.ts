@@ -17,7 +17,10 @@ export type PrestadoraResumo = {
   categorias: CategoriaResumo[]; // a "função" da prestadora (ex.: encanamento)
   notaMedia: number | null; // null quando ainda não tem avaliações; 1 casa decimal
   totalAvaliacoes: number;
-  precos: PrecoCategoria[]; // preço base de cada serviço (05_precos_servicos.sql)
+  // Preço base de cada serviço (05_precos_servicos.sql). Na busca com filtro
+  // de serviço, o Supabase só traz o preço do serviço filtrado (o mock traz
+  // todos); use sempre com o categoriaId do filtro (precoDeReferencia).
+  precos: PrecoCategoria[];
 };
 
 // Preço base de um serviço da prestadora. Vem do service de preços da

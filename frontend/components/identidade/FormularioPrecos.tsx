@@ -97,14 +97,19 @@ function LinhaServico({
 export function FormularioPrecos({ linhas }: Props) {
   const inicial: EstadoPrecos = {};
   const [estado, acao, enviando] = useActionState(salvarPrecos, inicial);
-  // Depois de salvar com sucesso, o formulário é remontado (key) com os
-  // valores novos que a página recarregou.
-  const versao = estado.salvo ? "salvo" : "editando";
+  // A cada resposta da action as linhas remontam (key): depois de salvar, com
+  // os valores que a página recarregou, já normalizados ("150.5" -> "150,50");
+  // depois de um erro, com o que foi digitado (estado.valores).
+  const versao = estado.versao ?? 0;
 
   return (
     <form action={acao} className="flex flex-col gap-4 md:max-w-xl">
       {estado.erro && <Aviso tipo="erro">{estado.erro}</Aviso>}
-      {estado.salvo && <Aviso tipo="sucesso">Preços salvos. Eles já aparecem no seu perfil e na busca.</Aviso>}
+      {estado.salvo && (
+        <Aviso key={estado.versao} tipo="sucesso">
+          Preços salvos. Eles já aparecem no seu perfil e na busca.
+        </Aviso>
+      )}
 
       <ul className="flex flex-col gap-3">
         {linhas.map((linha) => (

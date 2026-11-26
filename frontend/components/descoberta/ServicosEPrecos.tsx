@@ -52,10 +52,7 @@ export function ServicosEPrecos({ categorias, precos, ehDona = false }: Props) {
                 {valor === null ? (
                   <span className="text-[13.5px] text-suave">A combinar</span>
                 ) : (
-                  <>
-                    <span className="block text-[11.5px] text-suave">a partir de</span>
-                    <b className="text-[16px] text-vinho">{formatarPreco(valor)}</b>
-                  </>
+                  <b className="text-[16px] text-vinho">{formatarPreco(valor)}</b>
                 )}
               </span>
             </li>

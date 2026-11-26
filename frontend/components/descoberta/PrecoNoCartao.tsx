@@ -12,7 +12,8 @@ export function PrecoNoCartao({ precos, categoriaId }: Props) {
   if (!ref || ref.precoBase === null) {
     return <span className="text-[13px] text-suave">Preço a combinar</span>;
   }
-  const aPartirDe = !categoriaId && precos.length > 1;
+  // "a partir de" só quando há mais de um preço definido para comparar.
+  const aPartirDe = !categoriaId && precos.filter((p) => p.precoBase !== null).length > 1;
   return (
     <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
       <span className="text-[14px] font-bold text-vinho">

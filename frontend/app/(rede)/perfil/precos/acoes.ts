@@ -14,6 +14,11 @@ export type EstadoPrecos = {
   erros?: Record<number, string>;
   valores?: Record<number, ValorDigitado>;
   salvo?: boolean;
+  // Muda a cada resposta (sucesso ou erro). O formulário remonta com ela:
+  // o React 19 reseta o <form> depois da action e o checkbox voltaria ao
+  // valor inicial no DOM sem o React saber. Também faz o aviso de sucesso
+  // ser anunciado de novo a cada gravação.
+  versao?: number;
 };
 
 const ERRO_GENERICO = "Não foi possível salvar os preços agora. Tente de novo.";
@@ -22,7 +27,7 @@ const ENTRAR = `/entrar?next=${encodeURIComponent("/perfil/precos")}`;
 export async function salvarPrecos(_anterior: EstadoPrecos, form: FormData): Promise<EstadoPrecos> {
   const { alteracoes, erros, valores } = lerFormularioPrecos(form);
   if (Object.keys(erros).length > 0) {
-    return { erro: "Confira os preços marcados abaixo.", erros, valores };
+    return { erro: "Confira os preços marcados abaixo.", erros, valores, versao: Date.now() };
   }
 
   try {
@@ -31,10 +36,10 @@ export async function salvarPrecos(_anterior: EstadoPrecos, form: FormData): Pro
     unstable_rethrow(erro);
     if (ehErroIdentidade(erro) && erro.codigo === "nao_autenticada") redirect(ENTRAR);
     // Mensagem do service: fixa e em português, nunca a do banco.
-    if (ehErroIdentidade(erro)) return { erro: erro.message, valores };
-    return { erro: ERRO_GENERICO, valores };
+    if (ehErroIdentidade(erro)) return { erro: erro.message, valores, versao: Date.now() };
+    return { erro: ERRO_GENERICO, valores, versao: Date.now() };
   }
 
   revalidatePath("/perfil/precos");
-  return { salvo: true };
+  return { salvo: true, versao: Date.now() };
 }
