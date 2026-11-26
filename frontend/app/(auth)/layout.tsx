@@ -11,7 +11,7 @@ export default function LayoutConta({ children }: Readonly<{ children: React.Rea
       <Tela estreita className="gap-6 px-6 py-8">
         <Link
           href="/"
-          title="Voltar para a busca"
+          aria-label="Rede de Mulheres, ir para a busca"
           className="self-start rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-vinho"
         >
           <Marca />
