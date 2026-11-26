@@ -9,18 +9,15 @@ import { useEffect, useRef, useState } from "react";
 import { IconeFechar, IconePino } from "@/components/rede/icones";
 import { Rotulo } from "@/components/rede/Tela";
 import { buscarPrestadoras, listarCategorias } from "@/lib/descoberta/service";
-import type {
-  CategoriaResumo,
-  FiltrosBusca,
-  OrdenarPor,
-  PrestadoraResumo,
-} from "@/lib/descoberta/types";
+import type { CategoriaResumo, FiltrosBusca, PrestadoraResumo } from "@/lib/descoberta/types";
 import type { Perfil } from "@/lib/identidade/types";
 
 import { Avatar, tomDaPosicao } from "./Avatar";
 import { textoCategorias, textoCidade } from "./Categorias";
 import { Carregando, Erro, Vazio } from "./Estados";
 import { SeloNota } from "./Estrelas";
+import { OrdenarPor } from "./OrdenarPor";
+import { PrecoNoCartao } from "./PrecoNoCartao";
 
 const ESPERA_DIGITACAO_MS = 300;
 
@@ -74,6 +71,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
   }, [filtros, tentativa]);
 
   const temFiltro = Boolean(filtros.categoriaId || filtros.cidade?.trim());
+  const ordenarPor = filtros.ordenarPor ?? "nota";
   const chips = [{ id: undefined, nome: "Todos" }, ...categorias];
 
   return (
@@ -158,19 +156,16 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
         </nav>
 
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pb-4 pt-2 md:overflow-visible md:px-0 md:pb-10 lg:pt-6">
-          <div className="flex items-center justify-between gap-2">
-            <Rotulo>{filtros.ordenarPor === "preco" ? "Menor preço primeiro" : "Melhores avaliadas"}</Rotulo>
-            <label className="flex items-center gap-1 text-[13px] text-suave">
-              <span className="sr-only">Ordenar por</span>
-              <select
-                value={filtros.ordenarPor ?? "nota"}
-                onChange={(e) => setFiltros({ ...filtros, ordenarPor: e.target.value as OrdenarPor })}
-                className="min-h-11 rounded-full bg-transparent px-2 text-[13px] font-bold text-vinho"
-              >
-                <option value="nota">Melhor nota</option>
-                <option value="preco">Menor preço</option>
-              </select>
-            </label>
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <Rotulo>{ordenarPor === "preco" ? "Menor preço primeiro" : "Melhores avaliadas"}</Rotulo>
+              {ordenarPor === "preco" && !filtros.categoriaId && (
+                <span className="text-[12.5px] text-suave">
+                  Escolha um serviço para comparar o mesmo trabalho.
+                </span>
+              )}
+            </div>
+            <OrdenarPor valor={ordenarPor} onChange={(ordem) => setFiltros({ ...filtros, ordenarPor: ordem })} />
           </div>
 
           {erro && <Erro mensagem={erro} onTentarDeNovo={() => setTentativa((t) => t + 1)} />}
@@ -227,6 +222,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
                             : `${p.totalAvaliacoes} ${p.totalAvaliacoes === 1 ? "avaliação" : "avaliações"}`}
                         </span>
                       </span>
+                      <PrecoNoCartao precos={p.precos} categoriaId={filtros.categoriaId} />
                     </div>
                     <SeloNota nota={p.notaMedia} total={p.totalAvaliacoes} />
                   </Link>
