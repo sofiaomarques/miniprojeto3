@@ -7,6 +7,16 @@
 //
 // SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são injetadas pelo Supabase no
 // ambiente da função. A chave fica só aqui, nunca no frontend.
+//
+// ATENÇÃO: SUPABASE_SERVICE_ROLE_KEY é a chave LEGADA (o app já usa as
+// sb_publishable_). As chaves novas vêm em SUPABASE_SECRET_KEYS. Se as
+// chaves legadas forem desligadas no painel, esta função para: trocar a
+// leitura daqui para uma chave secret (sb_secret_).
+//
+// O projeto assina os tokens com ES256. Se, depois do deploy, a chamada
+// voltar 401 sem nenhum log da função, é o verify_jwt do gateway recusando:
+// publicar de novo com --no-verify-jwt. É seguro, porque a função valida o
+// token sozinha com admin.auth.getUser(token) logo abaixo.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { excluirConta } from "./excluir.ts";
 

@@ -93,7 +93,14 @@ export async function excluirConta(admin: ClienteAdmin, usuarioId: string): Prom
     }
   }
 
-  // Cascade da 01: perfis, servicos_prestadora e fotos_portfolio saem junto.
+  // O deleteUser apaga em cascata tudo que aponta para a conta:
+  // - 01: perfis, servicos_prestadora e fotos_portfolio;
+  // - 02: as avaliações que ela escreveu E as que recebeu (as duas FKs de
+  //   avaliacoes são on delete cascade). Se uma cliente sai, a nota média e
+  //   o total da prestadora mudam;
+  // - 03: as conversas dela e todas as mensagens delas, inclusive as da outra
+  //   pessoa, que perde o histórico.
+  // Decisão registrada no DECISIONS.md ("Excluir a conta apaga tudo dela").
   const { error } = await admin.auth.admin.deleteUser(usuarioId);
   if (error) return { ok: false, etapa: "usuario" };
   return { ok: true, arquivosApagados };
