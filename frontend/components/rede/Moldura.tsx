@@ -1,4 +1,4 @@
-// Fundo, cores de texto e fontes do protótipo "Rede de Mulheres". Usado pelos
+// Fundo, cores de texto e fontes do protótipo "Repara". Usado pelos
 // grupos (rede) e (auth), para cadastro, login e onboarding terem o mesmo visual.
 // flow-root: a margem da Tela estreita (no computador) fica dentro do fundo.
 export function MolduraRede({ children }: { children: React.ReactNode }) {

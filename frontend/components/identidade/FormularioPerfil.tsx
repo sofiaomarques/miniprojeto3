@@ -1,7 +1,7 @@
 "use client";
 // Formulário de edição do próprio perfil (#16): nome, cidade, bio e, para a
 // prestadora, os serviços que ela faz (categorias). Usa o visual das telas da
-// Rede de Mulheres (classeCampo e classeBotao de components/rede/Tela).
+// Repara (classeCampo e classeBotao de components/rede/Tela).
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { salvarPerfil, type EstadoEdicaoPerfil } from "@/app/(rede)/perfil/editar/acoes";

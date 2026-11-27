@@ -15,13 +15,17 @@ seed aplicado no Supabase, a busca aparece vazia.
 - Tamanho de celular (F12 → modo dispositivo, 390 px) ou o próprio celular.
   O app também funciona no computador; escolham um formato e mantenham.
 - Para o cadastro, um e-mail novo que vocês consigam abrir (ou desliguem a
-  confirmação de e-mail no Supabase; ver o checklist).
+  confirmação de e-mail no Supabase; ver o checklist). Cada ensaio precisa de
+  um e-mail novo.
+- **Depois de cada ensaio, rodem `seed-demo.sql` e logo depois
+  `seed-demo-precos.sql`.** O ensaio conta como "mexer nas contas da demo":
+  a conversa e a avaliação que ele cria apareceriam na gravação seguinte.
 
 ## O roteiro
 
 | Tempo | Tela | O que fazer | O que falar |
 |---|---|---|---|
-| 0:00–0:15 | Início (A) | Mostrar a busca com as prestadoras de João Pessoa. | "A Rede de Mulheres liga mulheres que moram sozinhas a prestadoras de serviços de casa: ar-condicionado, elétrica, encanamento, montagem de móveis." |
+| 0:00–0:15 | Início (A) | Mostrar a busca com as prestadoras de João Pessoa. | "A Repara liga mulheres que moram sozinhas a prestadoras de serviços de casa: ar-condicionado, elétrica, encanamento, montagem de móveis." |
 | 0:15–0:40 | Cadastro → onboarding (A) | **Criar conta** com nome, e-mail e senha (mostrar o olho da senha). No onboarding, escolher **Sou cliente**. | "O cadastro pede o papel uma vez só: cliente ou prestadora. Depois disso ele não muda, para ninguém trocar de lado e ganhar avaliação." |
 | 0:40–1:05 | Busca (A) | Digitar "João Pessoa" na cidade e mostrar que a lista já vem por **Melhor nota**. Tocar no filtro **Instalação de eletrodomésticos** e em **Menor preço**: aparecem a **Aline (R$ 85, Negociável)** e a **Marina (R$ 90)**. | "A busca filtra por serviço e cidade, mostra primeiro quem tem melhor nota pública e deixa comparar o preço base do mesmo serviço, e se a prestadora aceita negociar." |
 | 1:05–1:25 | Perfil da Marina (A) | Abrir **Marina Souza** (está na lista do filtro): serviços com preço, cidade, nota 4,5 e as duas avaliações. | "Toda prestadora tem perfil público com as avaliações de outras mulheres. É isso que dá confiança para abrir a porta de casa." |

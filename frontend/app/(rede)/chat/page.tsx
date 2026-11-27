@@ -1,6 +1,6 @@
 "use client";
 // A página só compõe componentes; as regras e queries ficam em lib/chat.
-// Visual do protótipo "Rede de Mulheres" (components/rede), com a barra de abas.
+// Visual do protótipo "Repara" (components/rede), com a barra de abas.
 
 import Link from "next/link";
 import { useEffect, useState } from "react";

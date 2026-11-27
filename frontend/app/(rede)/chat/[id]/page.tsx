@@ -1,7 +1,7 @@
 "use client";
 // A página só compõe componentes; as regras e queries ficam em lib/chat.
-// Mensagens novas chegam em tempo real (#37). Visual do protótipo "Rede de
-// Mulheres" (components/rede) e respostas rápidas de orçamento (#39).
+// Mensagens novas chegam em tempo real (#37). Visual do protótipo "Repara"
+// (components/rede) e respostas rápidas de orçamento (#39).
 
 import Link from "next/link";
 import { useParams } from "next/navigation";

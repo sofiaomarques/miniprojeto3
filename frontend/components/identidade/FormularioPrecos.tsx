@@ -1,7 +1,7 @@
 "use client";
 // Formulário da tela "Preços dos serviços": para cada serviço, o preço base
 // (vazio = "a combinar") e o aviso "Aceito negociar este valor". Mesmo visual
-// das outras telas da Rede de Mulheres (classeBotao, cartões bg-papel).
+// das outras telas da Repara (classeBotao, cartões bg-papel).
 import { useActionState, useState } from "react";
 import { salvarPrecos, type EstadoPrecos } from "@/app/(rede)/perfil/precos/acoes";
 import { classeBotao } from "@/components/rede/Tela";

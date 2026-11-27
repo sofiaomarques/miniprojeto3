@@ -1,4 +1,4 @@
--- seed-demo.sql — dados de demonstração da Rede de Mulheres (Pessoa 3, #40).
+-- seed-demo.sql — dados de demonstração da Repara (Pessoa 3, #40).
 --
 -- O que cria (tudo em João Pessoa, no nicho de serviços domésticos):
 --   * 6 contas fixas com e-mail e senha conhecidos (tabela no README):
