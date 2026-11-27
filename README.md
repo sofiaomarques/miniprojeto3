@@ -71,7 +71,7 @@ Todas as contas usam a senha **`demo12345`**:
 | `camila@demo.test` | Prestadora (encanamento) | 1 avaliação e 1 conversa |
 | `joana@demo.test` | Prestadora (montagem de móveis) | 1 avaliação e 1 conversa |
 | `aline@demo.test` | Prestadora (elétrica) | 1 avaliação, sem conversas |
-| `beatriz@demo.test` | Cliente | 3 avaliações feitas e 2 conversas, 1 não lida |
+| `beatriz@demo.test` | Cliente | 3 avaliações feitas e 2 conversas, 1 não lida; segue a Fernanda e a Marina |
 | `fernanda@demo.test` | Cliente | 2 avaliações feitas e 2 conversas |
 
 As fotos do portfólio não estão no seed (o SQL não envia arquivos para o
@@ -97,8 +97,14 @@ Na URL pública, https://miniprojeto3-phi.vercel.app, uns 5 minutos:
 4. **Avaliação:** no perfil da Camila, **Já foi atendida? Avaliar Camila** →
    estrelas e comentário → **Publicar avaliação**. A nota dela muda na hora.
    Uma avaliação por cliente; dá para editar depois.
-5. **Perfil:** na aba **Perfil**, a cliente vê os próprios dados e as
-   indicações, e a prestadora vê o próprio perfil e o link para editá-lo.
+5. **Seguir e feed:** no perfil da Marina, toque no nome de quem avaliou
+   (**Fernanda Dias**). Se o botão já mostrar **Seguindo** (caso da Beatriz),
+   não toque nele: abra direto a aba **Indicações**. Senão, toque em
+   **Seguir**. A aba **Indicações** mostra as prestadoras que as pessoas que
+   você segue indicaram.
+6. **Perfil:** na aba **Perfil**, cliente e prestadora veem os números de
+   seguidores e **Encontrar pessoas**. A cliente vê também as próprias
+   indicações; a prestadora, o resumo do que publicou e o link para editar.
 
 Use a Camila nos passos 3 e 4: no seed, a Beatriz já conversa com a Marina e
 já a avaliou, então no perfil da Marina ela veria "Editar sua avaliação" e a
