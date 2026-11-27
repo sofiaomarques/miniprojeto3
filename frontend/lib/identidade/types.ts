@@ -93,4 +93,9 @@ export type ServicoIdentidade = {
   // remove o arquivo do bucket ANTES da linha (contrato da #46).
   enviarMinhaFoto(arquivo: Blob): Promise<FotoPortfolio>;
   apagarMinhaFoto(fotoId: number): Promise<void>;
+  // #18: foto de perfil de qualquer conta (bucket `avatares` da 04). Sobe o
+  // arquivo, grava o link público em avatar_url e apaga o avatar anterior.
+  enviarMeuAvatar(arquivo: Blob): Promise<Perfil>;
+  // Tira o avatar (avatar_url = null) e apaga o arquivo do bucket.
+  removerMeuAvatar(): Promise<Perfil>;
 };

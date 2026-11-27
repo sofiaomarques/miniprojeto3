@@ -9,7 +9,7 @@
 // para o mock falhar nos mesmos casos que o Supabase. A entrada já chega
 // validada por service.ts.
 import { ErroIdentidade } from "./erros";
-import { novoCaminhoFoto } from "./fotos";
+import { novoCaminhoAvatar, novoCaminhoFoto } from "./fotos";
 import type {
   AtualizacaoPerfil,
   CategoriaServico,
@@ -316,5 +316,27 @@ export const servicoMock: ServicoIdentidade = {
     const indice = estado.fotos.findIndex((f) => f.id === fotoId && f.prestadora_id === id);
     if (indice === -1) throw new ErroIdentidade("nao_encontrado", "Foto não encontrada.");
     estado.fotos.splice(indice, 1);
+  },
+
+  // #18: qualquer conta. No mock não há Storage: o link aponta para o próprio
+  // arquivo no navegador (blob:), só para a tela mostrar a foto escolhida.
+  async enviarMeuAvatar(arquivo) {
+    const id = exigirSessao();
+    const perfil = estado.perfis.find((p) => p.id === id);
+    if (!perfil) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+    const url =
+      typeof URL.createObjectURL === "function"
+        ? URL.createObjectURL(arquivo)
+        : `https://mock.invalid/avatares/${novoCaminhoAvatar(id, arquivo.type)}`;
+    Object.assign(perfil, { avatar_url: url, atualizado_em: new Date().toISOString() });
+    return copiar(perfil);
+  },
+
+  async removerMeuAvatar() {
+    const id = exigirSessao();
+    const perfil = estado.perfis.find((p) => p.id === id);
+    if (!perfil) throw new ErroIdentidade("nao_encontrado", "Perfil não encontrado.");
+    Object.assign(perfil, { avatar_url: null, atualizado_em: new Date().toISOString() });
+    return copiar(perfil);
   },
 };

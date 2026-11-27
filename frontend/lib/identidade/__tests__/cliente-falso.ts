@@ -54,6 +54,9 @@ export function criarClienteFalso(opcoes: Opcoes = {}) {
         return {
           upload: (...args: unknown[]) => registrar("upload", args),
           remove: (...args: unknown[]) => registrar("remove", args),
+          getPublicUrl: (caminho: string) => ({
+            data: { publicUrl: `https://exemplo.supabase.co/storage/v1/object/public/${bucket}/${caminho}` },
+          }),
         };
       },
     },

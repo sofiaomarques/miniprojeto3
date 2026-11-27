@@ -36,6 +36,11 @@ export async function MenuConta() {
           Concluir cadastro
         </Link>
       )}
+      {perfil.avatar_url && (
+        // Foto de perfil (#18). alt vazio: o nome já vem logo ao lado.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={perfil.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
+      )}
       <span className="text-zinc-600">{perfil.nome ?? "Minha conta"}</span>
       <BotaoSair />
     </div>
