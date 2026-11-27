@@ -7,13 +7,18 @@ banca e para cada ensaio. Marquem na ordem.
 
 ### Supabase (projeto compartilhado)
 - [ ] **Migrations aplicadas, em ordem:** `01_identidade.sql`, `02_descoberta.sql`,
-      `03_chat.sql` e, quando o #60 entrar, `04_avatares.sql` (SQL Editor →
-      colar o arquivo → Run). Hoje a 01, a 02, a 03 e a 04 já estão aplicadas.
+      `03_chat.sql`, `04_avatares.sql` e `05_precos_servicos.sql` (SQL Editor →
+      colar o arquivo → Run). A 01 a 04 já estavam aplicadas em 26/11. A 05
+      (preços, #74) entra depois do merge do #74: sem ela, a ordem "Menor
+      preço" da busca dá erro.
 - [ ] **Realtime do chat:** em Database → Publications → `supabase_realtime`,
       `mensagens` e `conversas` aparecem (a 03 faz isso; só conferir).
 - [ ] **Seed da demo:** rodar `supabase/seed-demo.sql` no SQL Editor. Conferir
       na URL pública: a busca mostra Marina, Camila, Joana e Aline.
       *Aplicado em 26/11: a busca mostra as 4 prestadoras da demo.*
+- [ ] **Preços da demo:** depois do `seed-demo.sql` e da 05, rodar
+      `supabase/seed-demo-precos.sql`. Conferir na busca: a Marina aparece com
+      "R$ 150" (sem ele, todas aparecem "Preço a combinar").
 - [ ] **Contas de teste soltas:** apagar as contas criadas em testes manuais
       em Authentication → Users, para a busca mostrar só o nicho (a
       "testeprestadora" já saiu em 26/11; repetir antes da entrega se alguém
@@ -47,6 +52,8 @@ banca e para cada ensaio. Marquem na ordem.
 - [ ] **Se alguém mexeu nas contas da demo** (o repositório é público e a senha
       está no README), rodar o `seed-demo.sql` de novo: ele volta perfis,
       senhas, avaliações e conversas, e desloga quem estiver nelas. As fotos e
-      o avatar enviados pelo site continuam.
+      o avatar enviados pelo site continuam. **Logo depois, rodar o
+      `seed-demo-precos.sql`**: o `seed-demo.sql` recria os serviços da demo
+      sem preço.
 - [ ] **Duas janelas prontas** (normal e anônima) para mostrar o chat em tempo
       real, como no [roteiro da demo](roteiro-demo.md).
