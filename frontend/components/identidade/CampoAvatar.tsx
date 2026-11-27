@@ -4,7 +4,7 @@
 // avatares; depois a página é recarregada para a navbar mostrar a foto nova.
 // O círculo (foto ou iniciais) é o Avatar da descoberta, como no resto do site.
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { Avatar } from "@/components/descoberta/Avatar";
 import { Aviso } from "@/components/ui/Aviso";
 import {
@@ -23,6 +23,7 @@ export function CampoAvatar({ nome, avatarUrl }: { nome: string | null; avatarUr
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState<"enviando" | "removendo" | null>(null);
   const campo = useRef<HTMLInputElement>(null);
+  const rotulo = useId(); // "Foto de perfil" dá nome ao grupo de controles
 
   async function trocar(arquivo: File) {
     setErro(null);
@@ -59,8 +60,10 @@ export function CampoAvatar({ nome, avatarUrl }: { nome: string | null; avatarUr
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <span className="text-[13.5px] font-medium">Foto de perfil</span>
+    <div role="group" aria-labelledby={rotulo} className="flex flex-col gap-2">
+      <span id={rotulo} className="text-[13.5px] font-medium">
+        Foto de perfil
+      </span>
       <div className="flex items-center gap-4">
         <Avatar nome={nome} url={url} tamanho={72} fundo="rosa" />
         <div className="flex flex-col gap-1.5">
