@@ -31,7 +31,16 @@ export function Tela({
   );
 }
 
-export function Marca({ fundo = "rosa" }: { fundo?: "rosa" | "papel" }) {
+// fraseSoNoLg: na barra de abas (topo a partir de md), entre 768 e 1023 px a
+// frase espremia em três linhas ao lado das quatro abas; lá ela só aparece
+// a partir de lg. Nas telas de conta, aparece sempre.
+export function Marca({
+  fundo = "rosa",
+  fraseSoNoLg = false,
+}: {
+  fundo?: "rosa" | "papel";
+  fraseSoNoLg?: boolean;
+}) {
   return (
     <div className="flex items-center gap-2.5">
       <div
@@ -44,7 +53,9 @@ export function Marca({ fundo = "rosa" }: { fundo?: "rosa" | "papel" }) {
       {/* O nome não diz o nicho: a frase logo abaixo diz para quem é a rede. */}
       <span className="flex min-w-0 flex-col">
         <span className="font-display text-[19px] font-semibold leading-tight">Repara</span>
-        <span className="max-w-[15rem] text-[12px] leading-tight text-corpo">
+        <span
+          className={`max-w-[15rem] text-[12px] leading-tight text-corpo ${fraseSoNoLg ? "hidden lg:block" : ""}`}
+        >
           Mulheres que contratam mulheres, com confiança
         </span>
       </span>
@@ -80,7 +91,7 @@ export function BarraAbas({ ativa, className = "" }: { ativa?: Aba; className?: 
       className={`flex border-t border-borda bg-papel px-5 pb-5 pt-2.5 md:sticky md:top-0 md:z-10 md:order-first md:items-center md:gap-1 md:border-b md:border-t-0 md:py-2.5 ${className}`}
     >
       <Link href="/" aria-label="Repara, ir para a busca" className="mr-auto hidden rounded-full md:block">
-        <Marca />
+        <Marca fraseSoNoLg />
       </Link>
       {ABAS.map(({ id, rotulo, href, Icone }) => {
         const on = id === ativa;
