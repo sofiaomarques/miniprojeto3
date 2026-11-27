@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 
 import { IconePino, IconeVoltar } from "@/components/rede/icones";
 import { Rotulo } from "@/components/rede/Tela";
+import { PainelSeguir } from "@/components/seguidores/PainelSeguir";
 import { obterPrestadora } from "@/lib/descoberta/service";
 import type { PrestadoraDetalhe } from "@/lib/descoberta/types";
 
@@ -117,6 +118,8 @@ export function PaginaPrestadora({ id }: { id: string }) {
             <NotaMedia nota={notaMedia} total={totalAvaliacoes} />
           </div>
         </div>
+        {/* Quem acompanha a prestadora (seguidores) e o botão Seguir. */}
+        <PainelSeguir perfilId={perfil.id} usuaria={usuaria} />
       </div>
 
       {/* Celular: bio, fotos, avaliações e o botão fixo embaixo. Computador (md):
