@@ -105,3 +105,15 @@ describe("regras", () => {
     expect(ordem.map((c) => c.pessoa.nome)).toEqual(["a", "b"]);
   });
 });
+
+describe("feed (mock)", () => {
+  it("ids de quem eu sigo, mais recentes primeiro", async () => {
+    expect(await mock.idsQueSigo(10)).toEqual([ID_PRESTADORA_MARINA, ID_CLIENTE_FERNANDA]);
+    expect(await mock.idsQueSigo(1)).toEqual([ID_PRESTADORA_MARINA]);
+  });
+
+  it("deslogada não tem feed", async () => {
+    definirUsuariaMock(null);
+    await expect(mock.idsQueSigo(10)).rejects.toThrow(ERRO_SEGUIR_DESLOGADA);
+  });
+});

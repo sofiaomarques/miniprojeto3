@@ -33,3 +33,8 @@ export const ERRO_SEGUIR_GENERICO = "Não foi possível concluir a operação. T
 
 // Máximo de pessoas por lista ou busca (a tela não pagina nesta versão).
 export const LIMITE_LISTA = 100;
+
+// Feed: indicações das últimas LIMITE_FEED_SEGUIDAS pessoas que sigo (o id de
+// cada uma vai na URL da consulta), no máximo LIMITE_FEED indicações.
+export const LIMITE_FEED_SEGUIDAS = 200;
+export const LIMITE_FEED = 50;

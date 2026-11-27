@@ -86,6 +86,22 @@ export async function listar(perfilId: string, tipo: TipoLista): Promise<Conexao
   );
 }
 
+// Ids de quem eu sigo, mais recentes primeiro. A RLS da 06 só mostra as
+// linhas da própria seguidora.
+export async function idsQueSigo(limite: number): Promise<string[]> {
+  const eu = await meuId();
+  if (!eu) throw new Error(ERRO_SEGUIR_DESLOGADA);
+  const linhas = ou(
+    await clienteSupabase()
+      .from("seguidores")
+      .select("seguida_id")
+      .eq("seguidora_id", eu)
+      .order("criado_em", { ascending: false })
+      .limit(limite),
+  ) as any[];
+  return linhas.map((l) => l.seguida_id);
+}
+
 export async function euSigo(perfilId: string): Promise<boolean> {
   const eu = await meuId();
   if (!eu) return false;
