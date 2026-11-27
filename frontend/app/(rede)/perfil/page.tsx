@@ -53,6 +53,12 @@ export default async function PerfilPage() {
         >
           Editar perfil
         </Link>
+        <Link
+          href="/pessoas"
+          className="flex min-h-11 items-center rounded-full border border-vinho px-5 text-sm font-bold text-vinho focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vinho"
+        >
+          Encontrar pessoas
+        </Link>
         {perfil.papel === "prestadora" && (
           <Link
             href="/perfil/fotos"
