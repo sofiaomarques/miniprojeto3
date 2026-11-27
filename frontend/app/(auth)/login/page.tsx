@@ -1,4 +1,4 @@
-// /login é apelido de /entrar (a descoberta e textos antigos usam /login).
+// /login é apelido de /entrar, para links antigos que ainda usam /login.
 // Repassa só um ?next= interno; o resto é descartado.
 import { redirect } from "next/navigation";
 import { caminhoInterno } from "@/lib/identidade/auth";

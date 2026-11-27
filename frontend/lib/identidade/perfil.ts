@@ -4,7 +4,12 @@
 // funções recebem o service pronto, e dá para testar sem Supabase. As telas
 // usam pelo service.ts, que reexporta este arquivo.
 import { ehErroIdentidade } from "./erros";
-import type { AtualizacaoPerfil, CategoriaServico, ServicoIdentidade } from "./types";
+import type {
+  AtualizacaoPerfil,
+  CategoriaServico,
+  ServicoIdentidade,
+  ServicoPrestadora,
+} from "./types";
 
 export type EdicaoPerfil = {
   dados: AtualizacaoPerfil;
@@ -92,4 +97,14 @@ export async function carregarEdicaoPerfil(
     identidade.listarServicosDaPrestadora(perfil.id),
   ]);
   return { categorias, marcadas: servicos.map((s) => s.categoria_id) };
+}
+
+// Nomes dos serviços da prestadora, na ordem do catálogo (#20, resumo no
+// /perfil). Serviço de categoria que não está no catálogo fica de fora.
+export function nomesDosServicos(
+  catalogo: readonly CategoriaServico[],
+  servicos: readonly Pick<ServicoPrestadora, "categoria_id">[],
+): string[] {
+  const marcadas = new Set(servicos.map((s) => s.categoria_id));
+  return catalogo.filter((c) => marcadas.has(c.id)).map((c) => c.nome);
 }

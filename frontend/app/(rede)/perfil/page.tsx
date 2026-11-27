@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BotaoSair } from "@/components/identidade/BotaoSair";
+import { ResumoPrestadora } from "@/components/identidade/ResumoPrestadora";
 import { Avatar } from "@/components/descoberta/Avatar";
 import { ListaIndicacoes } from "@/components/descoberta/ListaIndicacoes";
 import { PainelSeguir } from "@/components/seguidores/PainelSeguir";
@@ -34,8 +35,13 @@ export default async function PerfilPage() {
     .join(" · ");
 
   return (
-    <Tela className="h-dvh md:h-auto">
-      <div className="flex flex-col items-center gap-2 rounded-b-[28px] bg-rosa px-5 pb-5 pt-8 text-center">
+    // Celular: a Tela inteira rola (cabeçalho e conteúdo juntos) e só a barra
+    // de abas fica presa embaixo; com bio longa ou tela baixa, um cabeçalho
+    // fixo deixava o conteúdo sem altura (#20). Computador (md, #71): altura
+    // automática, a página rola e a BarraAbas sobe para o topo. Cabeçalho e
+    // conteúdo ficam filhos diretos da Tela por causa da regra .tela > *.
+    <Tela className="h-dvh overflow-y-auto md:h-auto md:overflow-visible">
+      <div className="flex shrink-0 flex-col items-center gap-2 rounded-b-[28px] bg-rosa px-5 pb-5 pt-8 text-center">
         <Avatar nome={perfil.nome} url={perfil.avatar_url} tamanho={84} fundo="papel" />
         <h1 className="font-display text-[26px] font-semibold leading-[1.15]">
           {perfil.nome ?? "Minha conta"}
@@ -70,16 +76,12 @@ export default async function PerfilPage() {
         <BotaoSair />
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 pt-5 md:overflow-visible md:pb-10">
-        {!ehCliente && (
-          <p className="text-[14.5px] leading-[1.45] text-corpo">
-            Seu perfil de prestadora, com serviços e fotos de trabalhos, aparece aqui em breve.
-          </p>
-        )}
+      <div className="flex flex-1 flex-col gap-3 px-5 pb-5 pt-5 md:pb-10">
+        {!ehCliente && <ResumoPrestadora prestadoraId={perfil.id} />}
         {ehCliente && <ListaIndicacoes clienteId={perfil.id} editavel />}
       </div>
 
-      <BarraAbas ativa="perfil" />
+      <BarraAbas ativa="perfil" className="max-md:sticky max-md:bottom-0" />
     </Tela>
   );
 }
