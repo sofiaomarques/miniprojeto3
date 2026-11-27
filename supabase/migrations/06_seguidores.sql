@@ -75,3 +75,23 @@ revoke all on table public.seguidores from anon, authenticated;
 grant select on table public.seguidores to authenticated;
 grant insert (seguidora_id, seguida_id) on table public.seguidores to authenticated;
 grant delete on table public.seguidores to authenticated;
+
+-- ===========================================================================
+-- Contagem (pública)
+-- ===========================================================================
+-- SECURITY DEFINER: anon não lê a tabela, mas vê os números na página da
+-- prestadora. Devolve só dois números; id inexistente dá 0 e 0.
+create function public.contar_seguidores(perfil_id uuid)
+returns table (seguidores bigint, seguindo bigint)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select
+    (select count(*) from public.seguidores s where s.seguida_id = perfil_id),
+    (select count(*) from public.seguidores s where s.seguidora_id = perfil_id);
+$$;
+
+revoke all on function public.contar_seguidores(uuid) from public;
+grant execute on function public.contar_seguidores(uuid) to anon, authenticated;
