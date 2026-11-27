@@ -536,7 +536,9 @@ export function criarServicoSupabase(cliente: ClienteSupabase): ServicoIdentidad
         );
         return paraFoto(linha as Linha);
       } catch (erro) {
-        await bucket.remove([caminho]);
+        // Se desfazer também falhar (ex.: rede caiu), quem sobe continua
+        // sendo o erro do registro, que já vem com a mensagem traduzida.
+        await bucket.remove([caminho]).catch(() => {});
         throw erro;
       }
     },
