@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BotaoSair } from "@/components/identidade/BotaoSair";
 import { Avatar } from "@/components/descoberta/Avatar";
 import { ListaIndicacoes } from "@/components/descoberta/ListaIndicacoes";
+import { PainelSeguir } from "@/components/seguidores/PainelSeguir";
 import { BarraAbas, Tela } from "@/components/rede/Tela";
 import { Aviso } from "@/components/ui/Aviso";
 import { exigirConta } from "@/lib/rede/sessao";
@@ -40,6 +41,7 @@ export default async function PerfilPage() {
           {perfil.nome ?? "Minha conta"}
         </h1>
         <span className="text-sm text-corpo">{subtitulo}</span>
+        <PainelSeguir perfilId={perfil.id} usuaria={perfil} centralizado />
         {perfil.bio && (
           <p className="mt-1 max-w-[300px] text-[14.5px] leading-[1.45] text-corpo">
             {perfil.bio}
