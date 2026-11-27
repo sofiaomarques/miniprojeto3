@@ -110,7 +110,10 @@ select
   p.avatar_url,
   public.normalizar_texto(p.nome) as nome_normalizado
 from public.perfis p
-where p.papel is not null;
+where p.papel is not null
+  -- Só quem já tem papel enxerga a rede: o cadastro é aberto, e sem isto uma
+  -- conta nova (sem onboarding) listaria o nome de todas as clientes.
+  and public.tem_papel((select auth.uid()));
 
 revoke all on public.pessoas_publicas from public, anon, authenticated;
 grant select on public.pessoas_publicas to authenticated;
@@ -131,7 +134,8 @@ select
   b.avatar_url as seguida_avatar_url
 from public.seguidores s
 join public.perfis a on a.id = s.seguidora_id and a.papel is not null
-join public.perfis b on b.id = s.seguida_id and b.papel is not null;
+join public.perfis b on b.id = s.seguida_id and b.papel is not null
+where public.tem_papel((select auth.uid()));
 
 revoke all on public.seguidores_publicos from public, anon, authenticated;
 grant select on public.seguidores_publicos to authenticated;

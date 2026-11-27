@@ -6,9 +6,12 @@ import type { Conexao } from "./types";
 export const REGEX_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Busca de pessoas: mesma normalização do `normalizar_texto` do banco, sem os
-// curingas do ilike/PostgREST. Vazio = não busca.
+// curingas do ilike/PostgREST. Vazio (ou menos de 2 letras) = não busca.
+export const TERMO_MINIMO = 2;
+
 export function termoDeBusca(texto: string): string {
-  return normalizarTexto(texto).replace(/[%_,*\\()]/g, " ").replace(/\s+/g, " ").trim();
+  const termo = normalizarTexto(texto).replace(/[%_,*\\()]/g, " ").replace(/\s+/g, " ").trim();
+  return termo.length >= TERMO_MINIMO ? termo : "";
 }
 
 // Mais recentes primeiro; empate pelo nome.

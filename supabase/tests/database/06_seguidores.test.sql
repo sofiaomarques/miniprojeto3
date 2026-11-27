@@ -100,6 +100,14 @@ select throws_ok(
      values (auth.uid(), 'c6c6c6c6-0000-4000-8000-000000000003') $$,
   '42501', null, 'conta sem papel não segue ninguém'
 );
+select is_empty(
+  $$ select 1 from public.pessoas_publicas $$,
+  'conta sem papel não lista pessoas da rede'
+);
+select is_empty(
+  $$ select 1 from public.seguidores_publicos $$,
+  'conta sem papel não vê as listas de seguidores'
+);
 
 -- ---------------------------------------------------------------------------
 -- 4. Leitura: B (logada) vê listas com nomes; contagem é pública
