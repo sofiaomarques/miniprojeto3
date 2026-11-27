@@ -2,13 +2,19 @@
 // Galeria editável da prestadora (#17): ver, adicionar e apagar as próprias
 // fotos de trabalhos. O envio é direto do navegador para o Storage (a sessão
 // vem dos cookies); regras em lib/identidade (service.ts e fotos.ts). O link
-// público da foto reusa o urlFotoPortfolio da descoberta (P2), sem mudá-lo.
+// público da foto reusa o urlFotoPortfolio da descoberta (P2), sem mudá-lo,
+// importado direto como no GaleriaPortfolio da P2: reexportá-lo pelo
+// service.ts da identidade fecharia um ciclo de imports com a descoberta.
 import { useEffect, useRef, useState } from "react";
 import { classeBotao } from "@/components/rede/Tela";
 import { Aviso } from "@/components/ui/Aviso";
 import { urlFotoPortfolio } from "@/lib/descoberta/fotos";
-import { TIPOS_FOTO, validarArquivoFoto } from "@/lib/identidade/fotos";
-import { ehErroIdentidade, servicoIdentidade } from "@/lib/identidade/service";
+import {
+  TIPOS_FOTO,
+  ehErroIdentidade,
+  servicoIdentidade,
+  validarArquivoFoto,
+} from "@/lib/identidade/service";
 import type { FotoPortfolio } from "@/lib/identidade/types";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
