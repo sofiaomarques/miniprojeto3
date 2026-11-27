@@ -15,8 +15,23 @@
   --color-suave: #6e5a52;
   --color-borda: #e2d3bf;
   --color-campo: #dccbb5;
-  --font-display: "Fraunces", serif;
-  --font-corpo: "DM Sans", system-ui, sans-serif;
+  /* Uma fonte só, de máquina de escrever, em títulos e texto. --font-sans é a
+     padrão do Tailwind, então a família vale também fora da Moldura; mas o
+     arquivo da fonte só é carregado pela Moldura (fora dela, Courier New). */
+  --font-display: "Courier Prime", "Courier New", monospace;
+  --font-corpo: "Courier Prime", "Courier New", monospace;
+  --font-sans: "Courier Prime", "Courier New", monospace;
+}
+
+/* Visual retangular: nenhum canto arredondado (botões, cartões, campos,
+   avatares, abas). Fica fora de @layer de propósito: regra sem camada vence
+   as utilities do Tailwind (rounded-full, rounded-[28px]...) sem !important,
+   então os componentes não precisam mudar. Um rounded-* novo não tem efeito
+   (só um style inline ou um rounded-*! venceriam esta regra). */
+*,
+::before,
+::after {
+  border-radius: 0;
 }
 
 /* Tela responsiva (components/rede/Tela.tsx). A partir de md, cada filho direto

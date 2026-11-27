@@ -110,7 +110,7 @@ export function BuscaPrestadoras({ perfil, filtrosIniciais }: Props) {
             type="search"
             enterKeyHint="search"
             aria-label="Cidade"
-            placeholder="Em qual cidade? Ex.: João Pessoa"
+            placeholder="Cidade, ex. João Pessoa"
             value={filtros.cidade ?? ""}
             onChange={(e) => setFiltros({ ...filtros, cidade: e.target.value })}
             className="min-w-0 flex-1 bg-transparent text-base text-texto outline-none placeholder:text-suave [&::-webkit-search-cancel-button]:appearance-none"
