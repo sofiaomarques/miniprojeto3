@@ -7,8 +7,7 @@ import Link from "next/link";
 import { Vazio } from "@/components/descoberta/Estados";
 import { Rotulo } from "@/components/rede/Tela";
 import { Aviso } from "@/components/ui/Aviso";
-import { nomesDosServicos } from "@/lib/identidade/perfil";
-import { servicoIdentidade } from "@/lib/identidade/service";
+import { nomesDosServicos, servicoIdentidade } from "@/lib/identidade/service";
 import { criarClienteServidor } from "@/lib/supabase/server";
 
 type Publicado = { servicos: string[]; totalFotos: number };

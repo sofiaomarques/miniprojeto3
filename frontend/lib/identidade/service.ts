@@ -45,6 +45,7 @@ export { ErroIdentidade, ehErroIdentidade } from "./erros";
 export {
   carregarEdicaoPerfil,
   lerEdicaoPerfil,
+  nomesDosServicos,
   sincronizarMeusServicos,
 } from "./perfil";
 export { TIPOS_FOTO, validarArquivoAvatar, validarArquivoFoto } from "./fotos";
