@@ -90,13 +90,17 @@ Na URL pública, https://miniprojeto3-phi.vercel.app, uns 5 minutos:
    na cidade. Abra o perfil da **Marina Souza**: serviços, nota e avaliações.
 2. **Cadastro:** **Entrar** → **Criar conta**. No onboarding, escolha
    **Sou cliente**. Ou entre direto com `beatriz@demo.test` / `demo12345`.
-3. **Chat:** no perfil de uma prestadora, toque em **Conversar e pedir
+3. **Chat:** abra o perfil da **Camila Ribeiro**, toque em **Conversar e pedir
    orçamento** e use o botão **Pedir orçamento**. Para ver o tempo real, abra
-   uma janela anônima com `marina@demo.test` / `demo12345` na aba
-   **Conversas**: a mensagem chega sem recarregar.
-4. **Avaliação:** no perfil da prestadora, **Já foi atendida? Avaliar** →
-   estrelas e comentário. A nota dela muda na hora. Uma avaliação por cliente;
-   dá para editar depois.
+   uma janela anônima com `camila@demo.test` / `demo12345` na aba
+   **Conversas**: a conversa nova chega sem recarregar.
+4. **Avaliação:** no perfil da Camila, **Já foi atendida? Avaliar Camila** →
+   estrelas e comentário → **Publicar avaliação**. A nota dela muda na hora.
+   Uma avaliação por cliente; dá para editar depois.
+
+Use a Camila nos passos 3 e 4: no seed, a Beatriz já conversa com a Marina e
+já a avaliou, então no perfil da Marina ela veria "Editar sua avaliação" e a
+conversa antiga.
 5. **Perfil:** na aba **Perfil**, a cliente vê os próprios dados e as
    indicações, e a prestadora vê o próprio perfil e o link para editá-lo.
 
