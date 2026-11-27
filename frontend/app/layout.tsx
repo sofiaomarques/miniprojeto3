@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Rede de Mulheres",
+  title: "Repara",
   description: "Mulheres que contratam mulheres, com confiança e avaliações públicas.",
 };
 

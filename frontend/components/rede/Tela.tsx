@@ -41,7 +41,7 @@ export function Marca({ fundo = "rosa" }: { fundo?: "rosa" | "papel" }) {
       >
         <IconeCasa />
       </div>
-      <span className="font-display text-[19px] font-semibold">Rede de Mulheres</span>
+      <span className="font-display text-[19px] font-semibold">Repara</span>
     </div>
   );
 }
@@ -73,7 +73,7 @@ export function BarraAbas({ ativa, className = "" }: { ativa?: Aba; className?: 
       aria-label="Principal"
       className={`flex border-t border-borda bg-papel px-5 pb-5 pt-2.5 md:sticky md:top-0 md:z-10 md:order-first md:items-center md:gap-1 md:border-b md:border-t-0 md:py-2.5 ${className}`}
     >
-      <Link href="/" aria-label="Rede de Mulheres, ir para a busca" className="mr-auto hidden rounded-full md:block">
+      <Link href="/" aria-label="Repara, ir para a busca" className="mr-auto hidden rounded-full md:block">
         <Marca />
       </Link>
       {ABAS.map(({ id, rotulo, href, Icone }) => {
