@@ -12,12 +12,14 @@ describe("ehRotaProtegida", () => {
     "/chat/123",
     "/minhas-indicacoes",
     "/avaliar/ana",
+    "/pessoas",
+    "/pessoas/abc/seguidores",
   ])(
     "%s exige login",
     (caminho) => expect(ehRotaProtegida(caminho)).toBe(true),
   );
 
-  it.each(["/", "/buscar", "/prestadoras/abc", "/entrar", "/cadastro", "/onboarding", "/auth/callback", "/chatbot", "/perfis"])(
+  it.each(["/", "/buscar", "/prestadoras/abc", "/entrar", "/cadastro", "/onboarding", "/auth/callback", "/chatbot", "/perfis", "/pessoal"])(
     "%s é pública (inclusive nomes parecidos com rotas protegidas)",
     (caminho) => expect(ehRotaProtegida(caminho)).toBe(false),
   );
