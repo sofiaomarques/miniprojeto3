@@ -47,7 +47,7 @@ export {
   lerEdicaoPerfil,
   sincronizarMeusServicos,
 } from "./perfil";
-export { TIPOS_FOTO, validarArquivoFoto } from "./fotos";
+export { TIPOS_FOTO, validarArquivoAvatar, validarArquivoFoto } from "./fotos";
 
 // Qualquer cliente criado por lib/supabase (navegador ou servidor).
 export type ClienteSupabase = SupabaseClient;

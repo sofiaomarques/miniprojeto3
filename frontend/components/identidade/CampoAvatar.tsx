@@ -5,8 +5,12 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Aviso } from "@/components/ui/Aviso";
-import { TIPOS_FOTO, validarArquivoAvatar } from "@/lib/identidade/fotos";
-import { ehErroIdentidade, servicoIdentidade } from "@/lib/identidade/service";
+import {
+  TIPOS_FOTO,
+  ehErroIdentidade,
+  servicoIdentidade,
+  validarArquivoAvatar,
+} from "@/lib/identidade/service";
 import { criarClienteNavegador } from "@/lib/supabase/client";
 
 const ACEITOS = Object.keys(TIPOS_FOTO).join(",");
