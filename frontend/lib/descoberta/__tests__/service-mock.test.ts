@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   CATEGORIAS_MOCK,
   ID_CLIENTE_BEATRIZ,
+  ID_CLIENTE_FERNANDA,
   ID_PRESTADORA_ALINE,
   ID_PRESTADORA_CAMILA,
   ID_PRESTADORA_MARINA,
@@ -97,5 +98,15 @@ describe("texto", () => {
   it("média com uma casa", () => {
     expect(mediaComUmaCasa([])).toBeNull();
     expect(mediaComUmaCasa([5, 4, 4])).toBe(4.3);
+  });
+});
+
+describe("indicações de várias clientes (mock)", () => {
+  it("junta as das clientes pedidas, mais recentes primeiro, com limite", async () => {
+    const todas = await mock.listarIndicacoesDasClientes([ID_CLIENTE_BEATRIZ, ID_CLIENTE_FERNANDA], 10);
+    expect(todas.length).toBeGreaterThan(1);
+    expect(todas.map((a) => a.criadaEm)).toEqual([...todas.map((a) => a.criadaEm)].sort().reverse());
+    expect(await mock.listarIndicacoesDasClientes([ID_CLIENTE_BEATRIZ, ID_CLIENTE_FERNANDA], 1)).toHaveLength(1);
+    expect(await mock.listarIndicacoesDasClientes([ID_PRESTADORA_MARINA], 10)).toEqual([]);
   });
 });

@@ -63,3 +63,10 @@ export function apagarAvaliacao(clienteId: string, id: number): Promise<void> {
 export function listarIndicacoesDaCliente(clienteId: string): Promise<Avaliacao[]> {
   return impl.listarIndicacoesDaCliente(clienteId);
 }
+
+// Indicações de várias clientes juntas (o feed de quem eu sigo), mais
+// recentes primeiro, no máximo `limite`. Lista vazia não consulta o banco.
+export function listarIndicacoesDasClientes(clienteIds: string[], limite = 50): Promise<Avaliacao[]> {
+  if (clienteIds.length === 0) return Promise.resolve([]);
+  return impl.listarIndicacoesDasClientes(clienteIds, limite);
+}

@@ -245,3 +245,21 @@ export async function listarIndicacoesDaCliente(clienteId: string): Promise<Aval
   );
   return (linhas as any[]).map(paraAvaliacaoPublica);
 }
+
+export async function listarIndicacoesDasClientes(
+  clienteIds: string[],
+  limite: number,
+): Promise<Avaliacao[]> {
+  // Só uuids: um id inválido no `in` derrubaria a consulta inteira (22P02).
+  const ids = clienteIds.filter((id) => REGEX_UUID.test(id));
+  if (ids.length === 0) return [];
+  const linhas = ou(
+    await clienteSupabase()
+      .from("avaliacoes_publicas")
+      .select("*")
+      .in("cliente_id", ids)
+      .order("criada_em", { ascending: false })
+      .limit(limite),
+  );
+  return (linhas as any[]).map(paraAvaliacaoPublica);
+}
