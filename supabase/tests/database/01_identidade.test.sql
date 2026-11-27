@@ -195,7 +195,12 @@ select throws_ok(
 select set_config('request.jwt.claims', '{"role": "anon"}', true);
 set local role anon;
 
-select is((select count(*) from public.perfis), 1::bigint, 'anon só lê perfis de prestadoras (B)');
+select is(
+  (select array_agg(id) from public.perfis where id in (
+     '11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222',
+     '33333333-3333-3333-3333-333333333333', '44444444-4444-4444-4444-444444444444')),
+  array['22222222-2222-2222-2222-222222222222'::uuid], 'anon só lê perfis de prestadoras (B)'
+);
 select is((select count(*) from public.perfis where papel is distinct from 'prestadora'), 0::bigint, 'anon não lê clientes nem contas sem papel');
 select ok((select count(*) from public.categorias_servico) >= 4, 'anon lê categorias');
 select throws_ok($$ update public.perfis set nome = 'anon' $$, '42501', null, 'anon não edita perfis');
@@ -319,17 +324,27 @@ select throws_ok(
   $$ insert into storage.objects (bucket_id, name) values ('portfolio', '33333333-3333-3333-3333-333333333333/sub/c.jpg') $$,
   '42501', null, 'upload em subpasta é rejeitado'
 );
-select is((select count(*) from storage.objects where bucket_id = 'portfolio'), 1::bigint, 'prestadora enxerga só os próprios objetos');
+select is(
+  (select count(*) from storage.objects where bucket_id = 'portfolio' and name like '33333333-3333-3333-3333-333333333333/%'),
+  1::bigint, 'prestadora enxerga o próprio objeto'
+);
+select is(
+  (select count(*) from storage.objects where bucket_id = 'portfolio' and name not like '33333333-3333-3333-3333-333333333333/%'),
+  0::bigint, 'prestadora não enxerga objetos de outras contas'
+);
 
 select set_config('request.jwt.claims', '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
 select is((select count(*) from storage.objects where bucket_id = 'portfolio'), 0::bigint, 'outra conta não enxerga objetos alheios via API');
-select lives_ok(
-  $$ delete from storage.objects where bucket_id = 'portfolio' $$,
-  'delete em objeto alheio não dá erro, mas não atinge linha'
+select is_empty(
+  $$ delete from storage.objects where bucket_id = 'portfolio' returning id $$,
+  'delete em objeto alheio não atinge linha'
 );
 
 reset role;
-select is((select count(*) from storage.objects where bucket_id = 'portfolio'), 1::bigint, 'objeto da prestadora continua no bucket');
+select is(
+  (select count(*) from storage.objects where bucket_id = 'portfolio' and name like '33333333-3333-3333-3333-333333333333/%'),
+  1::bigint, 'objeto da prestadora continua no bucket'
+);
 
 -- ---------------------------------------------------------------------------
 -- Storage: configuração do bucket

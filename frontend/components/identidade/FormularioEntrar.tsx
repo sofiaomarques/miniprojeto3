@@ -4,6 +4,7 @@ import { entrar } from "@/app/(auth)/acoes";
 import { Aviso } from "@/components/ui/Aviso";
 import { Botao } from "@/components/ui/Botao";
 import { CampoTexto } from "@/components/ui/CampoTexto";
+import { CampoSenha } from "./CampoSenha";
 import { ESTADO_INICIAL, validarEmail } from "@/lib/identidade/auth";
 import { useValidacaoAoVivo, type Validadores } from "./useValidacaoAoVivo";
 
@@ -33,10 +34,9 @@ export function FormularioEntrar({ next = null }: { next?: string | null }) {
         erro={erro("email")}
         {...ligar}
       />
-      <CampoTexto
+      <CampoSenha
         rotulo="Senha"
         name="senha"
-        type="password"
         autoComplete="current-password"
         required
         erro={erro("senha")}

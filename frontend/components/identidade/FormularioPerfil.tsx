@@ -66,8 +66,11 @@ export function FormularioPerfil({ perfil, categorias, marcadas }: Props) {
           }
           className="h-[120px] resize-none rounded-2xl border border-campo bg-papel p-3.5 text-[15px] leading-[1.45] placeholder:text-suave"
         />
+        {/* bio.length (UTF-16) é o que o maxLength do navegador conta. O banco
+            conta caracteres (code points), que nunca passam disso, então o
+            contador não promete mais do que o campo deixa digitar. */}
         <span className="self-end text-xs text-suave">
-          {[...bio].length}/{BIO_MAXIMO}
+          {bio.length}/{BIO_MAXIMO}
         </span>
       </label>
 

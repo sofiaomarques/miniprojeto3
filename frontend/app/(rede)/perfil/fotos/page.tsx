@@ -15,8 +15,8 @@ export default async function FotosPerfilPage() {
   const perfil = await exigirConta("/perfil/fotos");
 
   return (
-    <Tela className="h-dvh">
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 pb-8 pt-5">
+    <Tela className="h-dvh md:h-auto">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 pb-8 pt-5 md:overflow-visible md:pb-10">
         <Link
           href="/perfil"
           aria-label="Voltar ao perfil"

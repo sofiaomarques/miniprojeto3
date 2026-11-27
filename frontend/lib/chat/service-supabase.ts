@@ -6,7 +6,16 @@
 // cookies do navegador). As telas do chat são todas "use client".
 import { servicoIdentidade } from "@/lib/identidade/service";
 import { criarClienteNavegador } from "@/lib/supabase/client";
-import { type Conversa, ERRO_DESLOGADA, type Mensagem } from "./types";
+import {
+  type AoChegarMensagem,
+  type AoMudarNaoLidas,
+  type CancelarAssinatura,
+  type Conversa,
+  ERRO_DESLOGADA,
+  INTERVALO_CONSULTA_MS,
+  INTERVALO_CONTADOR_MS,
+  type Mensagem,
+} from "./types";
 
 type LinhaConversaResumo = {
   id: number;
@@ -162,4 +171,131 @@ export async function contarNaoLidas(): Promise<number> {
   const { data, error } = await cliente().rpc("nao_lidas");
   if (error) falha(error);
   return data as number;
+}
+
+// Cada assinatura tem um canal com nome próprio. O realtime-js reaproveita o
+// canal quando o nome já existe; no StrictMode do dev o efeito monta, desmonta
+// (removeChannel é assíncrono) e monta de novo, e o .on() cairia num canal já
+// assinado. O contador de não lidas também pode estar em dois lugares da tela.
+let numeroCanal = 0;
+
+// Tempo real (#37). Ouve os INSERTs de `mensagens` desta conversa pelo
+// Supabase Realtime, que respeita a RLS: só chega o que a usuária pode ler.
+// A 03_chat.sql (#43) põe `mensagens` na publicação supabase_realtime.
+//
+// Plano B: consulta o banco a cada INTERVALO_CONSULTA_MS. Ele começa ligado e
+// só desliga quando chega o primeiro evento do Realtime: o canal pode chegar
+// a SUBSCRIBED e mesmo assim não mandar nada (por exemplo, se a tabela não
+// estiver na publicação). Se o canal cai depois, o plano B volta.
+// Ao conectar, faz uma consulta de recuperação: mensagens que chegaram entre
+// o carregamento da tela e a assinatura não se perdem.
+export function assinarMensagens(
+  conversaId: number,
+  ultimoIdConhecido: number,
+  aoChegar: AoChegarMensagem,
+): CancelarAssinatura {
+  const supabase = cliente();
+  let ultimoId = ultimoIdConhecido;
+  let ativa = true;
+  let consulta: ReturnType<typeof setInterval> | null = null;
+  let buscando = false;
+  // Realtime e plano B podem trazer a mesma mensagem; entrega uma vez só.
+  const entregues = new Set<number>();
+
+  function entregar(mensagem: Mensagem) {
+    if (!ativa || entregues.has(mensagem.id)) return;
+    entregues.add(mensagem.id);
+    if (mensagem.id > ultimoId) ultimoId = mensagem.id;
+    aoChegar(mensagem);
+  }
+
+  // Uma consulta por vez: com a rede lenta, as rodadas não se sobrepõem.
+  async function buscarNovas() {
+    if (buscando) return;
+    buscando = true;
+    try {
+      const { data, error } = await supabase
+        .from("mensagens")
+        .select(COLUNAS_MENSAGEM)
+        .eq("conversa_id", conversaId)
+        .gt("id", ultimoId)
+        .order("id", { ascending: true });
+      if (error || !data) return; // tenta de novo na próxima rodada
+      (data as LinhaMensagem[]).map(paraMensagem).forEach(entregar);
+    } finally {
+      buscando = false;
+    }
+  }
+
+  function ligarConsulta() {
+    if (!consulta) consulta = setInterval(() => void buscarNovas(), INTERVALO_CONSULTA_MS);
+  }
+
+  function desligarConsulta() {
+    if (consulta) {
+      clearInterval(consulta);
+      consulta = null;
+    }
+  }
+
+  const canal = supabase
+    .channel(`chat:mensagens:${conversaId}:${++numeroCanal}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "mensagens",
+        filter: `conversa_id=eq.${conversaId}`,
+      },
+      (evento) => {
+        // O Realtime está entregando de verdade: o plano B pode descansar.
+        desligarConsulta();
+        entregar(paraMensagem(evento.new as LinhaMensagem));
+      },
+    )
+    .subscribe((status) => {
+      if (!ativa) return;
+      if (status === "SUBSCRIBED") {
+        void buscarNovas();
+      } else {
+        // CHANNEL_ERROR, TIMED_OUT ou CLOSED: o supabase-js tenta reconectar
+        // sozinho; enquanto isso, o plano B garante as mensagens.
+        ligarConsulta();
+      }
+    });
+
+  ligarConsulta();
+
+  return () => {
+    ativa = false;
+    desligarConsulta();
+    void supabase.removeChannel(canal);
+  };
+}
+
+// Não lidas (#38). Ouve INSERT (mensagem nova) e UPDATE (marcar_lidas preenche
+// lida_em) de `mensagens` em todas as conversas da usuária: a RLS do Realtime
+// só entrega as linhas que ela pode ler. Cada evento chama aoMudar, que conta
+// de novo com nao_lidas(). A recontagem a cada INTERVALO_CONTADOR_MS cobre o
+// Realtime fora do ar.
+export function assinarNaoLidas(aoMudar: AoMudarNaoLidas): CancelarAssinatura {
+  const supabase = cliente();
+  let ativa = true;
+  const avisar = () => {
+    if (ativa) aoMudar();
+  };
+
+  const canal = supabase
+    .channel(`chat:nao-lidas:${++numeroCanal}`)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "mensagens" }, avisar)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mensagens" }, avisar)
+    .subscribe();
+  const recontagem = setInterval(avisar, INTERVALO_CONTADOR_MS);
+
+  return () => {
+    ativa = false;
+    clearInterval(recontagem);
+    void supabase.removeChannel(canal);
+  };
 }

@@ -5,11 +5,19 @@
 // Contrato para as outras pessoas:
 //   P2 (#25): o botão "Conversar" chama iniciarConversa(prestadoraId) e
 //             navega para `/chat/${conversa.id}`.
-//   P1 (#15): a navbar mostra <UnreadBadge /> (#38), que usa contarNaoLidas().
+//   P1 (#15) e protótipo (components/rede): a navbar e a aba "Conversas"
+//             mostram <UnreadBadge /> de "@/components/chat/UnreadBadge" (#38).
 import { usarMocks } from "@/lib/supabase/config";
 import * as mock from "./service-mock";
 import * as real from "./service-supabase";
-import { type Conversa, LIMITE_TEXTO_MENSAGEM, type Mensagem } from "./types";
+import {
+  type AoChegarMensagem,
+  type AoMudarNaoLidas,
+  type CancelarAssinatura,
+  type Conversa,
+  LIMITE_TEXTO_MENSAGEM,
+  type Mensagem,
+} from "./types";
 
 const impl = usarMocks ? mock : real;
 
@@ -62,7 +70,25 @@ export function marcarLidas(conversaId: number): Promise<number> {
   return impl.marcarLidas(conversaId);
 }
 
+// Tempo real (#37): chama aoChegar a cada mensagem nova da conversa (inclusive
+// as enviadas pela própria usuária; use juntarMensagens para não duplicar).
+// Devolve a função que cancela a assinatura. ultimoIdConhecido = maior id já
+// na tela, para a recuperação e o plano B não repetirem mensagens antigas.
+export function assinarMensagens(
+  conversaId: number,
+  ultimoIdConhecido: number,
+  aoChegar: AoChegarMensagem,
+): CancelarAssinatura {
+  return impl.assinarMensagens(conversaId, ultimoIdConhecido, aoChegar);
+}
+
 // Total de mensagens não lidas da usuária (para o <UnreadBadge />).
 export function contarNaoLidas(): Promise<number> {
   return impl.contarNaoLidas();
+}
+
+// Avisa quando o total de não lidas pode ter mudado (mensagem nova ou
+// mensagens marcadas como lidas). Devolve a função que cancela.
+export function assinarNaoLidas(aoMudar: AoMudarNaoLidas): CancelarAssinatura {
+  return impl.assinarNaoLidas(aoMudar);
 }

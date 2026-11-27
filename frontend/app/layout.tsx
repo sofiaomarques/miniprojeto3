@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Mulheres que contratam mulheres, com confiança e avaliações públicas.",
 };
 
-// Layout mínimo: cada grupo de rotas ((site) e (rede)) define a própria moldura.
+// Layout mínimo: a moldura fica no layout de cada grupo de rotas ((rede) e (auth)).
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
