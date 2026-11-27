@@ -19,3 +19,12 @@ export function ordenarConexoes(lista: Conexao[]): Conexao[] {
 }
 
 
+// Para onde vai o clique numa pessoa: prestadora tem a página pública dela
+// (descoberta); cliente, a página de pessoa (com as indicações).
+export function linkDaPessoa(pessoa: { id: string; papel: string | null }): string {
+  return pessoa.papel === "prestadora" ? `/prestadoras/${pessoa.id}` : `/pessoas/${pessoa.id}`;
+}
+
+export function linkDaLista(perfilId: string, tipo: "seguidores" | "seguindo"): string {
+  return `/pessoas/${perfilId}/${tipo}`;
+}
