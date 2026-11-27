@@ -11,6 +11,9 @@ banca e para cada ensaio. Marquem na ordem.
       colar o arquivo → Run). Sem a 05 (preços, #74), a ordem "Menor preço"
       da busca dá erro.
       *Aplicado: 01 a 04 em 26/11; a 05 em 27/11.*
+- [ ] **Migration de seguidores:** aplicar `06_seguidores.sql` (depende da 01 e
+      da 02). Sem ela, os números de seguidores aparecem como "–" e o botão
+      Seguir não funciona.
 - [ ] **Realtime do chat:** em Database → Publications → `supabase_realtime`,
       `mensagens` e `conversas` aparecem (a 03 faz isso; só conferir).
 - [ ] **Seed da demo:** rodar `supabase/seed-demo.sql` no SQL Editor. Conferir
