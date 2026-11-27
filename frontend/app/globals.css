@@ -23,6 +23,17 @@
   --font-sans: "Courier Prime", "Courier New", monospace;
 }
 
+/* Visual retangular: nenhum canto arredondado (botões, cartões, campos,
+   avatares, abas). Fica fora de @layer de propósito: regra sem camada vence
+   as utilities do Tailwind (rounded-full, rounded-[28px]...) sem !important,
+   então os componentes não precisam mudar. Um rounded-* novo não tem efeito
+   (só um style inline ou um rounded-*! venceriam esta regra). */
+*,
+::before,
+::after {
+  border-radius: 0;
+}
+
 /* Tela responsiva (components/rede/Tela.tsx). A partir de md, cada filho direto
    da Tela ocupa a largura toda (o fundo vai de ponta a ponta) e o conteúdo
    fica centralizado em até 72rem, com no mínimo 1.25rem de margem. Fica fora
