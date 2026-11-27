@@ -14,6 +14,7 @@ banca e para cada ensaio. Marquem na ordem.
 - [ ] **Migration de seguidores:** aplicar `06_seguidores.sql` (depende da 01 e
       da 02). Sem ela, os números de seguidores aparecem como "–" e o botão
       Seguir não funciona.
+      *Aplicado em 27/11.*
 - [ ] **Realtime do chat:** em Database → Publications → `supabase_realtime`,
       `mensagens` e `conversas` aparecem (a 03 faz isso; só conferir).
 - [ ] **Seed da demo:** rodar `supabase/seed-demo.sql` no SQL Editor. Conferir
@@ -26,8 +27,9 @@ banca e para cada ensaio. Marquem na ordem.
       *Aplicado em 27/11.*
 - [ ] **Seguidores da demo:** depois do `seed-demo.sql` e da 06, rodar
       `supabase/seed-demo-seguidores.sql`. Conferir: a página da Marina mostra
-      "2 seguidores", e a Beatriz, na aba **Indicações**, vê a indicação que a
-      Fernanda fez da Camila. Pode rodar de novo.
+      "2 seguidores", e a Beatriz, na aba **Indicações**, vê as indicações da
+      Fernanda (Camila e Marina). Pode rodar de novo.
+      *Aplicado em 27/11.*
 - [ ] **Contas de teste soltas:** apagar as contas criadas em testes manuais
       em Authentication → Users, para a busca mostrar só o nicho (a
       "testeprestadora" já saiu em 26/11; repetir antes da entrega se alguém
