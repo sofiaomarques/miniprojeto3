@@ -31,6 +31,10 @@ seed aplicado no Supabase, a busca aparece vazia.
 | 3:10–3:40 | Perfil (A) e explicação | Abrir a aba **Perfil** da cliente: perfil, **Editar perfil** e **Minhas indicações**. | **Decisão de produto:** "O perfil da cliente não é público: bio e bairro só ela vê. Nome e foto aparecem só para quem tem conta e já escolheu o papel, para uma amiga achar a outra e seguir, e a cliente nunca expõe onde mora. Para quem mora sozinha, isso é um risco que não corremos." |
 | 3:40–4:00 | Fechamento | Voltar para a busca (casinha ou aba **Buscar**). | "Mulheres que contratam mulheres, com confiança e avaliações públicas. Obrigado!" |
 
+**Cronometrem o cadastro no ensaio:** 25 s para nome, e-mail, senha e
+onboarding é apertado. Se passar, tirem o tempo da busca (0:40–1:05), que é o
+trecho mais fácil de encurtar.
+
 ## Se algo der errado na hora
 
 - **Busca vazia:** o seed não foi aplicado. Rodem o `seed-demo.sql` (checklist)
@@ -39,14 +43,18 @@ seed aplicado no Supabase, a busca aparece vazia.
   cada poucos segundos, então a mensagem aparece mesmo sem o Realtime. Esperem
   uns 3 segundos antes de cortar a cena.
 - **Cadastro pede confirmação de e-mail:** usem uma conta pronta
-  (`beatriz@demo.test`) e mostrem o cadastro só até o envio. **Com a Beatriz,
-  troquem a Marina pela Camila Ribeiro** no chat e na avaliação (janela B com
-  `camila@demo.test`): no seed, a Beatriz já conversa com a Marina e já a
-  avaliou, então lá apareceria "Editar sua avaliação" e a conversa antiga.
-  A Camila não aparece no filtro Instalação de eletrodomésticos: antes de
-  abri-la, toquem em **Encanamento** (ou em **Todos**). No trecho de seguir,
-  a Beatriz **já segue a Fernanda** (o botão mostra "Seguindo"): pulem o
-  clique e abram direto a aba **Indicações**.
+  (`beatriz@demo.test`) e mostrem o cadastro só até o envio. Com a Beatriz,
+  o caminho muda um pouco (janela B com `camila@demo.test`):
+  - **Busca e perfil da Marina (0:40–1:25):** iguais. A Beatriz já avaliou a
+    Marina, então ali aparece **"Editar sua avaliação"** por uns segundos; é
+    esperado, não parem nele.
+  - **Seguir (1:25–1:55):** a Beatriz **já segue a Fernanda**, e o botão
+    mostra **"Seguindo"**. **Não toquem nele** (isso deixaria de seguir e a
+    aba Indicações ficaria vazia). Abram direto a aba **Indicações** e, no
+    feed, toquem no card da **Camila Ribeiro**: ele abre o perfil dela.
+  - **Chat e avaliação (1:55–3:10):** com a **Camila**, no lugar da Marina.
+    No seed, a Beatriz já conversa com a Marina e já a avaliou, então lá
+    apareceria a conversa antiga e "Editar sua avaliação".
 - **"Menor preço" dá erro ou tudo aparece "a combinar":** falta a migration
   05 ou o `seed-demo-precos.sql` (checklist). Fiquem em **Melhor nota**.
 - **Alguém mexeu nas contas da demo:** rodar o `seed-demo.sql` de novo volta
@@ -54,12 +62,12 @@ seed aplicado no Supabase, a busca aparece vazia.
 
 ## Ensaio para o pitch (3 min, ao vivo)
 
-A mesma ordem, mais curta: busca → perfil da prestadora → aba **Indicações**
-(o feed de quem eu sigo) → **Conversar e pedir orçamento** → mensagem chegando
-na outra janela → avaliação. Cerca de 1 minuto
-de demo no meio do pitch. Ao vivo, o mais seguro é `beatriz@demo.test` com a
-**Camila Ribeiro** (janela anônima com `camila@demo.test`), pelo mesmo motivo
-do item acima.
+A mesma ordem, mais curta: busca → aba **Indicações** (o feed de quem eu
+sigo) → card da **Camila Ribeiro** no feed, que abre o perfil dela →
+**Conversar e pedir orçamento** → mensagem chegando na outra janela →
+avaliação. Cerca de 1 minuto de demo no meio do pitch. Ao vivo, o mais seguro
+é `beatriz@demo.test` com a **Camila** (janela anônima com
+`camila@demo.test`), pelo mesmo motivo do item acima.
 
 **Slides do pitch:** https://claude.ai/artifact/RZ2FopTmZ6L6Cv3bfE8amV (8 slides:
 capa, público, problema, solução, demo, decisões, o que ficou de fora,
