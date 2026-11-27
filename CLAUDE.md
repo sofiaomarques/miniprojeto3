@@ -9,12 +9,13 @@ Três áreas, uma pessoa por área: **P1** identidade, **P2** descoberta, **P3**
 ## Estrutura
 - `frontend/app/` rotas, em grupos: `(auth)/` `cadastro`, `entrar`, `onboarding` e callback;
   `(rede)/` início (a busca), `prestadoras/[id]`, `perfil` (inclui as indicações da cliente),
-  `avaliar/[id]`, `chat` e `chat/[id]`. `login`, `buscar`, `minhas-indicacoes` e
+  `avaliar/[id]`, `chat`, `chat/[id]` e `pessoas` (busca de pessoas, `pessoas/[id]` e as listas
+  `pessoas/[id]/seguidores` e `seguindo`). `login`, `buscar`, `minhas-indicacoes` e
   `p/[slug]` são só redirects de links antigos: não recriar essas telas
-- `frontend/components/` peças de tela, por área (`ui`, `rede`, `identidade`, `descoberta`, `chat`).
+- `frontend/components/` peças de tela, por área (`ui`, `rede`, `identidade`, `descoberta`, `chat`, `seguidores`).
   Avatar é o de `components/descoberta/Avatar`
-- `frontend/lib/` regras e acesso a dados, por área (`identidade`, `descoberta`, `chat`, `rede`,
-  `supabase`). `lib/rede/sessao.ts` é a sessão das telas (Server Components)
+- `frontend/lib/` regras e acesso a dados, por área (`identidade`, `descoberta`, `chat`, `seguidores`,
+  `rede`, `supabase`). `lib/rede/sessao.ts` é a sessão das telas (Server Components)
 - `frontend/middleware.ts` renova a sessão do Supabase
 - `supabase/migrations/` SQL numerado (01 identidade, 02 descoberta). A 03 (chat) ainda não
   está na `main`, embora `lib/chat/service-supabase.ts` já use `mensagens` e `conversas_resumo`
@@ -55,7 +56,7 @@ Qualquer pedido para codar no `frontend/` segue esta ordem:
   A flag só é ignorada no deploy de produção da Vercel (`NEXT_PUBLIC_VERCEL_ENV=production`);
   em preview e em build local ela continua valendo. **Nunca** usar a chave secret/service_role no frontend.
 - A segurança dos dados está na **RLS do banco**, não nas telas nem no middleware.
-- Migrations são aplicadas **à mão** no Supabase compartilhado, em ordem (01 → 02; a 03, do chat, quando entrar).
+- Migrations são aplicadas **à mão** no Supabase compartilhado, em ordem (01 → 02; a 03, do chat, quando entrar). A 06 (seguidores) depende da 01 e da 02.
 - Pasta dentro do OneDrive quebra o Git (`cannot stat 'frontend'`) e o Next (`EINVAL .next`):
   trabalhe fora dele.
 - Perfis de cliente só são legíveis pela própria dona (RLS da 01); quem precisar ler outros
