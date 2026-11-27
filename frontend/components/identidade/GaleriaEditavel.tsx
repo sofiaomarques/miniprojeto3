@@ -82,7 +82,7 @@ export function GaleriaEditavel({ prestadoraId }: { prestadoraId: string }) {
     <div className="flex flex-col gap-4">
       {erro && <Aviso tipo="erro">{erro}</Aviso>}
 
-      <label className={`${classeBotao} cursor-pointer md:w-80 md:self-start ${enviando ? "pointer-events-none opacity-60" : ""}`}>
+      <label className={`${classeBotao} cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-vinho md:w-80 md:self-start ${enviando ? "pointer-events-none opacity-60" : ""}`}>
         {enviando ? "Enviando…" : "Adicionar foto"}
         <input
           ref={campoArquivo}
