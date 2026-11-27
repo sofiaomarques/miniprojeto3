@@ -1,7 +1,7 @@
 "use client";
 
-// Erro inesperado no /perfil (e /perfil/editar, /perfil/fotos) (#20): em vez
-// da tela de erro do Next, um aviso no visual do protótipo com "Tentar de
+// Erro inesperado no /perfil (e /perfil/editar, /perfil/fotos, /perfil/precos)
+// (#20): em vez da tela de erro do Next, um aviso no visual do protótipo com "Tentar de
 // novo". O detalhe vai só para o console; a mensagem é fixa em português.
 import { useRouter } from "next/navigation";
 import { startTransition, useEffect } from "react";

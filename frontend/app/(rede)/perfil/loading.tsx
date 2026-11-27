@@ -1,5 +1,5 @@
-// Enquanto o /perfil (e /perfil/editar, /perfil/fotos) busca a conta no
-// servidor (#20): esqueleto no visual do protótipo, em vez de tela parada.
+// Enquanto o /perfil (e /perfil/editar, /perfil/fotos, /perfil/precos) busca
+// a conta no servidor (#20): esqueleto no visual do protótipo, em vez de tela parada.
 import { Carregando } from "@/components/descoberta/Estados";
 import { BarraAbas, Tela } from "@/components/rede/Tela";
 

@@ -1,7 +1,8 @@
 "use client";
 // Foto de perfil (#18), para cliente e prestadora: mostra a atual (ou as
 // iniciais), troca e remove. O envio vai direto do navegador para o bucket
-// avatares; depois a página é recarregada para a navbar mostrar a foto nova.
+// avatares; depois os dados do servidor são recarregados (router.refresh)
+// para o /perfil já mostrar a foto nova.
 // O círculo (foto ou iniciais) é o Avatar da descoberta, como no resto do site.
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";

@@ -3,7 +3,16 @@ import { describe, expect, it } from "vitest";
 import { ehRotaProtegida } from "../rotas";
 
 describe("ehRotaProtegida", () => {
-  it.each(["/perfil", "/perfil/editar", "/perfil/fotos", "/chat", "/chat/123", "/minhas-indicacoes", "/avaliar/ana"])(
+  it.each([
+    "/perfil",
+    "/perfil/editar",
+    "/perfil/fotos",
+    "/perfil/precos",
+    "/chat",
+    "/chat/123",
+    "/minhas-indicacoes",
+    "/avaliar/ana",
+  ])(
     "%s exige login",
     (caminho) => expect(ehRotaProtegida(caminho)).toBe(true),
   );
