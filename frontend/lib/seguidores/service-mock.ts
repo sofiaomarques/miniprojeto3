@@ -73,6 +73,16 @@ export async function listar(perfilId: string, tipo: TipoLista): Promise<Conexao
   return ordenarConexoes(conexoes).slice(0, LIMITE_LISTA);
 }
 
+// Ids de quem eu sigo, mais recentes primeiro (como a RLS da 06: só as minhas linhas).
+export async function idsQueSigo(limite: number): Promise<string[]> {
+  const eu = await exigirLogada();
+  return seguimentos
+    .filter((s) => s.seguidoraId === eu.id)
+    .sort((a, b) => b.criadoEm.localeCompare(a.criadoEm))
+    .slice(0, limite)
+    .map((s) => s.seguidaId);
+}
+
 export async function euSigo(perfilId: string): Promise<boolean> {
   const eu = await servicoMock.obterMeuPerfil();
   if (!eu) return false;

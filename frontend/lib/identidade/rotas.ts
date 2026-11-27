@@ -14,6 +14,7 @@ export const ROTAS_PROTEGIDAS: readonly string[] = [
   "/minhas-indicacoes",
   "/avaliar",
   "/pessoas",
+  "/indicacoes",
 ];
 
 function comecaCom(caminho: string, rota: string): boolean {

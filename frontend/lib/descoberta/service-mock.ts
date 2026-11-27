@@ -168,8 +168,16 @@ export async function apagarAvaliacao(clienteId: string, id: number): Promise<vo
 }
 
 export async function listarIndicacoesDaCliente(clienteId: string): Promise<Avaliacao[]> {
+  return listarIndicacoesDasClientes([clienteId], avaliacoes.length);
+}
+
+export async function listarIndicacoesDasClientes(
+  clienteIds: string[],
+  limite: number,
+): Promise<Avaliacao[]> {
   return avaliacoes
-    .filter((a) => a.clienteId === clienteId)
+    .filter((a) => clienteIds.includes(a.clienteId))
     .sort((a, b) => b.criadaEm.localeCompare(a.criadaEm))
+    .slice(0, limite)
     .map(paraAvaliacao);
 }

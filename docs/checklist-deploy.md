@@ -24,6 +24,10 @@ banca e para cada ensaio. Marquem na ordem.
       "a partir de R$ 90" (com o filtro Ar-condicionado, "R$ 150"). Sem o seed
       de preços, todas aparecem "Preço a combinar".
       *Aplicado em 27/11.*
+- [ ] **Seguidores da demo:** depois do `seed-demo.sql` e da 06, rodar
+      `supabase/seed-demo-seguidores.sql`. Conferir: a página da Marina mostra
+      "2 seguidores", e a Beatriz, na aba **Indicações**, vê a indicação que a
+      Fernanda fez da Camila. Pode rodar de novo.
 - [ ] **Contas de teste soltas:** apagar as contas criadas em testes manuais
       em Authentication → Users, para a busca mostrar só o nicho (a
       "testeprestadora" já saiu em 26/11; repetir antes da entrega se alguém
@@ -59,6 +63,7 @@ banca e para cada ensaio. Marquem na ordem.
       senhas, avaliações e conversas, e desloga quem estiver nelas. As fotos e
       o avatar enviados pelo site continuam. **Logo depois, rodar o
       `seed-demo-precos.sql`**: o `seed-demo.sql` recria os serviços da demo
-      sem preço.
+      sem preço. Os seguidores não saem com o `seed-demo.sql`; se alguém
+      mexeu neles, rodar o `seed-demo-seguidores.sql`.
 - [ ] **Duas janelas prontas** (normal e anônima) para mostrar o chat em tempo
       real, como no [roteiro da demo](roteiro-demo.md).

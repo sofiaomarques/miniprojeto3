@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { UnreadBadge } from "@/components/chat/UnreadBadge";
 
-import { IconeBusca, IconeCasa, IconeChat, IconePessoa } from "./icones";
+import { IconeBusca, IconeCasa, IconeChat, IconeCoracao, IconePessoa } from "./icones";
 
 // Moldura de todas as telas, responsiva por padrão. No celular é uma coluna
 // de tela cheia. A partir de md ocupa a página toda: cada faixa (cabeçalho rosa,
@@ -56,6 +56,8 @@ export function Rotulo({ children }: { children: React.ReactNode }) {
 
 const ABAS = [
   { id: "buscar", rotulo: "Buscar", href: "/", Icone: IconeBusca },
+  // Feed: indicações de quem eu sigo (#81).
+  { id: "indicacoes", rotulo: "Indicações", href: "/indicacoes", Icone: IconeCoracao },
   { id: "conversas", rotulo: "Conversas", href: "/chat", Icone: IconeChat },
   { id: "perfil", rotulo: "Perfil", href: "/perfil", Icone: IconePessoa },
 ] as const;

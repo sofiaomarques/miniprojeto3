@@ -9,7 +9,7 @@ Três áreas, uma pessoa por área: **P1** identidade, **P2** descoberta, **P3**
 ## Estrutura
 - `frontend/app/` rotas, em grupos: `(auth)/` `cadastro`, `entrar`, `onboarding` e callback;
   `(rede)/` início (a busca), `prestadoras/[id]`, `perfil` (inclui as indicações da cliente),
-  `avaliar/[id]`, `chat`, `chat/[id]` e `pessoas` (busca de pessoas, `pessoas/[id]` e as listas
+  `avaliar/[id]`, `chat`, `chat/[id]`, `indicacoes` (feed de quem eu sigo) e `pessoas` (busca de pessoas, `pessoas/[id]` e as listas
   `pessoas/[id]/seguidores` e `seguindo`). `login`, `buscar`, `minhas-indicacoes` e
   `p/[slug]` são só redirects de links antigos: não recriar essas telas
 - `frontend/components/` peças de tela, por área (`ui`, `rede`, `identidade`, `descoberta`, `chat`, `seguidores`).

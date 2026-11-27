@@ -6,12 +6,22 @@
 //   contarSeguidores: qualquer pessoa, também sem login;
 //   listas, perfil de pessoa e busca: só logada;
 //   seguir e deixar de seguir: só a conta logada, em nome dela, com papel.
+import { listarIndicacoesDasClientes } from "@/lib/descoberta/service";
+import type { Avaliacao } from "@/lib/descoberta/types";
 import { usarMocks } from "@/lib/supabase/config";
 
 import { REGEX_UUID } from "./regras";
 import * as mock from "./service-mock";
 import * as real from "./service-supabase";
-import { type Conexao, type Contagem, ERRO_SEGUIR_GENERICO, type PessoaResumo, type TipoLista } from "./types";
+import {
+  type Conexao,
+  type Contagem,
+  ERRO_SEGUIR_GENERICO,
+  LIMITE_FEED,
+  LIMITE_FEED_SEGUIDAS,
+  type PessoaResumo,
+  type TipoLista,
+} from "./types";
 
 const impl = usarMocks ? mock : real;
 
@@ -54,4 +64,11 @@ export function obterPessoa(id: string): Promise<PessoaResumo | null> {
 // Por nome, sem diferença de acento ou maiúscula. Ordem alfabética.
 export function buscarPessoas(texto: string): Promise<PessoaResumo[]> {
   return impl.buscarPessoas(texto);
+}
+
+// Feed: indicações (avaliações) de quem eu sigo, mais recentes primeiro.
+// Só logada. Quem eu sigo vem daqui; as indicações, da descoberta (P2).
+export async function listarIndicacoesDeQuemSigo(): Promise<Avaliacao[]> {
+  const ids = await impl.idsQueSigo(LIMITE_FEED_SEGUIDAS);
+  return listarIndicacoesDasClientes(ids, LIMITE_FEED);
 }
