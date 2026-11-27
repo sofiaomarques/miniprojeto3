@@ -82,6 +82,27 @@ entrar nessas contas. Se alguém mudar um perfil, apagar uma avaliação ou
 trocar a senha, é só rodar o seed de novo: ele também desloga quem
 estiver nessas contas.
 
+## Roteiro de teste (para a banca)
+
+Na URL pública, https://miniprojeto3-phi.vercel.app, uns 5 minutos:
+
+1. **Busca, sem login:** filtre por **Ar-condicionado** e digite "João Pessoa"
+   na cidade. Abra o perfil da **Marina Souza**: serviços, nota e avaliações.
+2. **Cadastro:** **Entrar** → **Criar conta**. No onboarding, escolha
+   **Sou cliente**. Ou entre direto com `beatriz@demo.test` / `demo12345`.
+3. **Chat:** no perfil de uma prestadora, toque em **Conversar e pedir
+   orçamento** e use o botão **Pedir orçamento**. Para ver o tempo real, abra
+   uma janela anônima com `marina@demo.test` / `demo12345` na aba
+   **Conversas**: a mensagem chega sem recarregar.
+4. **Avaliação:** no perfil da prestadora, **Já foi atendida? Avaliar** →
+   estrelas e comentário. A nota dela muda na hora. Uma avaliação por cliente;
+   dá para editar depois.
+5. **Perfil:** na aba **Perfil**, a cliente vê os próprios dados e as
+   indicações, e a prestadora vê o próprio perfil e o link para editá-lo.
+
+Roteiro completo do vídeo: [docs/roteiro-demo.md](docs/roteiro-demo.md). Para
+deixar a URL pronta: [docs/checklist-deploy.md](docs/checklist-deploy.md).
+
 ## Primeiros passos do time
 
 1. Leiam o código existente (Supabase em `frontend/lib/supabase`). Toda feature
