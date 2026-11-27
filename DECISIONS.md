@@ -59,6 +59,27 @@ Exemplo:
   basta uma migration trocando as FKs de `avaliacoes`, `conversas` e
   `mensagens`.
 
+### Nome e foto das clientes aparecem para quem tem conta (#78, PR 83)
+
+- **Contexto:** para seguir amigas e ver as indicações delas, a cliente precisa
+  ser achada pelo nome. Na 01 o perfil da cliente só é legível pela dona, e a
+  `avaliacoes_publicas` (02) já mostra a anon o nome e a foto de quem avaliou.
+- **Opções:** (a) qualquer conta com papel acha qualquer cliente pelo nome;
+  (b) a busca acha só prestadoras e clientes já conectadas; (c) a cliente liga,
+  por opção, "meu perfil aparece na rede".
+- **Escolha:** (a), na migration 06. As views `pessoas_publicas` e
+  `seguidores_publicos` expõem só nome, foto e papel, e só para quem já tem
+  papel (`tem_papel(auth.uid())`); o cadastro é aberto, então sem esse filtro
+  uma conta nova listaria todas. A tabela `seguidores` só deixa cada conta ler
+  as próprias linhas. **Confirmada pelo grupo** (27/11): nome e foto das
+  clientes podem ser vistos por quem tem conta e papel.
+- **O que cortamos e por quê:** a privacidade total do nome. Bio e cidade
+  continuam privadas.
+- **Armadilha:** as duas views são `security definer` de propósito (avisos do
+  advisor são esperados). `tem_papel` precisa continuar executável por
+  `authenticated`: as views e a policy de insert a chamam com o papel de quem
+  consulta, e revogá-la quebra as duas.
+
 ## Features
 
 Listem as features que o time vai construir, quem é o dono de cada uma e por
