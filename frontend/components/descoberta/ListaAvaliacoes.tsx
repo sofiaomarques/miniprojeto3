@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { Avaliacao } from "@/lib/descoberta/types";
 
 import { NotaAvaliacao } from "./Estrelas";
@@ -16,7 +18,13 @@ export function ListaAvaliacoes({ avaliacoes }: { avaliacoes: Avaliacao[] }) {
           className="flex flex-col gap-1.5 rounded-[18px] border border-borda bg-papel p-3.5"
         >
           <div className="flex items-center justify-between gap-2 text-sm">
-            <b className="min-w-0 truncate">{a.clienteNome || "Cliente"}</b>
+            {/* O nome abre o perfil de quem avaliou, para seguir e ver as indicações dela. */}
+            <Link
+              href={`/pessoas/${a.clienteId}`}
+              className="min-w-0 truncate font-bold hover:underline focus-visible:outline-2 focus-visible:outline-vinho"
+            >
+              {a.clienteNome || "Cliente"}
+            </Link>
             <NotaAvaliacao nota={a.nota} />
           </div>
           {a.comentario && (
