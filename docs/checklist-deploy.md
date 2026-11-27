@@ -13,10 +13,11 @@ banca e para cada ensaio. Marquem na ordem.
       `mensagens` e `conversas` aparecem (a 03 faz isso; só conferir).
 - [ ] **Seed da demo:** rodar `supabase/seed-demo.sql` no SQL Editor. Conferir
       na URL pública: a busca mostra Marina, Camila, Joana e Aline.
-      *Em 26/11 ainda não estava aplicado: a busca mostrava só uma conta de teste.*
+      *Aplicado em 26/11: a busca mostra as 4 prestadoras da demo.*
 - [ ] **Contas de teste soltas:** apagar as contas criadas em testes manuais
-      (ex.: "testeprestadora") em Authentication → Users, para a busca mostrar
-      só o nicho.
+      em Authentication → Users, para a busca mostrar só o nicho (a
+      "testeprestadora" já saiu em 26/11; repetir antes da entrega se alguém
+      criar outra).
 - [ ] **Auth → URL Configuration:** Site URL = `https://miniprojeto3-phi.vercel.app`
       e a mesma URL em Redirect URLs (o link de confirmação de e-mail volta
       para cá, e não para `localhost`).
