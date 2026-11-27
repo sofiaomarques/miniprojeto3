@@ -14,6 +14,7 @@ describe("ehRotaProtegida", () => {
     "/avaliar/ana",
     "/pessoas",
     "/pessoas/abc/seguidores",
+    "/indicacoes",
   ])(
     "%s exige login",
     (caminho) => expect(ehRotaProtegida(caminho)).toBe(true),
