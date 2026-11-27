@@ -10,6 +10,7 @@ import {
   ERRO_SEGUIR_A_SI_MESMA,
   ERRO_SEGUIR_DESLOGADA,
   ERRO_SEGUIR_GENERICO,
+  ERRO_SEGUIR_SEM_PAPEL,
   LIMITE_LISTA,
   type PessoaResumo,
   type TipoLista,
@@ -29,8 +30,9 @@ function mensagemDoErro(erro: NonNullable<ErroBanco>): string {
   switch (erro.code) {
     case "23514":
       return ERRO_SEGUIR_A_SI_MESMA;
+    case "42501": // RLS: a conta ainda não escolheu papel
+      return ERRO_SEGUIR_SEM_PAPEL;
     case "PGRST301":
-    case "401":
       return ERRO_SEGUIR_DESLOGADA;
     default:
       return ERRO_SEGUIR_GENERICO;

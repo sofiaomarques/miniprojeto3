@@ -76,7 +76,7 @@ select throws_ok(
 select throws_ok(
   $$ insert into public.seguidores (seguidora_id, seguida_id, criado_em)
      values (auth.uid(), 'd6d6d6d6-0000-4000-8000-000000000004', now() - interval '1 year') $$,
-  '42501', null, 'criado_em não é escolhido pelo app (GRANT por coluna)'
+  '42501', 'permission denied for table seguidores', 'criado_em não é escolhido pelo app (GRANT por coluna)'
 );
 select throws_ok(
   $$ update public.seguidores set seguida_id = 'b6b6b6b6-0000-4000-8000-000000000002'
@@ -101,6 +101,10 @@ select throws_ok(
   '42501', null, 'conta sem papel não segue ninguém'
 );
 select is_empty(
+  $$ select 1 from public.seguidores $$,
+  'conta sem papel não lê a tabela seguidores (só as próprias linhas)'
+);
+select is_empty(
   $$ select 1 from public.pessoas_publicas $$,
   'conta sem papel não lista pessoas da rede'
 );
@@ -118,6 +122,10 @@ select is(
   (select count(*)::int from public.seguidores_publicos
     where seguida_id = 'c6c6c6c6-0000-4000-8000-000000000003'),
   1, 'B vê quem segue P'
+);
+select is_empty(
+  $$ select 1 from public.seguidores where seguidora_id <> auth.uid() $$,
+  'B só lê as próprias linhas em public.seguidores'
 );
 select is(
   (select seguidora_nome from public.seguidores_publicos

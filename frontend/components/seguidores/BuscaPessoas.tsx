@@ -59,6 +59,12 @@ export function BuscaPessoas({ minhaId }: { minhaId: string }) {
         />
       </label>
 
+      <p aria-live="polite" className="sr-only">
+        {resultado
+          ? `${resultado.length} ${resultado.length === 1 ? "pessoa encontrada" : "pessoas encontradas"}`
+          : ""}
+      </p>
+
       {!termo && (
         <p className="text-[14.5px] leading-[1.45] text-corpo">
           Procure suas amigas pelo nome para ver as indicações delas, ou prestadoras que você quer acompanhar.

@@ -108,7 +108,6 @@ export function PainelSeguir({ perfilId, usuaria, centralizado = false }: Props)
           type="button"
           onClick={alternar}
           disabled={ocupado || sigo === null}
-          aria-pressed={sigo ?? undefined}
           aria-busy={ocupado || undefined}
           className={`flex min-h-11 items-center rounded-full px-6 text-sm font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vinho disabled:opacity-60 ${
             sigo ? "border border-vinho text-vinho" : "bg-vinho text-white"

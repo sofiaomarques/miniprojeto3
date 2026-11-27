@@ -47,15 +47,20 @@ as $$
   );
 $$;
 
+-- Atenção: as views da rede e a policy de insert chamam esta função, e o
+-- EXECUTE é checado com o papel de quem consulta. Não revogar de `authenticated`
+-- para calar o aviso do advisor: quebra as duas views e o insert.
 revoke all on function public.tem_papel(uuid) from public, anon;
 grant execute on function public.tem_papel(uuid) to authenticated;
 
 alter table public.seguidores enable row level security;
 
--- Quem segue quem é público para quem está logada (é o que a rede mostra).
-create policy seguidores_leitura_logada on public.seguidores
+-- A tabela só deixa cada conta ler as próprias linhas (é o que `euSigo` usa).
+-- As listas de seguidores e seguindo saem da view `seguidores_publicos`, que
+-- exige papel, e a contagem sai de `contar_seguidores`.
+create policy seguidores_leitura_da_seguidora on public.seguidores
   for select to authenticated
-  using (true);
+  using (seguidora_id = (select auth.uid()));
 
 -- Só segue em nome próprio, e as duas pontas precisam ter papel.
 create policy seguidores_insert_da_seguidora on public.seguidores
