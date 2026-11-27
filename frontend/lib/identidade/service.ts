@@ -19,6 +19,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { usarMocks } from "@/lib/supabase/config";
 import { ErroIdentidade } from "./erros";
+import { BUCKET_PORTFOLIO, MENSAGENS_FOTO, novoCaminhoFoto, validarArquivoFoto } from "./fotos";
 import { servicoMock } from "./mocks";
 import type {
   AtualizacaoPerfil,
@@ -36,6 +37,7 @@ export {
   lerEdicaoPerfil,
   sincronizarMeusServicos,
 } from "./perfil";
+export { TIPOS_FOTO, validarArquivoFoto } from "./fotos";
 
 // Qualquer cliente criado por lib/supabase (navegador ou servidor).
 export type ClienteSupabase = SupabaseClient;
@@ -231,6 +233,22 @@ function comValidacao(impl: ServicoIdentidade): ServicoIdentidade {
       const uuid = normalizarUuid(prestadoraId);
       return uuid ? impl.listarFotosDaPrestadora(uuid) : [];
     },
+
+    async enviarMinhaFoto(arquivo) {
+      if (typeof arquivo !== "object" || arquivo === null) {
+        throw new ErroIdentidade("validacao", "Escolha uma foto.");
+      }
+      const erro = validarArquivoFoto(arquivo);
+      if (erro) throw new ErroIdentidade("validacao", erro);
+      return impl.enviarMinhaFoto(arquivo);
+    },
+
+    async apagarMinhaFoto(fotoId) {
+      if (typeof fotoId !== "number" || !Number.isSafeInteger(fotoId) || fotoId < 1) {
+        throw new ErroIdentidade("validacao", "Foto inválida.");
+      }
+      return impl.apagarMinhaFoto(fotoId);
+    },
   };
 }
 
@@ -316,6 +334,13 @@ const TRADUCOES_SERVICO: Traducoes = {
   "42501": new ErroIdentidade("permissao", "Só prestadoras podem cadastrar serviços."),
   "23505": new ErroIdentidade("conflito", "Este serviço já está cadastrado."),
   "23503": new ErroIdentidade("validacao", "Categoria de serviço inexistente."),
+};
+
+const TRADUCOES_FOTO: Traducoes = {
+  // 23514 = trigger exigir_prestadora ou CHECK do caminho; 42501 = RLS.
+  "23514": new ErroIdentidade("permissao", "Só prestadoras podem enviar fotos."),
+  "42501": new ErroIdentidade("permissao", "Só prestadoras podem enviar fotos."),
+  "23505": new ErroIdentidade("conflito", "Esta foto já foi enviada."),
 };
 
 const TRADUCOES_PERFIL: Traducoes = {
@@ -486,5 +511,80 @@ export function criarServicoSupabase(cliente: ClienteSupabase): ServicoIdentidad
       );
       return comoLinhas(linhas).map(paraFoto);
     },
+
+    async enviarMinhaFoto(arquivo) {
+      const id = await exigirSessao();
+      const caminho = novoCaminhoFoto(id, arquivo.type);
+      const bucket = cliente.storage.from(BUCKET_PORTFOLIO);
+
+      // 1) arquivo no bucket (a policy só deixa a prestadora na própria pasta)
+      const envio = await bucket.upload(caminho, arquivo, {
+        contentType: arquivo.type,
+        upsert: false,
+      });
+      if (envio.error) throw erroDoStorage(envio.error, "Não foi possível enviar a foto. Tente de novo.");
+
+      // 2) registro em fotos_portfolio; se falhar, desfaz o envio para não
+      //    deixar arquivo solto no bucket público.
+      try {
+        const linha = dados(
+          await cliente
+            .from("fotos_portfolio")
+            .insert({ prestadora_id: id, caminho })
+            .select(SELECT_FOTO)
+            .single(),
+          TRADUCOES_FOTO,
+        );
+        return paraFoto(linha as Linha);
+      } catch (erro) {
+        // Se desfazer também falhar (ex.: rede caiu), quem sobe continua
+        // sendo o erro do registro, que já vem com a mensagem traduzida.
+        await bucket.remove([caminho]).catch(() => {});
+        throw erro;
+      }
+    },
+
+    async apagarMinhaFoto(fotoId) {
+      const id = await exigirSessao();
+      const linha = dados(
+        await cliente
+          .from("fotos_portfolio")
+          .select(SELECT_FOTO)
+          .eq("id", fotoId)
+          .eq("prestadora_id", id)
+          .maybeSingle(),
+      );
+      if (!linha) throw new ErroIdentidade("nao_encontrado", "Foto não encontrada.");
+      const foto = paraFoto(linha as Linha);
+
+      // Contrato da #46: o arquivo sai do bucket ANTES da linha. Se o Storage
+      // falhar, a linha fica e a foto continua na galeria (nada some pela metade).
+      const remocao = await cliente.storage.from(BUCKET_PORTFOLIO).remove([foto.caminho]);
+      if (remocao.error) throw erroDoStorage(remocao.error, "Não foi possível apagar a foto. Tente de novo.");
+
+      const removidas = dados(
+        await cliente
+          .from("fotos_portfolio")
+          .delete()
+          .eq("id", fotoId)
+          .eq("prestadora_id", id)
+          .select("id"),
+      );
+      if (comoLinhas(removidas).length === 0) {
+        throw new ErroIdentidade("nao_encontrado", "Foto não encontrada.");
+      }
+    },
   };
+}
+
+// Erro do Supabase Storage → ErroIdentidade com mensagem fixa (nunca a crua).
+function erroDoStorage(erro: unknown, padrao: string): ErroIdentidade {
+  const e = (erro ?? {}) as { statusCode?: unknown; status?: unknown };
+  const status = Number(e.statusCode ?? e.status);
+  if (status === 413) return new ErroIdentidade("validacao", MENSAGENS_FOTO.grande);
+  if (status === 415) return new ErroIdentidade("validacao", MENSAGENS_FOTO.tipo);
+  if (status === 401 || status === 403) {
+    return new ErroIdentidade("permissao", "Só prestadoras podem mexer nas fotos da própria galeria.");
+  }
+  return new ErroIdentidade("indisponivel", padrao);
 }

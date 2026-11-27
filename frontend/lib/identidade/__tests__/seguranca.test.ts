@@ -14,6 +14,7 @@ describe("lib/identidade não expõe nem usa credencial administrativa", () => {
     expect(ARQUIVOS.sort()).toEqual(expect.arrayContaining([
       "auth.ts",
       "erros.ts",
+      "fotos.ts",
       "mocks.ts",
       "perfil.ts",
       "service.ts",
@@ -54,13 +55,15 @@ describe("lib/identidade não expõe nem usa credencial administrativa", () => {
   it("escritas filtram pelo id da sessão, nunca por argumento", () => {
     const codigo = fonte("service.ts");
     const escritas = [...codigo.matchAll(/\.(update|insert|delete)\(/g)];
-    expect(escritas.length).toBe(4);
+    expect(escritas.length).toBe(6);
     // Toda escrita é precedida por exigirSessao() na mesma função.
     for (const funcao of [
       "atualizarMeuPerfil",
       "escolherMeuPapel",
       "adicionarMeuServico",
       "removerMeuServico",
+      "enviarMinhaFoto",
+      "apagarMinhaFoto",
     ]) {
       // lastIndexOf: a última definição é a do Supabase (a primeira é a validação).
       const corpo = codigo.slice(codigo.lastIndexOf(`async ${funcao}(`));

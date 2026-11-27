@@ -12,12 +12,17 @@ type Opcoes = {
   // erro devolvido por auth.getClaims (sobrepõe `usuaria`).
   erroAuth?: { name: string; status?: number; message: string };
   responder?: (consulta: Consulta) => RespostaFalsa;
+  // resposta do Storage por operação (padrão: sucesso).
+  responderStorage?: (operacao: "upload" | "remove") => RespostaFalsa;
 };
+
+export type ChamadaStorage = { bucket: string; operacao: "upload" | "remove"; args: unknown[] };
 
 const METODOS = ["select", "eq", "in", "is", "order", "update", "insert", "delete", "maybeSingle", "single"];
 
 export function criarClienteFalso(opcoes: Opcoes = {}) {
   const consultas: Consulta[] = [];
+  const armazenamento: ChamadaStorage[] = [];
   let chamadasAuth = 0;
   const responder = opcoes.responder ?? (() => ({ data: [], error: null }));
 
@@ -39,6 +44,19 @@ export function criarClienteFalso(opcoes: Opcoes = {}) {
   }
 
   const cliente = {
+    // Storage falso: grava cada upload/remove e devolve o configurado.
+    storage: {
+      from(bucket: string) {
+        const registrar = async (operacao: "upload" | "remove", args: unknown[]) => {
+          armazenamento.push({ bucket, operacao, args });
+          return (opcoes.responderStorage ?? (() => ({ data: {}, error: null })))(operacao);
+        };
+        return {
+          upload: (...args: unknown[]) => registrar("upload", args),
+          remove: (...args: unknown[]) => registrar("remove", args),
+        };
+      },
+    },
     from(tabela: string) {
       const consulta: Consulta = { tabela, chamadas: [] };
       consultas.push(consulta);
@@ -59,6 +77,7 @@ export function criarClienteFalso(opcoes: Opcoes = {}) {
   return {
     cliente: cliente as unknown as ClienteSupabase,
     consultas,
+    armazenamento,
     get chamadasAuth() {
       return chamadasAuth;
     },
