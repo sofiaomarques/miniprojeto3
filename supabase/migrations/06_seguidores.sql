@@ -95,3 +95,43 @@ $$;
 
 revoke all on function public.contar_seguidores(uuid) from public;
 grant execute on function public.contar_seguidores(uuid) to anon, authenticated;
+
+-- ===========================================================================
+-- Pessoas da rede (só logada)
+-- ===========================================================================
+-- Sem security_invoker, de propósito: roda com o dono da view e ignora a RLS
+-- de perfis para mostrar nome e avatar de clientes. Contas sem papel ficam de
+-- fora. nome_normalizado: comparar com normalizar_texto(<busca>).
+create view public.pessoas_publicas as
+select
+  p.id,
+  p.papel,
+  p.nome,
+  p.avatar_url,
+  public.normalizar_texto(p.nome) as nome_normalizado
+from public.perfis p
+where p.papel is not null;
+
+revoke all on public.pessoas_publicas from public, anon, authenticated;
+grant select on public.pessoas_publicas to authenticated;
+
+-- Cada "A segue B" com nome, avatar e papel das duas pontas: a lista de
+-- seguidores de B e a lista de quem A segue saem desta view numa consulta.
+-- Mesma ideia da pessoas_publicas (sem security_invoker, só logada).
+create view public.seguidores_publicos as
+select
+  s.seguidora_id,
+  s.seguida_id,
+  s.criado_em,
+  a.papel      as seguidora_papel,
+  a.nome       as seguidora_nome,
+  a.avatar_url as seguidora_avatar_url,
+  b.papel      as seguida_papel,
+  b.nome       as seguida_nome,
+  b.avatar_url as seguida_avatar_url
+from public.seguidores s
+join public.perfis a on a.id = s.seguidora_id and a.papel is not null
+join public.perfis b on b.id = s.seguida_id and b.papel is not null;
+
+revoke all on public.seguidores_publicos from public, anon, authenticated;
+grant select on public.seguidores_publicos to authenticated;
