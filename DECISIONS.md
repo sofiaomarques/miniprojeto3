@@ -80,6 +80,20 @@ Exemplo:
   `authenticated`: as views e a policy de insert a chamam com o papel de quem
   consulta, e revogá-la quebra as duas.
 
+### Feed: só as indicações de quem eu sigo, em ordem cronológica (#81)
+
+- **Contexto:** a rubrica pede follow → feed, e a cliente segue as amigas para
+  saber em quem elas confiam.
+- **Opções:** feed com indicações de toda a rede, ranqueado por nota; ou só de
+  quem eu sigo, mais recentes primeiro.
+- **Escolha:** só de quem eu sigo, cronológico, na aba **Indicações**. Não
+  precisou de migration: lê as minhas linhas de `seguidores` (a RLS da 06 só
+  mostra essas) e busca em `avaliacoes_publicas` (02).
+- **O que cortamos e por quê:** o ranqueamento e as indicações de quem eu não
+  sigo. A busca já ordena prestadoras por nota; o feed responde outra pergunta,
+  "o que minhas amigas indicaram". O feed olha as últimas 200 pessoas
+  seguidas e mostra até 50 indicações, sem paginação.
+
 ## Features
 
 Listem as features que o time vai construir, quem é o dono de cada uma e por
