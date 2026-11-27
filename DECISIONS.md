@@ -71,8 +71,8 @@ Exemplo:
   `seguidores_publicos` expõem só nome, foto e papel, e só para quem já tem
   papel (`tem_papel(auth.uid())`); o cadastro é aberto, então sem esse filtro
   uma conta nova listaria todas. A tabela `seguidores` só deixa cada conta ler
-  as próprias linhas. **Pendente de confirmação do grupo**: se preferirem (b)
-  ou (c), muda só a view e a busca.
+  as próprias linhas. **Confirmada pelo grupo** (27/11): nome e foto das
+  clientes podem ser vistos por quem tem conta e papel.
 - **O que cortamos e por quê:** a privacidade total do nome. Bio e cidade
   continuam privadas.
 - **Armadilha:** as duas views são `security definer` de propósito (avisos do
