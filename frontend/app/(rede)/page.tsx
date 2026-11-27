@@ -12,7 +12,8 @@ function lerFiltros({ categoria, cidade, ordem }: Params): FiltrosBusca {
   return {
     categoriaId: Number.isSafeInteger(categoriaId) && categoriaId > 0 ? categoriaId : undefined,
     cidade: typeof cidade === "string" ? cidade.slice(0, 100) : undefined,
-    ordenarPor: ordem === "nome" ? "nome" : "nota",
+    // Link antigo com ?ordem=nome (ordem alfabética saiu) cai no padrão.
+    ordenarPor: ordem === "preco" ? "preco" : "nota",
   };
 }
 

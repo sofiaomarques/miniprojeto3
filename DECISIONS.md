@@ -139,6 +139,39 @@ como admin.
 As contagens são filtradas pelas contas de teste: o teste continua passando se
 o banco local já tiver contas e avaliações criadas usando o app.
 
+### Perfis e fotos com duas contas (#19)
+
+- **Arquivo:** `supabase/tests/database/01_identidade_duas_contas.test.sql`
+  (pgTAP, transação com rollback). Rodar com `supabase start && supabase test db`.
+- **Contas:** cliente Ana, prestadoras Bia e Cris. `auth.uid()` simulado via
+  `request.jwt.claims`.
+- **Resultado (24/11):** 26/26 ok em Postgres 17.12 local (imagem do
+  Supabase) com a 01 e a 02; no mesmo ambiente, `01_identidade.test.sql` 96/96
+  e `02_descoberta.test.sql` 53/53. As mesmas tentativas também foram feitas no
+  Supabase compartilhado, com contas temporárias numa transação desfeita: mesmo
+  resultado, nada ficou gravado.
+
+| Tentativa | Resultado |
+|---|---|
+| Ana (cliente) edita nome, bio, cidade ou avatar da Bia | bloqueado pela RLS (0 linhas) |
+| Ana ou Cris sobem arquivo na pasta da Bia no bucket `portfolio` | `42501` (policy do Storage) |
+| Ana ou Cris apagam arquivo da pasta da Bia | bloqueado (0 linhas) |
+| Ana ou Cris registram foto em nome da Bia | `42501` |
+| Ana ou Cris apagam foto ou serviço da Bia | bloqueado pela RLS (0 linhas) |
+| Bia edita ou lê o perfil da Ana (cliente) | 0 linhas: perfil de cliente não é público |
+| Cris sobe arquivo na própria pasta (controle) | ok |
+| sem login lê perfil, fotos e serviços da Bia | ok (vitrine pública) |
+| sem login lê o perfil da Ana | 0 linhas |
+| sem login lista o bucket `portfolio` | 0 linhas: a foto abre só pelo link público |
+
+Ao final, como admin: perfil, foto e arquivo da Bia continuam iguais.
+
+Para garantir que o teste pega erro de verdade, afrouxamos três policies numa
+cópia (update de `perfis`, delete de `fotos_portfolio` e upload no
+`portfolio`): 11 testes falharam, como esperado. No Supabase compartilhado o
+delete direto em `storage.objects` é bloqueado pelo próprio Storage
+(`protect_delete`), então apagar arquivo alheio foi conferido no banco local.
+
 ## Uso de IA
 
 Ferramenta e para quê. Exemplo: "Claude para gerar o seed de 200 posts sobre

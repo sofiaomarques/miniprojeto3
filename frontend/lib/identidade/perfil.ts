@@ -1,8 +1,15 @@
-// Edição do próprio perfil (#16): leitura do formulário e quais categorias de
-// serviço adicionar ou remover. As regras de verdade (limites, quem pode
-// gravar) continuam no service.ts e no banco; aqui só a parte sem rede, que
-// dá para testar sem Supabase.
-import type { AtualizacaoPerfil, CategoriaServico, ServicoPrestadora } from "./types";
+// Edição do próprio perfil (#16): leitura do formulário, quais categorias de
+// serviço adicionar ou remover e a sincronização delas. As regras de verdade
+// (limites, quem pode gravar) continuam no service.ts e no banco; aqui as
+// funções recebem o service pronto, e dá para testar sem Supabase. As telas
+// usam pelo service.ts, que reexporta este arquivo.
+import { ehErroIdentidade } from "./erros";
+import type {
+  AtualizacaoPerfil,
+  CategoriaServico,
+  ServicoIdentidade,
+  ServicoPrestadora,
+} from "./types";
 
 export type EdicaoPerfil = {
   dados: AtualizacaoPerfil;
@@ -45,6 +52,51 @@ export function diferencaCategorias(
     adicionar: [...depois].filter((id) => !antes.has(id)).sort((a, b) => a - b),
     remover: [...antes].filter((id) => !depois.has(id)).sort((a, b) => a - b),
   };
+}
+
+// Deixa servicos_prestadora igual ao que foi marcado. Idempotente: um serviço
+// que já existe (conflito) ou que já saiu (nao_encontrado) conta como feito,
+// para dois envios ao mesmo tempo (duas abas) não virarem erro na tela.
+export async function sincronizarMeusServicos(
+  identidade: Pick<
+    ServicoIdentidade,
+    "listarServicosDaPrestadora" | "adicionarMeuServico" | "removerMeuServico"
+  >,
+  prestadoraId: string,
+  escolhidas: readonly number[],
+): Promise<void> {
+  const atuais = (await identidade.listarServicosDaPrestadora(prestadoraId)).map(
+    (s) => s.categoria_id,
+  );
+  const { adicionar, remover } = diferencaCategorias(atuais, escolhidas);
+  for (const id of adicionar) {
+    try {
+      await identidade.adicionarMeuServico(id);
+    } catch (erro) {
+      if (!(ehErroIdentidade(erro) && erro.codigo === "conflito")) throw erro;
+    }
+  }
+  for (const id of remover) {
+    try {
+      await identidade.removerMeuServico(id);
+    } catch (erro) {
+      if (!(ehErroIdentidade(erro) && erro.codigo === "nao_encontrado")) throw erro;
+    }
+  }
+}
+
+// O que a tela de edição precisa além do perfil: o catálogo e as categorias
+// que a prestadora já faz. Para a cliente, tudo vazio.
+export async function carregarEdicaoPerfil(
+  identidade: Pick<ServicoIdentidade, "listarCategorias" | "listarServicosDaPrestadora">,
+  perfil: { id: string; papel: string | null },
+): Promise<{ categorias: CategoriaServico[]; marcadas: number[] }> {
+  if (perfil.papel !== "prestadora") return { categorias: [], marcadas: [] };
+  const [categorias, servicos] = await Promise.all([
+    identidade.listarCategorias(),
+    identidade.listarServicosDaPrestadora(perfil.id),
+  ]);
+  return { categorias, marcadas: servicos.map((s) => s.categoria_id) };
 }
 
 // Nomes dos serviços da prestadora, na ordem do catálogo (#20, resumo no

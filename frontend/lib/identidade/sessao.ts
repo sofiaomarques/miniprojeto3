@@ -5,8 +5,8 @@ import { cache } from "react";
 import { usarMocks } from "@/lib/supabase/config";
 import { criarClienteServidor } from "@/lib/supabase/server";
 import { destinoAposLogin } from "./auth";
-import { servicoIdentidade } from "./service";
-import type { Perfil } from "./types";
+import { carregarEdicaoPerfil, servicoIdentidade } from "./service";
+import type { CategoriaServico, Perfil } from "./types";
 
 // Perfil da usuária logada, ou null sem sessão. Pode lançar ErroIdentidade
 // (ex.: Supabase fora do ar).
@@ -28,4 +28,16 @@ export async function redirecionarSeLogada(next?: unknown): Promise<void> {
     return; // na dúvida, mostra a tela de login
   }
   if (perfil) redirect(destinoAposLogin(perfil, next));
+}
+
+// Tela de edição do perfil (#16): catálogo e categorias marcadas da prestadora
+// (vazios para a cliente). null se o Supabase não respondeu.
+export async function carregarEdicaoPerfilNoServidor(
+  perfil: Perfil,
+): Promise<{ categorias: CategoriaServico[]; marcadas: number[] } | null> {
+  try {
+    return await carregarEdicaoPerfil(servicoIdentidade(await criarClienteServidor()), perfil);
+  } catch {
+    return null;
+  }
 }

@@ -102,6 +102,22 @@ describe("enviarMinhaFoto: modo real (Supabase falso)", () => {
     const caminhoEnviado = (f.armazenamento[0].args as [string])[0];
     expect(f.armazenamento[1].args).toEqual([[caminhoEnviado]]);
   });
+
+  it("se desfazer o envio também falhar (ex.: rede caiu), o erro que sobe é o do registro", async () => {
+    const m = await carregar("false");
+    const f = criarClienteFalso({
+      usuaria: EU,
+      responder: () => ({ data: null, error: { code: "23514", message: "perfil não é prestadora" } }),
+      responderStorage: (operacao) => {
+        if (operacao === "remove") throw new Error("Failed to fetch");
+        return { data: {}, error: null };
+      },
+    });
+    const erro = await erroDe(m.servicoIdentidade(f.cliente).enviarMinhaFoto(foto()));
+    expect(erro.codigo).toBe("permissao");
+    expect(erro.message).toBe("Só prestadoras podem enviar fotos.");
+    expect(f.armazenamento.map((c) => c.operacao)).toEqual(["upload", "remove"]);
+  });
 });
 
 describe("enviarMinhaFoto: modo mock", () => {

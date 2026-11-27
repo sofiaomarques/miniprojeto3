@@ -1,7 +1,12 @@
 // Edição do perfil (#16): leitura do formulário, diferença de categorias e o
 // caminho completo pelo service no modo mock.
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { diferencaCategorias, lerEdicaoPerfil, nomesDosServicos } from "../perfil";
+import {
+  carregarEdicaoPerfil,
+  diferencaCategorias,
+  lerEdicaoPerfil,
+  nomesDosServicos,
+} from "../perfil";
 
 function formulario(campos: [string, string][]): FormData {
   const form = new FormData();
@@ -115,13 +120,36 @@ describe("salvar pelo service (modo mock)", () => {
       ]),
     );
     await s.atualizarMeuPerfil(dados);
-    const atuais = (await s.listarServicosDaPrestadora(m.ID_PRESTADORA_ALINE)).map((x) => x.categoria_id);
-    const { adicionar, remover } = diferencaCategorias(atuais, categorias);
-    for (const id of adicionar) await s.adicionarMeuServico(id);
-    for (const id of remover) await s.removerMeuServico(id);
+    await m.sincronizarMeusServicos(s, m.ID_PRESTADORA_ALINE, categorias);
 
     expect(await s.obterMeuPerfil()).toMatchObject({ nome: "Aline C.", cidade: "Recife", bio: null });
     expect((await s.listarServicosDaPrestadora(m.ID_PRESTADORA_ALINE)).map((x) => x.categoria_id)).toEqual([3, 6]);
+  });
+
+  it("sincronizar é idempotente: serviço que já entrou ou já saiu não vira erro", async () => {
+    const m = await carregar();
+    m.redefinirMocks();
+    m.definirUsuariaMock(m.ID_PRESTADORA_ALINE); // começa com 2 e 3
+    const s = m.servicoIdentidade(null);
+    // Outra aba já fez a mesma troca depois que esta leu a lista: a leitura
+    // velha ([2, 3]) manda adicionar 6 (já existe) e remover 2 (já saiu).
+    const leituraVelha = await s.listarServicosDaPrestadora(m.ID_PRESTADORA_ALINE);
+    await m.sincronizarMeusServicos(s, m.ID_PRESTADORA_ALINE, [3, 6]);
+    const atrasada = { ...s, listarServicosDaPrestadora: async () => leituraVelha };
+    await expect(
+      m.sincronizarMeusServicos(atrasada, m.ID_PRESTADORA_ALINE, [3, 6]),
+    ).resolves.toBeUndefined();
+    expect((await s.listarServicosDaPrestadora(m.ID_PRESTADORA_ALINE)).map((x) => x.categoria_id)).toEqual([3, 6]);
+  });
+
+  it("sincronizar repassa erros que não são de repetição", async () => {
+    const m = await carregar();
+    m.redefinirMocks();
+    m.definirUsuariaMock(m.ID_PRESTADORA_ALINE);
+    const s = m.servicoIdentidade(null);
+    await expect(m.sincronizarMeusServicos(s, m.ID_PRESTADORA_ALINE, [9999])).rejects.toMatchObject({
+      codigo: "validacao",
+    });
   });
 
   it("nome vazio é recusado pelo service antes de gravar", async () => {
@@ -133,5 +161,28 @@ describe("salvar pelo service (modo mock)", () => {
       codigo: "validacao",
     });
     expect((await m.servicoIdentidade(null).obterMeuPerfil())?.nome).toBe("Aline Costa");
+  });
+});
+
+describe("carregarEdicaoPerfil", () => {
+  const falha = () => Promise.reject(new Error("não devia chamar"));
+
+  it("cliente não busca catálogo nem serviços", async () => {
+    const r = await carregarEdicaoPerfil(
+      { listarCategorias: falha, listarServicosDaPrestadora: falha },
+      { id: "x", papel: "cliente" },
+    );
+    expect(r).toEqual({ categorias: [], marcadas: [] });
+  });
+
+  it("prestadora recebe o catálogo e as categorias marcadas", async () => {
+    const r = await carregarEdicaoPerfil(
+      {
+        listarCategorias: async () => [{ id: 1, nome: "Elétrica" }],
+        listarServicosDaPrestadora: async () => [{ prestadora_id: "x", categoria_id: 1, criado_em: "2026-01-01" }],
+      },
+      { id: "x", papel: "prestadora" },
+    );
+    expect(r).toEqual({ categorias: [{ id: 1, nome: "Elétrica" }], marcadas: [1] });
   });
 });

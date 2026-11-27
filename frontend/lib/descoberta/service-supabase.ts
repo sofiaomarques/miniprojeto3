@@ -1,8 +1,10 @@
 // Implementação real do service (NEXT_PUBLIC_USE_MOCKS=false), sobre o banco
 // criado por 02_descoberta.sql. A segurança de verdade está na RLS; as
 // checagens daqui só dão mensagens claras.
+import { servicoPrecos } from "@/lib/identidade/precos";
 import { servicoIdentidade } from "@/lib/identidade/service";
 import { criarClienteNavegador } from "@/lib/supabase/client";
+import { ordenarPorPreco, paraPrecosCategoria, precosPorPrestadora } from "./precos";
 import { normalizarTexto } from "./texto";
 import type {
   Avaliacao,
@@ -92,6 +94,7 @@ function paraResumo(l: any): PrestadoraResumo {
     categorias: (l.categorias ?? []) as CategoriaResumo[],
     notaMedia: l.nota_media === null ? null : Number(l.nota_media),
     totalAvaliacoes: l.total_avaliacoes ?? 0,
+    precos: [], // preenchido com o service de preços (P1)
   };
 }
 
@@ -113,13 +116,33 @@ export async function buscarPrestadoras(filtros: FiltrosBusca): Promise<Prestado
     const termo = normalizarTexto(filtros.cidade).replace(/[%_,*\\]/g, " ");
     consulta = consulta.ilike("cidade_normalizada", `%${termo}%`);
   }
+  // Por preço, a ordem é feita aqui (ordenarPorPreco), igual ao mock: com
+  // filtro de serviço vale o preço daquele serviço, e ele não está na view.
   consulta =
-    filtros.ordenarPor === "nome"
+    filtros.ordenarPor === "preco"
       ? consulta.order("nome", { ascending: true })
       : consulta
           .order("nota_media", { ascending: false, nullsFirst: false })
           .order("nome", { ascending: true });
-  return (ou(await consulta) as any[]).map(paraResumo);
+  // Preços pelo service da P1, numa consulta só (só o serviço filtrado, se houver).
+  // Opcionais: se falharem (ex.: banco ainda sem a 05), todas aparecem "a
+  // combinar" e a busca por nota continua; só a ordem por preço vira erro.
+  const [resposta, precos] = await Promise.all([
+    consulta,
+    servicoPrecos(clienteSupabase())
+      .listarPrecos({ categoriaId: filtros.categoriaId })
+      .catch((err) => {
+        if (filtros.ordenarPor === "preco") throw err;
+        console.error("Erro ao carregar os preços:", err);
+        return [];
+      }),
+  ]);
+  const porPrestadora = precosPorPrestadora(precos);
+  const resumos = (ou(resposta) as any[]).map((l) => ({
+    ...paraResumo(l),
+    precos: porPrestadora.get(l.id) ?? [],
+  }));
+  return filtros.ordenarPor === "preco" ? ordenarPorPreco(resumos, filtros.categoriaId) : resumos;
 }
 
 export async function listarAvaliacoes(prestadoraId: string): Promise<Avaliacao[]> {
@@ -139,11 +162,18 @@ export async function obterPrestadora(id: string): Promise<PrestadoraDetalhe | n
   const db = clienteSupabase();
   // Perfil e fotos vêm do service da identidade (P1); nota e categorias, da view da 02.
   const identidade = servicoIdentidade(db);
-  const [resumo, perfil, fotos, avaliacoes] = await Promise.all([
+  const [resumo, perfil, fotos, avaliacoes, precos] = await Promise.all([
     db.from("prestadoras_resumo").select("*").eq("id", id).maybeSingle(),
     identidade.obterPerfil(id),
     identidade.listarFotosDaPrestadora(id),
     listarAvaliacoes(id),
+    // Opcional, como na busca: sem preços a página continua, tudo "a combinar".
+    servicoPrecos(db)
+      .listarPrecos({ prestadoraId: id })
+      .catch((err) => {
+        console.error("Erro ao carregar os preços:", err);
+        return [];
+      }),
   ]);
   const linhaResumo = ou(resumo);
   if (!linhaResumo || !perfil || perfil.papel !== "prestadora") return null;
@@ -155,6 +185,7 @@ export async function obterPrestadora(id: string): Promise<PrestadoraDetalhe | n
     avaliacoes,
     notaMedia: base.notaMedia,
     totalAvaliacoes: base.totalAvaliacoes,
+    precos: paraPrecosCategoria(precos),
   };
 }
 

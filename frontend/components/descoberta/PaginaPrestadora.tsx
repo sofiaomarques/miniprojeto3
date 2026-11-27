@@ -6,18 +6,19 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { IconeVoltar } from "@/components/rede/icones";
+import { IconePino, IconeVoltar } from "@/components/rede/icones";
 import { Rotulo } from "@/components/rede/Tela";
 import { obterPrestadora } from "@/lib/descoberta/service";
 import type { PrestadoraDetalhe } from "@/lib/descoberta/types";
 
 import { Avatar } from "./Avatar";
 import { BotaoConversar } from "./BotaoConversar";
-import { linhaServicoCidade } from "./Categorias";
+import { textoCategorias, textoCidade } from "./Categorias";
 import { Carregando, Erro, Vazio } from "./Estados";
 import { NotaMedia } from "./Estrelas";
 import { GaleriaPortfolio } from "./GaleriaPortfolio";
 import { ListaAvaliacoes } from "./ListaAvaliacoes";
+import { ServicosEPrecos } from "./ServicosEPrecos";
 import { useMeuPerfil } from "./useMeuPerfil";
 
 type Estado =
@@ -106,7 +107,13 @@ export function PaginaPrestadora({ id }: { id: string }) {
             <h1 className="break-words font-display text-[25px] font-semibold leading-[1.1] md:text-[32px]">
               {perfil.nome}
             </h1>
-            <span className="text-sm text-corpo">{linhaServicoCidade(categorias, perfil.cidade)}</span>
+            {categorias.length > 0 && (
+              <span className="text-sm text-corpo">{textoCategorias(categorias)}</span>
+            )}
+            <span className="flex items-center gap-1 text-sm text-corpo">
+              <IconePino size={16} className="shrink-0 text-vinho" />
+              {textoCidade(perfil.cidade)}
+            </span>
             <NotaMedia nota={notaMedia} total={totalAvaliacoes} />
           </div>
         </div>
@@ -123,6 +130,12 @@ export function PaginaPrestadora({ id }: { id: string }) {
         )}
 
         <div className="flex flex-1 flex-col gap-4 px-5 pt-4 md:col-start-2 md:row-span-3 md:row-start-1 md:gap-6 md:px-0 md:pt-0">
+          <ServicosEPrecos
+            categorias={categorias}
+            precos={estado.prestadora.precos}
+            ehDona={usuaria !== "erro" && usuaria?.id === perfil.id}
+          />
+
           <section className="flex flex-col gap-2">
             <Rotulo>Trabalhos realizados</Rotulo>
             <GaleriaPortfolio fotos={fotos} nome={perfil.nome} />
