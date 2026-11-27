@@ -41,7 +41,13 @@ export function Marca({ fundo = "rosa" }: { fundo?: "rosa" | "papel" }) {
       >
         <IconeCasa />
       </div>
-      <span className="font-display text-[19px] font-semibold">Repara</span>
+      {/* O nome não diz o nicho: a frase logo abaixo diz para quem é a rede. */}
+      <span className="flex min-w-0 flex-col">
+        <span className="font-display text-[19px] font-semibold leading-tight">Repara</span>
+        <span className="max-w-[15rem] text-[12px] leading-tight text-corpo">
+          Mulheres que contratam mulheres, com confiança
+        </span>
+      </span>
     </div>
   );
 }
