@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { UnreadBadge } from "@/components/chat/UnreadBadge";
+
 import { IconeBusca, IconeCasa, IconeChat, IconePessoa } from "./icones";
 
 // Moldura de todas as telas, responsiva por padrão. No celular é uma coluna
@@ -83,7 +85,15 @@ export function BarraAbas({ ativa, className = "" }: { ativa?: Aba; className?: 
               on ? "font-bold text-vinho md:bg-rosa" : "font-medium text-suave md:hover:bg-rosa-claro"
             }`}
           >
-            <Icone />
+            {/* Aba Conversas: número de não lidas (#38) no canto do ícone. No
+                computador o texto fica ao lado do ícone, então o número vai
+                para o canto esquerdo, para não cobrir o "C". */}
+            <span className="relative">
+              <Icone />
+              {id === "conversas" && (
+                <UnreadBadge className="absolute -right-2.5 -top-1.5 md:-left-3 md:right-auto" />
+              )}
+            </span>
             {rotulo}
           </Link>
         );
