@@ -23,8 +23,8 @@ seed aplicado no Supabase, a busca aparece vazia.
 |---|---|---|---|
 | 0:00–0:20 | Início (A) | Mostrar a busca com as prestadoras de João Pessoa. | "A Rede de Mulheres liga mulheres que moram sozinhas a prestadoras de serviços de casa: ar-condicionado, elétrica, encanamento, montagem de móveis." |
 | 0:20–0:50 | Cadastro → onboarding (A) | **Criar conta** com nome, e-mail e senha (mostrar o olho da senha). No onboarding, escolher **Sou cliente**. | "O cadastro pede o papel uma vez só: cliente ou prestadora. Depois disso ele não muda, para ninguém trocar de lado e ganhar avaliação." |
-| 0:50–1:20 | Busca (A) | Tocar no filtro **Ar-condicionado** e digitar "João Pessoa" na cidade. Mostrar que a lista já vem por **Melhor nota**; tocar em **Menor preço** para ver os preços e o selo **Negociável**. | "A busca filtra por serviço e cidade, mostra primeiro quem tem melhor nota pública e deixa comparar o preço base de cada uma." |
-| 1:20–1:50 | Perfil da Marina (A) | Abrir **Marina Souza**: serviços, cidade, nota 4,5 e as duas avaliações. | "Toda prestadora tem perfil público com as avaliações de outras mulheres. É isso que dá confiança para abrir a porta de casa." |
+| 0:50–1:20 | Busca (A) | Digitar "João Pessoa" na cidade e mostrar que a lista já vem por **Melhor nota**. Tocar no filtro **Instalação de eletrodomésticos** e em **Menor preço**: aparecem a **Aline (R$ 85, Negociável)** e a **Marina (R$ 90)**. | "A busca filtra por serviço e cidade, mostra primeiro quem tem melhor nota pública e deixa comparar o preço base do mesmo serviço, e se a prestadora aceita negociar." |
+| 1:20–1:50 | Perfil da Marina (A) | Abrir **Marina Souza** (está na lista do filtro): serviços com preço, cidade, nota 4,5 e as duas avaliações. | "Toda prestadora tem perfil público com as avaliações de outras mulheres. É isso que dá confiança para abrir a porta de casa." |
 | 1:50–2:40 | Chat (A e B lado a lado) | Em A, tocar **Conversar e pedir orçamento** e depois **Pedir orçamento**: o campo vem preenchido com Serviço/Bairro/Data. Enviar. Em B (Marina, na lista de **Conversas**), a conversa nova aparece no topo **sem recarregar**, com o número de não lidas. Marina abre a conversa e responde com **Enviar orçamento**; em A, a resposta chega sozinha. | **Feature forte 1:** "O chat é em tempo real e tem respostas prontas para orçamento: a cliente não precisa saber o que perguntar." |
 | 2:40–3:10 | Avaliar (A) | Voltar ao perfil da Marina → **Já foi atendida? Avaliar Marina** → 5 estrelas, comentário curto, **Publicar avaliação**. A nota da Marina muda na hora. | **Feature forte 2:** "A avaliação é pública e uma por cliente; dá para editar depois, não para avaliar duas vezes." |
 | 3:10–3:40 | Perfil (A) e explicação | Abrir a aba **Perfil** da cliente: perfil, **Editar perfil** e **Minhas indicações**. | **Decisão de produto:** "O perfil da cliente não é público. Só a prestadora com quem ela conversa vê o nome e a foto, nada de bio ou bairro. Para quem mora sozinha, expor onde mora seria um risco." |
@@ -42,6 +42,8 @@ seed aplicado no Supabase, a busca aparece vazia.
   troquem a Marina pela Camila Ribeiro** de 1:20 a 3:10 (janela B com
   `camila@demo.test`): no seed, a Beatriz já conversa com a Marina e já a
   avaliou, então lá apareceria "Editar sua avaliação" e a conversa antiga.
+  A Camila não aparece no filtro Instalação de eletrodomésticos: antes de
+  abri-la, toquem em **Encanamento** (ou em **Todos**).
 - **"Menor preço" dá erro ou tudo aparece "a combinar":** falta a migration
   05 ou o `seed-demo-precos.sql` (checklist). Fiquem em **Melhor nota**.
 - **Alguém mexeu nas contas da demo:** rodar o `seed-demo.sql` de novo volta

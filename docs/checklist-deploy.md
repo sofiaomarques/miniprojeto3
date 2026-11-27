@@ -8,9 +8,9 @@ banca e para cada ensaio. Marquem na ordem.
 ### Supabase (projeto compartilhado)
 - [ ] **Migrations aplicadas, em ordem:** `01_identidade.sql`, `02_descoberta.sql`,
       `03_chat.sql`, `04_avatares.sql` e `05_precos_servicos.sql` (SQL Editor →
-      colar o arquivo → Run). A 01 a 04 já estavam aplicadas em 26/11. A 05
-      (preços, #74) entra depois do merge do #74: sem ela, a ordem "Menor
-      preço" da busca dá erro.
+      colar o arquivo → Run). Sem a 05 (preços, #74), a ordem "Menor preço"
+      da busca dá erro.
+      *Aplicado: 01 a 04 em 26/11; a 05 em 27/11.*
 - [ ] **Realtime do chat:** em Database → Publications → `supabase_realtime`,
       `mensagens` e `conversas` aparecem (a 03 faz isso; só conferir).
 - [ ] **Seed da demo:** rodar `supabase/seed-demo.sql` no SQL Editor. Conferir
@@ -18,7 +18,9 @@ banca e para cada ensaio. Marquem na ordem.
       *Aplicado em 26/11: a busca mostra as 4 prestadoras da demo.*
 - [ ] **Preços da demo:** depois do `seed-demo.sql` e da 05, rodar
       `supabase/seed-demo-precos.sql`. Conferir na busca: a Marina aparece com
-      "R$ 150" (sem ele, todas aparecem "Preço a combinar").
+      "a partir de R$ 90" (com o filtro Ar-condicionado, "R$ 150"). Sem o seed
+      de preços, todas aparecem "Preço a combinar".
+      *Aplicado em 27/11.*
 - [ ] **Contas de teste soltas:** apagar as contas criadas em testes manuais
       em Authentication → Users, para a busca mostrar só o nicho (a
       "testeprestadora" já saiu em 26/11; repetir antes da entrega se alguém
