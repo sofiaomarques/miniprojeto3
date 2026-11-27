@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { BotaoSair } from "@/components/identidade/BotaoSair";
 import { Avatar } from "@/components/descoberta/Avatar";
 import { ListaIndicacoes } from "@/components/descoberta/ListaIndicacoes";
