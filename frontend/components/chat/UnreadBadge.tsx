@@ -9,7 +9,7 @@
 //   <span className="relative"><IconeChat /><UnreadBadge className="absolute -right-2 -top-1" /></span>
 //
 // Leitor de tela: o número fica escondido e vai por extenso em texto sr-only,
-// que entra no nome do link ("3 mensagens não lidas Conversas"). Sem
+// que entra no nome do link ("3 mensagens não lidas, Conversas"). Sem
 // role="status": como a barra aparece em toda tela, o anúncio se repetiria a
 // cada navegação.
 import { useEffect, useState } from "react";
@@ -19,8 +19,13 @@ import { assinarNaoLidas, contarNaoLidas, obterUsuariaAtualId } from "@/lib/chat
 // Vários eventos juntos (ex.: marcar 5 mensagens como lidas) viram uma recontagem.
 const ESPERA_RECONTAGEM_MS = 300;
 
+// Último total conhecido nesta aba do navegador. A BarraAbas é renderizada
+// por página, então o badge monta de novo a cada navegação: começar daqui
+// evita o número sumir e voltar enquanto a recontagem não chega.
+let ultimoTotal = 0;
+
 export function UnreadBadge({ className = "" }: { className?: string }) {
-  const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState(ultimoTotal);
 
   useEffect(() => {
     let ativa = true;
@@ -29,7 +34,10 @@ export function UnreadBadge({ className = "" }: { className?: string }) {
 
     function contar() {
       contarNaoLidas()
-        .then((n) => ativa && setTotal(n))
+        .then((n) => {
+          ultimoTotal = n;
+          if (ativa) setTotal(n);
+        })
         .catch(() => {
           // Sem rede: mantém o último número; a próxima recontagem tenta de novo.
         });
@@ -42,7 +50,13 @@ export function UnreadBadge({ className = "" }: { className?: string }) {
 
     obterUsuariaAtualId()
       .then((id) => {
-        if (!ativa || !id) return; // deslogada: sem contador e sem assinatura
+        if (!id) {
+          // Deslogada: sem contador e sem assinatura (e esquece o total de antes).
+          ultimoTotal = 0;
+          if (ativa) setTotal(0);
+          return;
+        }
+        if (!ativa) return;
         contar();
         cancelar = assinarNaoLidas(agendar);
       })
@@ -59,11 +73,11 @@ export function UnreadBadge({ className = "" }: { className?: string }) {
   const rotulo = `${total} ${total === 1 ? "mensagem não lida" : "mensagens não lidas"}`;
   return (
     <span
-      title={rotulo}
       className={`inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-vinho px-1 text-[11px] font-bold leading-none text-white ${className}`}
     >
       <span aria-hidden="true">{total > 99 ? "99+" : total}</span>
-      <span className="sr-only">{rotulo}</span>
+      {/* A vírgula dá a pausa antes do nome da aba: "2 mensagens não lidas, Conversas". */}
+      <span className="sr-only">{rotulo}, </span>
     </span>
   );
 }
