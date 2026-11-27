@@ -1,43 +1,65 @@
 # Decisões do time
 
-**Time:** _(nomes e usernames do GitHub)_
+**Time:** Rodrigo Porto (`Rodrigo-Angelo-Porto`, P1, identidade), Sofia Marques
+(`sofiaomarques`, P2, descoberta) e Pedro Macedo (`phmcd-bit`, P3, chat).
 
 Este arquivo acompanha o projeto. Comecem com o que já sabem e atualizem quando
 as decisões mudarem.
 
 ## Produto
 
-Respondam antes de escolher features. O pitch sai daqui.
-
-- **Público:** _(quem usa a rede, o mais específico possível: "corredores
-  iniciantes da UFPB", não "pessoas que gostam de esporte")_
-- **Problema:** _(o que essa pessoa tenta fazer hoje e onde isso falha)_
-- **Como a rede resolve:** _(uma ou duas frases)_
-- **Como saberíamos que funcionou:** _(um sinal observável: "a pessoa volta
-  no dia seguinte para ver o treino dos amigos")_
+- **Público:** mulheres que moram sozinhas e precisam de um serviço de casa
+  (ar-condicionado, elétrica, encanamento, montagem de móveis, pequenos
+  reparos) e as mulheres que prestam esses serviços. Começamos por João
+  Pessoa: o seed e a demo são de lá.
+- **Problema** (nossa hipótese, sem pesquisa formal): quem mora sozinha
+  precisa abrir a porta de casa para um desconhecido. Hoje ela procura por
+  indicação solta, em grupo de mensagens ou em site genérico, sem saber se a
+  pessoa é de confiança, se outras mulheres já contrataram, nem quanto vai
+  custar antes de chamar.
+- **Como a rede resolve:** reúne prestadoras mulheres (a rede é feita por e
+  para mulheres; nesta versão o cadastro não confere gênero), que a cliente
+  acha por serviço e cidade, com avaliações públicas de outras clientes e o
+  preço base de cada serviço. O orçamento é pedido no chat, com respostas
+  prontas. E dá para seguir as amigas e ver em quem elas confiam.
+- **Como saberíamos que funcionou:** uma cliente pede orçamento pelo chat a
+  uma prestadora que viu nas indicações de uma amiga e, depois do serviço,
+  deixa a própria avaliação, que passa a aparecer para quem segue essa
+  cliente. Dá para aproximar isso no banco: a cliente segue uma amiga que já
+  avaliou a prestadora (`seguidores.criado_em`, `avaliacoes.criada_em`),
+  depois abre conversa com ela (`conversas.criada_em`) e, mais tarde, deixa a
+  própria avaliação.
 
 ## Decisões de produto
 
-Registrem de 3 a 5 escolhas que mudaram o que a rede é. Boas candidatas: por
-que essas features e não outras, o que ficou de fora, como o seed e a interface
-refletem o nicho. Uma delas vai para o vídeo.
+### A avaliação é o "post" da rede, e não há curtidas (#26, #81)
 
-### 1. _(título curto)_
+- **Contexto:** uma rede social costuma ter post livre, curtida e comentário.
+  Aqui o que interessa é: "essa prestadora é de confiança, e eu recomendo?".
+- **Opções:** post livre com curtidas e comentários; ou um post com forma
+  fixa, a avaliação (nota de 1 a 5 e comentário) de uma cliente sobre uma
+  prestadora.
+- **Escolha:** a avaliação é o post. É pública, uma por cliente para cada
+  prestadora (`unique` na 02) e só a autora edita. Ela aparece na página da
+  prestadora, nas indicações da cliente e no feed de quem a segue.
+- **O que cortamos e por quê:** post livre, curtidas e comentários. Uma
+  curtida não diz se o serviço foi bom, e a nota diz. Com uma avaliação por
+  cliente, uma mesma conta não infla a nota repetindo avaliações. Também não
+  exigimos conversa nem serviço fechado antes de avaliar: qualquer cliente
+  avalia qualquer prestadora.
 
-- **Contexto:** _(o que estava em jogo)_
-- **Opções:** _(o que vocês consideraram)_
-- **Escolha:** _(o que fizeram)_
-- **O que cortamos e por quê:** _(o custo da escolha)_
+### O papel é escolhido uma vez: cliente ou prestadora (#14)
 
-Exemplo:
-
-> **Feed cronológico em vez de "Em alta"**
->
-> - **Contexto:** a comunidade é de corredores que treinam juntos.
-> - **Opções:** feed ranqueado por engajamento ou feed cronológico.
-> - **Escolha:** cronológico, com stories do dia.
-> - **O que cortamos e por quê:** o "Em alta". Quem abre o app quer ver o
->   treino de hoje dos amigos, não o post mais curtido da semana.
+- **Contexto:** a mesma pessoa poderia querer contratar e prestar serviço.
+- **Opções:** uma conta com os dois papéis; ou um papel escolhido no
+  onboarding e fixo.
+- **Escolha:** papel fixo. O onboarding pede cliente ou prestadora uma vez, e
+  um trigger da 01 recusa a troca. Só cliente avalia e só prestadora recebe
+  avaliação (policies da 02).
+- **O que cortamos e por quê:** a conta com os dois papéis. Sem a troca, as
+  avaliações ficam coerentes: as que uma prestadora recebeu não passam a
+  pertencer a uma cliente, e as que uma cliente escreveu não passam a ser de
+  uma prestadora. Quem também presta serviço cria outra conta.
 
 ### Excluir a conta apaga tudo dela (#46)
 
@@ -96,27 +118,57 @@ Exemplo:
 
 ## Features
 
-Listem as features que o time vai construir, quem é o dono de cada uma e por
-que ela entra no produto. A lista muda junto com o projeto: acrescentem e
-tirem linhas quando mudarem de ideia.
+Números com # são issues; com "PR", pull requests (quando não houve issue).
 
 | Feature | Dono | Por quê (1 frase) |
 |---|---|---|
-| Auth (núcleo) | | |
-| Posts (núcleo) | | |
-| Feed (núcleo) | | |
-| Perfil (núcleo) | | |
-| Follow (núcleo) | | |
-| Curtidas (núcleo) | | |
-| Comentários (núcleo) | | |
-| Seed fake (núcleo) | | |
+| Auth (núcleo): cadastro, login, onboarding com papel, rotas protegidas | Rodrigo (#14, #15) | Sem conta não há quem avalie nem com quem conversar; o papel separa quem contrata de quem presta. |
+| Posts (núcleo): a avaliação, com nota de 1 a 5 e comentário | Sofia (#26) | É a recomendação de uma mulher para outra, o que dá confiança para abrir a porta de casa. |
+| Feed (núcleo): indicações de quem eu sigo | Sofia (#81) | Responde "em quem minhas amigas confiam?", em ordem cronológica. |
+| Perfil (núcleo): perfil, edição, avatar e fotos dos trabalhos | Rodrigo (#16, #17, #18) | A prestadora mostra o que faz e o resultado; a cliente mostra só nome e foto. |
+| Follow (núcleo): seguir pessoas, seguidores e seguindo | Sofia (#78, #79, #80) | A cliente segue as amigas para ver as indicações delas. |
+| Curtidas (núcleo) | Não entrou | Uma curtida não diz se o serviço foi bom; a nota diz (ver "A avaliação é o post da rede"). |
+| Comentários (núcleo): o comentário da avaliação | Sofia (#26) | O comentário fica preso à avaliação, que é uma por cliente; não há comentário solto. |
+| Seed fake (núcleo): contas, avaliações, conversas, preços e seguidores da demo | Pedro (#40); preços, Rodrigo (PR #74); seguidores, Sofia (#82) | O nicho aparece na demo: prestadoras de João Pessoa, clientes que moram sozinhas ou acabaram de se mudar, conversas de orçamento. |
+| Busca de prestadoras por serviço e cidade, por nota ou menor preço | Sofia (#24); preço, Rodrigo (PR #74) | É como a cliente acha quem atende o serviço dela, na cidade dela. |
+| Página pública da prestadora | Sofia (#25) | Junta serviços, preços, fotos e avaliações antes de chamar. |
+| Preço base por serviço e "aceito negociar" | Rodrigo (PR #74) | A cliente sabe quanto custa antes de pedir orçamento. |
+| Chat em tempo real com "Pedir orçamento" | Pedro (#34 a #39) | O orçamento é pedido e combinado dentro da rede; a resposta pronta ensina o que perguntar. |
+| Não lidas na aba Conversas | Pedro (#38) | A prestadora vê que chegou pedido novo. |
+| Deploy na Vercel com Supabase | Rodrigo (#11), Sofia (#58) | A banca testa na URL pública. |
 
 ## Uma escolha técnica
 
-Contem uma escolha técnica que o time fez e por quê. Por exemplo, por que usou
-uma estrutura de dados no `core/`, qual o Big O da operação principal, ou o
-que mudaria se a rede crescesse 100 vezes. Se mediram com `make bench`, colem a
-saída e uma frase dizendo o que os números mostram.
+### Seguir e feed: as consultas andam pelos índices (06 e 02)
+
+As três perguntas da rede de seguidores são "quem eu sigo", "quem me segue" e
+"o que as pessoas que eu sigo indicaram". Cada uma tem um índice próprio, para
+não varrer a tabela inteira:
+
+| Pergunta | Índice | Custo (n linhas de `seguidores`, a linhas de `avaliacoes`, k resultados) |
+|---|---|---|
+| Quem eu sigo (`idsQueSigo`, `euSigo`, lista "seguindo") | chave primária `(seguidora_id, seguida_id)` | O(log n + k) para achar (`euSigo` é uma busca por ponto, O(log n)); a ordem por data não sai da chave, então as k linhas são ordenadas |
+| Quem me segue, mais recentes primeiro (lista "seguidores") | `seguidores_seguida_id_idx (seguida_id, criado_em desc)` | O(log n + k), já na ordem; a view junta nome e foto pela chave de `perfis` |
+| Números de seguidores e seguindo (`contar_seguidores`) | os dois acima | O(log n + k) cada contagem |
+| Indicações de quem eu sigo (feed) | `avaliacoes_cliente_id_idx (cliente_id)` (02) | O(s · log a + r) para as s pessoas seguidas, mais a ordenação das r avaliações encontradas |
+
+O feed não precisou de tabela nova: são duas consultas, primeiro quem eu sigo
+(até 200), depois as avaliações dessas pessoas (até 50), sem copiar dado
+nenhum. Como a tabela `seguidores` só deixa cada conta ler as próprias
+linhas, a primeira consulta só devolve as linhas da própria conta, mesmo que o
+filtro do front falhasse.
+
+**Se a rede crescesse 100 vezes:**
+- A lista de ids vai na URL da segunda consulta. Com 200 pessoas seguidas ela
+  já tem uns 7.900 caracteres, perto do `urlLengthLimit` padrão do
+  `postgrest-js` (8.000), acima do qual ele sugere trocar o `.in()` por uma
+  função no banco quando a requisição falha. Faríamos isso: uma função que
+  junta `seguidores` com `avaliacoes` e devolve as 50 mais recentes.
+- Essa função usaria um índice `(cliente_id, criada_em desc)` em `avaliacoes`
+  para pegar só as 50 mais recentes de cada pessoa seguida (`LATERAL ...
+  LIMIT 50`) antes de juntar, em vez de ler todas as avaliações delas.
+- `contar_seguidores` conta linhas a cada visita a um perfil. Com muitos
+  seguidores, guardaríamos os dois números numa coluna atualizada por trigger.
 
 ## Deploy
 
@@ -132,10 +184,17 @@ saída e uma frase dizendo o que os números mostram.
   ignorada no deploy de produção, então a URL pública sempre usa o Supabase de
   verdade. Nos previews de PR ela continua valendo: deixem sem definir (ou
   `false`) na Vercel para o preview também usar o banco.
-- **Banco:** as migrations 01, 02 e 03 precisam estar aplicadas, em ordem, no
-  Supabase compartilhado (são aplicadas à mão). Sem a 03 o chat não funciona.
+- **Banco:** as migrations 01 a 06 precisam estar aplicadas, em ordem, no
+  Supabase compartilhado (são aplicadas à mão, por alguém do time). Sem a 03
+  o chat não funciona, sem a 05 a busca por menor preço dá erro e sem a 06
+  não há seguir nem feed. Os seeds da demo
+  (`seed-demo.sql`, depois `seed-demo-precos.sql` e `seed-demo-seguidores.sql`)
+  preparam as contas. O Supabase compartilhado é o banco da demo, por isso os
+  seeds rodam nele. O que já foi aplicado, e quando, fica marcado em
+  `docs/checklist-deploy.md`.
 - **Para conferir:** cadastro → entrar → buscar prestadora → abrir o perfil →
-  avaliar → chat.
+  avaliar (o "post") → seguir uma amiga → ver a aba Indicações (o feed) →
+  chat.
 
 ## Testes de RLS
 
@@ -209,5 +268,17 @@ delete direto em `storage.objects` é bloqueado pelo próprio Storage
 
 ## Uso de IA
 
-Ferramenta e para quê. Exemplo: "Claude para gerar o seed de 200 posts sobre
-corrida; o resto foi escrito pelo time."
+- **Ferramenta:** Claude Code (Claude, da Anthropic), usado pelas três
+  pessoas do time.
+- **Para quê:**
+  - escrever código e SQL a partir das issues de cada área: migrations,
+    services, telas e seeds;
+  - escrever os testes (vitest e pgTAP);
+  - revisar diffs e PRs, às vezes com um segundo agente conferindo a revisão;
+  - conferir as telas no navegador;
+  - aplicar migrations e seeds no Supabase compartilhado, com alguém do time
+    pedindo e conferindo;
+  - redigir documentos: roteiro da demo, checklist de deploy e este arquivo.
+- **O que ficou com o time:** escolher o nicho, as features e as decisões
+  deste arquivo; revisar e testar os PRs uns dos outros; e decidir o que
+  entra e o que fica de fora.
