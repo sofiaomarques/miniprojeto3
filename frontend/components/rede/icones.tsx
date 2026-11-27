@@ -42,6 +42,11 @@ export const IconePessoa = (p: P) => (
     <path d="M4 21c1-4 4-6 8-6s7 2 8 6" />
   </Base>
 );
+export const IconeCoracao = (p: P) => (
+  <Base {...p}>
+    <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+  </Base>
+);
 export const IconeVoltar = (p: P) => (
   <Base {...p}>
     <path d="M15 5l-7 7 7 7" />
