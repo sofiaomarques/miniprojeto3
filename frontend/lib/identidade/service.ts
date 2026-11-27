@@ -32,6 +32,11 @@ import type {
 } from "./types";
 
 export { ErroIdentidade, ehErroIdentidade } from "./erros";
+export {
+  carregarEdicaoPerfil,
+  lerEdicaoPerfil,
+  sincronizarMeusServicos,
+} from "./perfil";
 
 // Qualquer cliente criado por lib/supabase (navegador ou servidor).
 export type ClienteSupabase = SupabaseClient;

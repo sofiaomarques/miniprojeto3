@@ -39,6 +39,26 @@ Exemplo:
 > - **O que cortamos e por quê:** o "Em alta". Quem abre o app quer ver o
 >   treino de hoje dos amigos, não o post mais curtido da semana.
 
+### Excluir a conta apaga tudo dela (#46)
+
+- **Contexto:** a Edge Function `excluir-conta` apaga os arquivos da conta no
+  Storage e depois chama `auth.admin.deleteUser`. Todas as FKs para `perfis`
+  são `on delete cascade`, então a exclusão leva junto: perfil, serviços e
+  fotos do portfólio (01); as avaliações que a conta escreveu **e** as que
+  recebeu (02); as conversas dela e todas as mensagens dessas conversas,
+  inclusive as da outra pessoa (03).
+- **Opções:** apagar tudo em cascata; ou manter avaliações e conversas
+  anonimizadas ("Conta excluída"), trocando as FKs para `on delete set null`.
+- **Escolha:** apagar tudo, como o banco já faz. Quem sai não deixa nome,
+  nota nem mensagem para trás, e não precisamos tratar autora nula em
+  `avaliacoes_publicas`, `prestadoras_resumo` nem no chat.
+- **O que cortamos e por quê:** a estabilidade da nota. Se uma cliente exclui
+  a conta, as avaliações dela somem e a nota média e o total de avaliações da
+  prestadora mudam. A outra pessoa da conversa perde o histórico. O botão
+  "Excluir conta" precisa avisar isso antes de confirmar. Para mudar de ideia,
+  basta uma migration trocando as FKs de `avaliacoes`, `conversas` e
+  `mensagens`.
+
 ## Features
 
 Listem as features que o time vai construir, quem é o dono de cada uma e por
@@ -62,6 +82,62 @@ Contem uma escolha técnica que o time fez e por quê. Por exemplo, por que usou
 uma estrutura de dados no `core/`, qual o Big O da operação principal, ou o
 que mudaria se a rede crescesse 100 vezes. Se mediram com `make bench`, colem a
 saída e uma frase dizendo o que os números mostram.
+
+## Deploy
+
+- **URL pública:** https://miniprojeto3-phi.vercel.app
+- **Onde roda:** o front (Next) na Vercel, com Root Directory `frontend`. Auth,
+  banco e arquivos ficam no Supabase.
+- **Por que sem Render:** o guia 08 usa o Render para hospedar o backend
+  FastAPI do modelo. Este projeto não usa esse backend: o front fala direto com
+  o Supabase usando a chave publishable, e quem protege os dados é a RLS do
+  banco. Sem servidor próprio, não há nada para subir no Render.
+- **Variáveis na Vercel:** `NEXT_PUBLIC_SUPABASE_URL` e
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. A `NEXT_PUBLIC_USE_MOCKS` só é
+  ignorada no deploy de produção, então a URL pública sempre usa o Supabase de
+  verdade. Nos previews de PR ela continua valendo: deixem sem definir (ou
+  `false`) na Vercel para o preview também usar o banco.
+- **Banco:** as migrations 01, 02 e 03 precisam estar aplicadas, em ordem, no
+  Supabase compartilhado (são aplicadas à mão). Sem a 03 o chat não funciona.
+- **Para conferir:** cadastro → entrar → buscar prestadora → abrir o perfil →
+  avaliar → chat.
+
+## Testes de RLS
+
+### Avaliações com duas contas (#28)
+
+- **Arquivo:** `supabase/tests/database/02_descoberta.test.sql` (pgTAP, roda
+  numa transação com rollback). Rodar com `supabase start && supabase test db`.
+- **Contas:** clientes A e B, prestadoras P e Q, conta sem papel N.
+  `auth.uid()` é simulado via `request.jwt.claims`, como o PostgREST faz.
+- **Resultado (24/11):** 53/53 ok. Rodado em Postgres 16 local com pgTAP e um
+  shim mínimo do Supabase (papéis `anon`/`authenticated`, `auth.uid()`); a
+  `01_identidade.test.sql` passou 95/95 no mesmo ambiente.
+
+| Tentativa | Resultado |
+|---|---|
+| A edita/apaga a avaliação de B | bloqueado pela RLS (0 linhas; conferido como admin) |
+| A troca `cliente_id` da avaliação de B para si | `42501` (sem GRANT na coluna) |
+| A insere avaliação com `cliente_id` de B | `42501` (policy de insert) |
+| A avalia outra cliente, conta sem papel, perfil inexistente ou a si mesma | `42501` |
+| Prestadora P avalia Q; conta sem papel N avalia P | `42501` |
+| P cria 5 estrelas para si em nome de A | `42501` |
+| P apaga/edita avaliações sobre ela | bloqueado pela RLS (0 linhas) |
+| Segunda avaliação de A para P | `23505` (`UNIQUE`) |
+| Nota 0, 6, 9 (no update) ou nula; comentário > 1000 caracteres | `23514` / `23502` |
+| Forjar `criada_em` ou mover a avaliação para outra prestadora | `42501` (GRANT só em `nota` e `comentario`) |
+| anon insere, edita, apaga ou chama `perfil_tem_papel` | `42501` |
+| anon lê `avaliacoes`, `avaliacoes_publicas` e `prestadoras_resumo` | ok (média, total e busca por cidade sem acento conferidos) |
+| anon lê perfis de clientes | 0 linhas; a view só expõe nome e avatar da autora |
+
+Para garantir que o teste pega erro de verdade, afrouxamos as policies de
+insert e delete numa cópia: 8 testes falharam, como esperado. Afrouxando as de
+update e delete (`using (true)`), 13 falharam: as tentativas em linha alheia
+usam `returning id` + `is_empty`, então falham na hora, e não só na conferência
+como admin.
+
+As contagens são filtradas pelas contas de teste: o teste continua passando se
+o banco local já tiver contas e avaliações criadas usando o app.
 
 ## Uso de IA
 

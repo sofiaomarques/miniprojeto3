@@ -4,6 +4,13 @@ Procurem a mensagem que estão vendo (Ctrl+F ajuda). Cada bloco traz a mensagem
 literal, a causa e o conserto. Antes de tudo, leiam o traceback de baixo para
 cima (guia 03, item 5).
 
+> **Neste projeto:** o backend FastAPI do modelo não é usado (ver a seção
+> Deploy do `DECISIONS.md`). O que este guia fala de `make dev-back`, `:8000`,
+> Swagger e `NEXT_PUBLIC_API_URL` vale só para o modelo. Aqui o front fala
+> direto com o Supabase: se uma chamada falhar, confiram
+> `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` no
+> `frontend/.env.local`.
+
 ## Resumo
 
 | Vocês veem | Vão para |

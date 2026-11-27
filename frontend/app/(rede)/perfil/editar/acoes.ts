@@ -4,8 +4,12 @@
 // perfil da sessão; o banco confere de novo (RLS, GRANTs e triggers da 01).
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
-import { diferencaCategorias, lerEdicaoPerfil } from "@/lib/identidade/perfil";
-import { ehErroIdentidade, servicoIdentidade } from "@/lib/identidade/service";
+import {
+  ehErroIdentidade,
+  lerEdicaoPerfil,
+  servicoIdentidade,
+  sincronizarMeusServicos,
+} from "@/lib/identidade/service";
 import { criarClienteServidor } from "@/lib/supabase/server";
 
 export type EstadoEdicaoPerfil = {
@@ -14,6 +18,10 @@ export type EstadoEdicaoPerfil = {
 };
 
 const ERRO_GENERICO = "Não foi possível salvar agora. Tente de novo.";
+// Nome, bio e cidade já foram gravados; só os serviços falharam.
+const ERRO_SERVICOS =
+  "Seus dados foram salvos, mas não foi possível atualizar os serviços. Tente de novo.";
+const ENTRAR = `/entrar?next=${encodeURIComponent("/perfil/editar")}`;
 
 export async function salvarPerfil(
   _anterior: EstadoEdicaoPerfil,
@@ -29,31 +37,28 @@ export async function salvarPerfil(
 
   const identidade = servicoIdentidade(await criarClienteServidor());
 
-  let papel: string | null = null;
+  let dadosSalvos = false;
   try {
     const perfil = await identidade.obterMeuPerfil();
-    if (!perfil) redirect(`/entrar?next=${encodeURIComponent("/perfil/editar")}`);
-    papel = perfil.papel;
+    if (!perfil) redirect(ENTRAR);
+    // Igual ao exigirConta da página: sem papel, primeiro o onboarding.
+    if (!perfil.papel) redirect("/onboarding");
     await identidade.atualizarMeuPerfil(dados);
+    dadosSalvos = true;
 
     // Categorias: só prestadora tem serviços (o banco recusaria a cliente).
-    if (papel === "prestadora") {
-      const atuais = (await identidade.listarServicosDaPrestadora(perfil.id)).map(
-        (s) => s.categoria_id,
-      );
-      const { adicionar, remover } = diferencaCategorias(atuais, categorias);
-      for (const id of adicionar) await identidade.adicionarMeuServico(id);
-      for (const id of remover) await identidade.removerMeuServico(id);
+    if (perfil.papel === "prestadora") {
+      await sincronizarMeusServicos(identidade, perfil.id, categorias);
     }
   } catch (erro) {
     unstable_rethrow(erro); // redirect() do Next não é erro: deixa seguir
-    if (ehErroIdentidade(erro)) {
-      if (erro.codigo === "nao_autenticada") {
-        redirect(`/entrar?next=${encodeURIComponent("/perfil/editar")}`);
-      }
-      // Mensagem do service: fixa e em português, nunca a do banco.
-      return { erro: erro.message, valores };
+    if (ehErroIdentidade(erro) && erro.codigo === "nao_autenticada") redirect(ENTRAR);
+    if (dadosSalvos) {
+      revalidatePath("/perfil");
+      return { erro: ERRO_SERVICOS, valores };
     }
+    // Mensagem do service: fixa e em português, nunca a do banco.
+    if (ehErroIdentidade(erro)) return { erro: erro.message, valores };
     return { erro: ERRO_GENERICO, valores };
   }
 

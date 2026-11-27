@@ -1,32 +1,32 @@
 import type { Avaliacao } from "@/lib/descoberta/types";
 
+import { NotaAvaliacao } from "./Estrelas";
+
 // Avaliações mais recentes primeiro (a ordem vem do service).
 export function ListaAvaliacoes({ avaliacoes }: { avaliacoes: Avaliacao[] }) {
   if (avaliacoes.length === 0) {
-    return <p className="text-sm text-zinc-500">Ainda não há avaliações.</p>;
+    return <p className="text-[14.5px] text-suave">Ainda não há avaliações. Seja a primeira!</p>;
   }
 
   return (
-    <ul className="space-y-3">
-      {avaliacoes.map((avaliacao) => (
-        <li key={avaliacao.id} className="rounded-lg border border-zinc-200 bg-white p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-medium">{avaliacao.clienteNome || "Cliente"}</p>
-            <time dateTime={avaliacao.criadaEm} className="text-xs text-zinc-500">
-              {new Date(avaliacao.criadaEm).toLocaleDateString("pt-BR")}
-            </time>
+    <ul className="flex flex-col gap-2.5">
+      {avaliacoes.map((a) => (
+        <li
+          key={a.id}
+          className="flex flex-col gap-1.5 rounded-[18px] border border-borda bg-papel p-3.5"
+        >
+          <div className="flex items-center justify-between gap-2 text-sm">
+            <b className="min-w-0 truncate">{a.clienteNome || "Cliente"}</b>
+            <NotaAvaliacao nota={a.nota} />
           </div>
-          <p
-            role="img"
-            aria-label={`${avaliacao.nota} de 5 estrelas`}
-            className="text-amber-500"
-          >
-            {"★".repeat(avaliacao.nota)}
-            <span className="text-zinc-300">{"★".repeat(5 - avaliacao.nota)}</span>
-          </p>
-          {avaliacao.comentario && (
-            <p className="mt-1 text-sm text-zinc-700">{avaliacao.comentario}</p>
+          {a.comentario && (
+            <p className="whitespace-pre-line break-words text-sm leading-[1.45] text-corpo">
+              {a.comentario}
+            </p>
           )}
+          <time dateTime={a.criadaEm} className="text-xs text-suave">
+            {new Date(a.criadaEm).toLocaleDateString("pt-BR")}
+          </time>
         </li>
       ))}
     </ul>

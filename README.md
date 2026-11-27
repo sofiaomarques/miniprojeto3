@@ -24,29 +24,63 @@ Este é o treino final antes do hackathon de novembro.
 
 ## Como começar
 
-Instalem as dependências uma vez:
+Este projeto não usa o backend FastAPI do modelo (`backend/`): o front fala
+direto com o Supabase, e a RLS do banco protege os dados (ver a seção Deploy
+do [DECISIONS.md](DECISIONS.md)). Por isso `make check`, `make dev-back`, `make seed` e
+`make test` não se aplicam.
+
+Instalem as dependências uma vez (Node 22 ou mais novo):
 
 ```bash
-cd backend && uv sync && cd ..
 cd frontend && npm install && cp .env.local.example .env.local && cd ..
 ```
+
+No `frontend/.env.local`, preencham `NEXT_PUBLIC_SUPABASE_URL` e
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, ou usem `NEXT_PUBLIC_USE_MOCKS=true`
+para rodar com dados de mentira.
 
 Depois validem o ambiente:
 
 ```bash
-make check      # tudo precisa ficar verde
-make seed       # cria 3 usuários de exemplo
-make test       # deve mostrar "4 passed, 10 skipped"
+cd frontend && npm test && npx tsc --noEmit && cd ..
 ```
 
-Para rodar o projeto, abram dois terminais:
+Para rodar o projeto:
 
 ```bash
-make dev-back   # API em localhost:8000, Swagger em localhost:8000/docs
 make dev-front  # site em localhost:3000
 ```
 
 Se algum comando falhar, vejam o [guia 00](docs/guias/00-setup.md).
+
+## Dados de demonstração
+
+O `supabase/seed-demo.sql` cria contas fixas, perfis, serviços, avaliações e
+conversas em João Pessoa, para testar e apresentar o site. Rodem no Supabase
+de **desenvolvimento**, depois das migrations 01, 02 e 03, pelo SQL Editor ou
+com `psql "$DATABASE_URL" -f supabase/seed-demo.sql`. Pode rodar de novo: ele
+refaz serviços, avaliações e conversas destas contas e volta a senha para a
+de baixo, sem apagar as fotos e o avatar enviados pelo site. Não mexe em
+nenhuma outra conta.
+
+Todas as contas usam a senha **`demo12345`**:
+
+| E-mail | Conta | O que tem |
+|---|---|---|
+| `marina@demo.test` | Prestadora (ar-condicionado) | 2 avaliações (média 4,5) e 2 conversas, 3 mensagens não lidas |
+| `camila@demo.test` | Prestadora (encanamento) | 1 avaliação e 1 conversa |
+| `joana@demo.test` | Prestadora (montagem de móveis) | 1 avaliação e 1 conversa |
+| `aline@demo.test` | Prestadora (elétrica) | 1 avaliação, sem conversas |
+| `beatriz@demo.test` | Cliente | 3 avaliações feitas e 2 conversas, 1 não lida |
+| `fernanda@demo.test` | Cliente | 2 avaliações feitas e 2 conversas |
+
+As fotos do portfólio não estão no seed (o SQL não envia arquivos para o
+Storage): enviem pelo próprio site, entrando como a prestadora.
+
+O repositório é público e a senha está aqui, então qualquer pessoa pode
+entrar nessas contas. Se alguém mudar um perfil, apagar uma avaliação ou
+trocar a senha, é só rodar o seed de novo: ele também desloga quem
+estiver nessas contas.
 
 ## Primeiros passos do time
 
