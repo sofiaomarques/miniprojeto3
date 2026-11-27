@@ -1,12 +1,17 @@
 "use client";
 
-// Contador de mensagens não lidas (#38), para pôr ao lado de "Conversas" na
-// navbar (P1) e na barra de abas do protótipo (components/rede/Tela.tsx).
-// Some quando não há não lidas ou ninguém está logada. Atualiza sozinho
-// quando chega mensagem ou quando a conversa é aberta (marcar_lidas).
+// Contador de mensagens não lidas (#38), no ícone da aba "Conversas" da
+// BarraAbas (components/rede/Tela.tsx). Some quando não há não lidas ou
+// ninguém está logada. Atualiza sozinho quando chega mensagem ou quando a
+// conversa é aberta (marcar_lidas).
 //
 // Uso: dentro de um elemento `relative`, por exemplo
 //   <span className="relative"><IconeChat /><UnreadBadge className="absolute -right-2 -top-1" /></span>
+//
+// Leitor de tela: o número fica escondido e vai por extenso em texto sr-only,
+// que entra no nome do link ("3 mensagens não lidas Conversas"). Sem
+// role="status": como a barra aparece em toda tela, o anúncio se repetiria a
+// cada navegação.
 import { useEffect, useState } from "react";
 
 import { assinarNaoLidas, contarNaoLidas, obterUsuariaAtualId } from "@/lib/chat/service";
@@ -54,12 +59,11 @@ export function UnreadBadge({ className = "" }: { className?: string }) {
   const rotulo = `${total} ${total === 1 ? "mensagem não lida" : "mensagens não lidas"}`;
   return (
     <span
-      role="status"
-      aria-label={rotulo}
       title={rotulo}
       className={`inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-vinho px-1 text-[11px] font-bold leading-none text-white ${className}`}
     >
-      {total > 99 ? "99+" : total}
+      <span aria-hidden="true">{total > 99 ? "99+" : total}</span>
+      <span className="sr-only">{rotulo}</span>
     </span>
   );
 }

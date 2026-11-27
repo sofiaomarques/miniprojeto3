@@ -5,8 +5,8 @@
 // Contrato para as outras pessoas:
 //   P2 (#25): o botão "Conversar" chama iniciarConversa(prestadoraId) e
 //             navega para `/chat/${conversa.id}`.
-//   P1 (#15) e protótipo (components/rede): a navbar e a aba "Conversas"
-//             mostram <UnreadBadge /> de "@/components/chat/UnreadBadge" (#38).
+//   Protótipo (components/rede): a aba "Conversas" da BarraAbas mostra
+//             <UnreadBadge /> de "@/components/chat/UnreadBadge" (#38).
 import { usarMocks } from "@/lib/supabase/config";
 import * as mock from "./service-mock";
 import * as real from "./service-supabase";
