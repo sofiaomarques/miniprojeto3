@@ -4,6 +4,14 @@ Roteiro para gravar o vídeo e para ensaiar a apresentação. Usa as contas do
 `supabase/seed-demo.sql` (senha de todas: `demo12345`) na URL pública
 https://miniprojeto3-phi.vercel.app.
 
+**Vídeo pronto:** [video-demo-repara.webm](video-demo-repara.webm) (3 min 19 s,
+sem som, com legendas e zoom nos botões). Foi gravado com o site rodando
+localmente no modo de teste (`NEXT_PUBLIC_USE_MOCKS=true`): por isso o
+cadastro e o login aparecem preenchidos com o aviso "Modo de dados de
+mentira" e não são enviados, e alguns dados diferem do seed (no modo de
+teste, a Camila é de Recife e a Aline de Natal). O roteiro abaixo é para
+gravar de novo na URL pública.
+
 **Antes de gravar:** siga o [checklist de deploy](checklist-deploy.md). Sem o
 seed aplicado no Supabase, a busca aparece vazia.
 
