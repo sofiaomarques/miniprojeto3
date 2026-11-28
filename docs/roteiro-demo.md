@@ -73,7 +73,8 @@ avaliação. Cerca de 1 minuto de demo no meio do pitch. Ao vivo, o mais seguro
 é `beatriz@demo.test` com a **Camila** (janela anônima com
 `camila@demo.test`), pelo mesmo motivo do item acima.
 
-**Slides do pitch:** https://claude.ai/artifact/RZ2FopTmZ6L6Cv3bfE8amV (8 slides:
+**Slides do pitch:** [docs/slides-repara.pdf](slides-repara.pdf) (8 slides:
 capa, público, problema, solução, demo, decisões, o que ficou de fora,
-fechamento; cada um tem notas de fala com o tempo). Os trechos entre colchetes
-são para o time confirmar. Tempo total: cerca de 3 min.
+fechamento). A versão editável, com notas de fala e o tempo de cada slide,
+está em https://claude.ai/artifact/RZ2FopTmZ6L6Cv3bfE8amV. Tempo total:
+cerca de 3 min.
