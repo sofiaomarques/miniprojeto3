@@ -4,6 +4,14 @@ Roteiro para gravar o vídeo e para ensaiar a apresentação. Usa as contas do
 `supabase/seed-demo.sql` (senha de todas: `demo12345`) na URL pública
 https://miniprojeto3-phi.vercel.app.
 
+**Vídeo pronto:** [video-demo-repara.webm](video-demo-repara.webm) (3 min 19 s,
+sem som, com legendas e zoom nos botões). Foi gravado com o site rodando
+localmente no modo de teste (`NEXT_PUBLIC_USE_MOCKS=true`): por isso o
+cadastro e o login aparecem preenchidos com o aviso "Modo de dados de
+mentira" e não são enviados, e alguns dados diferem do seed (no modo de
+teste, a Camila é de Recife e a Aline de Natal). O roteiro abaixo é para
+gravar de novo na URL pública.
+
 **Antes de gravar:** siga o [checklist de deploy](checklist-deploy.md). Sem o
 seed aplicado no Supabase, a busca aparece vazia.
 
@@ -73,7 +81,8 @@ avaliação. Cerca de 1 minuto de demo no meio do pitch. Ao vivo, o mais seguro
 é `beatriz@demo.test` com a **Camila** (janela anônima com
 `camila@demo.test`), pelo mesmo motivo do item acima.
 
-**Slides do pitch:** https://claude.ai/artifact/RZ2FopTmZ6L6Cv3bfE8amV (8 slides:
+**Slides do pitch:** [docs/slides-repara.pdf](slides-repara.pdf) (8 slides:
 capa, público, problema, solução, demo, decisões, o que ficou de fora,
-fechamento; cada um tem notas de fala com o tempo). Os trechos entre colchetes
-são para o time confirmar. Tempo total: cerca de 3 min.
+fechamento). A versão editável, com notas de fala e o tempo de cada slide,
+está em https://claude.ai/artifact/RZ2FopTmZ6L6Cv3bfE8amV. Tempo total:
+cerca de 3 min.

@@ -110,6 +110,10 @@ Use a Camila nos passos 3 e 4: no seed, a Beatriz já conversa com a Marina e
 já a avaliou, então no perfil da Marina ela veria "Editar sua avaliação" e a
 conversa antiga.
 
+**Vídeo da demonstração:** [docs/video-demo-repara.webm](docs/video-demo-repara.webm)
+(3 min 19 s, com legendas). **Slides do pitch:**
+[docs/slides-repara.pdf](docs/slides-repara.pdf).
+
 Roteiro completo do vídeo: [docs/roteiro-demo.md](docs/roteiro-demo.md). Para
 deixar a URL pronta: [docs/checklist-deploy.md](docs/checklist-deploy.md).
 
